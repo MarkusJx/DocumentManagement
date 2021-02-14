@@ -1,6 +1,19 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.graalvm.plugin:gradle-graal-truffle-plugins:0.1.0-alpha2"
+    }
+}
+
 plugins {
     id 'java'
 }
+
+apply plugin: "org.graalvm.plugin.native-image"
 
 group 'org.markusjx'
 version '1.0-SNAPSHOT'
@@ -15,12 +28,37 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.8.11.2'
     implementation group: 'com.github.gwenn', name: 'sqlite-dialect', version: 'master'
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.28.Final'
-    implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.25.Final'
+    //implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.25.Final'
     implementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    implementation group: 'org.graalvm.sdk', name: 'graal-sdk', version: '20.3.0'
 }
+
+tasks.named('jar') {
+    manifest {
+        attributes(
+                'Main-Class': 'Main',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+task initVCVars(type: Exec) {
+    commandLine "cmd", "/c", "${System.env.VCVARS_BAT}"
+}
+
+task buildNativeExecutable(type: Exec) {
+    workingDir "${buildDir}/libs"
+
+    commandLine "cmd", "/c", "${System.env.VCVARS_BAT}"
+    commandLine "cmd", "/c", "native-image", "--shared", "-jar", "${project.name}-${project.version}.jar"
+}
+
+buildNativeExecutable.dependsOn(jar)
+//buildNativeExecutable.dependsOn(initVCVars)
 
 test {
     useJUnitPlatform()

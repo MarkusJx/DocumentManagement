@@ -5,6 +5,7 @@ import database.databaseTypes.Property;
 import database.databaseTypes.PropertyValue;
 import database.databaseTypes.Tag;
 import database.filter.DocumentFilter;
+import datatypes.DocumentSearchResult;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

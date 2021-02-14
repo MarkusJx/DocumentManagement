@@ -1,5 +1,5 @@
 import database.DatabaseManager;
-import database.DocumentSearchResult;
+import datatypes.DocumentSearchResult;
 import database.filter.DocumentFilter;
 import database.filter.filters.FilenameFilter;
 import database.filter.filters.PropertyFilter;
@@ -12,6 +12,10 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
+        test();
+    }
+
+    public static void test() {
         DatabaseManager.persistenceUnitName = "Database";
         DatabaseManager.createTag("abc");
         DatabaseManager.createTag("def");
