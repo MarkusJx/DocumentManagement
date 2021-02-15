@@ -1,6 +1,5 @@
 package database.filter.filters.dates;
 
-import com.sun.istack.NotNull;
 import database.databaseTypes.Document;
 import database.filter.DocumentFilterOperations;
 
@@ -14,7 +13,7 @@ import java.util.Objects;
 public class SingleDateFilter extends DateFilterBase {
     private final LocalDate date;
 
-    public SingleDateFilter(@NotNull LocalDate date) {
+    public SingleDateFilter(LocalDate date) {
         Objects.requireNonNull(date);
         this.date = date;
     }

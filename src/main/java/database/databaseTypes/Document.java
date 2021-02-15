@@ -1,9 +1,7 @@
 package database.databaseTypes;
 
-import cApi.NativeImported;
-import cApi.TypeConverter;
 import cApi.interfaces.CConvertible;
-import cApi.structs.*;
+import cApi.structs.DocumentPointer;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -53,22 +51,20 @@ public class Document implements Serializable, CConvertible<DocumentPointer> {
                 properties + ", creation date=" + creationDate + ", tag=" + tags + "}";
     }
 
-    @Override
-    public void writeToPointer(DocumentPointer ptr) {
-        NativeImported.copyStringToPointer(ptr.filename(), DocumentPointer.filename_size, filename);
-        NativeImported.copyStringToPointer(ptr.path(), DocumentPointer.path_size, path);
-        NativeImported.copyStringToPointer(ptr.date(), DocumentPointer.date_size, creationDate.toString());
+    /*public void writeToPointer(DocumentPointer ptr) {
+        NativeImported.copyStringToPointer(ptr.filename(), Constants.DATABASE_LONG_STRING, filename);
+        NativeImported.copyStringToPointer(ptr.path(), Constants.DATABASE_LONG_STRING, path);
+        NativeImported.copyStringToPointer(ptr.date(), Constants.DATABASE_SHORT_STRING, creationDate.toString());
 
         ptr.tags(TypeConverter.convertTagList(tags));
         ptr.properties(TypeConverter.convertPropertyValueList(properties));
 
         ptr.tags().numElements(tags.size());
         ptr.properties().numElements(properties.size());
-    }
+    }*/
 
-    @Override
-    public void freePointer(DocumentPointer toFree) {
+    /*public void freePointer(DocumentPointer toFree) {
         TypeConverter.freeTagArray(toFree.tags());
         TypeConverter.freePropertyValueArray(toFree.properties());
-    }
+    }*/
 }

@@ -1,6 +1,5 @@
 package database.databaseTypes;
 
-import cApi.NativeImported;
 import cApi.interfaces.CConvertible;
 import cApi.structs.TagPointer;
 
@@ -42,8 +41,7 @@ public class Tag implements Serializable, CConvertible<TagPointer> {
         return Objects.hash(name);
     }
 
-    @Override
-    public void writeToPointer(TagPointer ptr) {
-        NativeImported.copyStringToPointer(ptr.name(), TagPointer.name_length, name);
-    }
+    /*public void writeToPointer(TagPointer ptr) {
+        NativeImported.copyStringToPointer(ptr.name(), Constants.DATABASE_LONG_STRING, name);
+    }*/
 }

@@ -1,11 +1,8 @@
 import database.DatabaseManager;
-import database.databaseTypes.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 public class TestDBManager {
     @BeforeAll
@@ -45,7 +42,7 @@ public class TestDBManager {
         Assertions.assertFalse(DatabaseManager.propertyExists("prop5"));
     }
 
-    @Test
+    /*@Test
     void testTagSearch() {
         List<Document> documents = DatabaseManager.getDocumentsByTags("tag1");
         System.out.println(documents);
@@ -66,5 +63,5 @@ public class TestDBManager {
         documents = DatabaseManager.getDocumentsByTags("tag3", "tag4");
         System.out.println(documents);
         Assertions.assertEquals(1, documents.size());
-    }
+    }*/
 }

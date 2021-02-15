@@ -1,42 +1,49 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "org.graalvm.plugin:gradle-graal-truffle-plugins:0.1.0-alpha2"
-    }
-}
-
 plugins {
     id 'java'
+    id 'io.quarkus' version '1.11.3.Final'
 }
 
-apply plugin: "org.graalvm.plugin.native-image"
-
-group 'org.markusjx'
+group 'io.github.markusjx'
 version '1.0-SNAPSHOT'
 compileJava.options.fork = true
-//compileJava.options.forkOptions.executable = 'C:\\Program Files\\Java\\jdk1.8.0_281\\bin'
 
 repositories {
     maven { url 'https://jitpack.io' }
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.8.11.2'
-    implementation group: 'com.github.gwenn', name: 'sqlite-dialect', version: 'master'
-    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.28.Final'
-    //implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.25.Final'
-    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    //implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.8.11.2'
+    //implementation group: 'com.github.gwenn', name: 'sqlite-dialect', version: 'master'
+    //implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.28.Final'
     implementation group: 'org.graalvm.sdk', name: 'graal-sdk', version: '20.3.0'
+    //implementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    //implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    //implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    //implementation group: 'javax.security.jacc', name: 'javax.security.jacc-api', version: '1.6'
+
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+    implementation 'io.quarkus:quarkus-jdbc-h2'
+
+    /*implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+    implementation 'io.quarkus:quarkus-arc'
+    implementation 'io.quarkus:quarkus-resteasy'*/
 }
 
-tasks.named('jar') {
+quarkusBuild {
+    nativeArgs {
+        containerBuild = false
+        buildImage = "quay.io/quarkus/ubi-quarkus-native-image:20.3.0-java11"
+        dumpProxies = true
+    }
+}
+
+jar {
     manifest {
         attributes(
                 'Main-Class': 'Main',
@@ -44,21 +51,17 @@ tasks.named('jar') {
                 'Implementation-Version': project.version
         )
     }
+    from {
+        configurations.compileClasspath.resolvedConfiguration.files.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }
 
-task initVCVars(type: Exec) {
-    commandLine "cmd", "/c", "${System.env.VCVARS_BAT}"
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
-
-task buildNativeExecutable(type: Exec) {
-    workingDir "${buildDir}/libs"
-
-    commandLine "cmd", "/c", "${System.env.VCVARS_BAT}"
-    commandLine "cmd", "/c", "native-image", "--shared", "-jar", "${project.name}-${project.version}.jar"
-}
-
-buildNativeExecutable.dependsOn(jar)
-//buildNativeExecutable.dependsOn(initVCVars)
 
 test {
     useJUnitPlatform()

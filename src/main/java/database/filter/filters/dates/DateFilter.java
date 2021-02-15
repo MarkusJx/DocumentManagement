@@ -1,6 +1,5 @@
 package database.filter.filters.dates;
 
-import com.sun.istack.NotNull;
 import database.databaseTypes.Document;
 import database.filter.DocumentFilterBase;
 import database.filter.DocumentFilterOperations;
@@ -20,7 +19,7 @@ public class DateFilter implements DocumentFilterBase {
         this.filter = filter;
     }
 
-    public static DateFilter getByDate(@NotNull LocalDate begin) {
+    public static DateFilter getByDate(LocalDate begin) {
         Objects.requireNonNull(begin);
         return new DateFilter(new SingleDateFilter(begin));
     }

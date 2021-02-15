@@ -2,7 +2,6 @@ package cApi.structs;
 
 import cApi.DatabaseContext;
 import org.graalvm.nativeimage.c.CContext;
-import org.graalvm.nativeimage.c.struct.AllowNarrowingCast;
 import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CFieldAddress;
 import org.graalvm.nativeimage.c.struct.CStruct;
@@ -15,8 +14,7 @@ public interface DocumentPointer extends PointerBase {
     @CFieldAddress
     CCharPointer filename();
 
-    @AllowNarrowingCast
-    @CField
+    @CFieldAddress
     CCharPointer path();
 
     @CField
@@ -25,8 +23,7 @@ public interface DocumentPointer extends PointerBase {
     @CField
     PropertyValuePointerArray properties();
 
-    @AllowNarrowingCast
-    @CField
+    @CFieldAddress
     CCharPointer date();
 
     @CField
@@ -34,8 +31,4 @@ public interface DocumentPointer extends PointerBase {
 
     @CField
     void properties(PropertyValuePointerArray p);
-
-    int filename_size = 255;
-    int path_size = 255;
-    int date_size  = 25;
 }

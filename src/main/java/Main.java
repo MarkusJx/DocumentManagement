@@ -1,10 +1,10 @@
 import database.DatabaseManager;
-import datatypes.DocumentSearchResult;
 import database.filter.DocumentFilter;
 import database.filter.filters.FilenameFilter;
 import database.filter.filters.PropertyFilter;
 import database.filter.filters.TagFilter;
 import database.filter.filters.dates.DateFilter;
+import datatypes.DocumentSearchResult;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -16,7 +16,6 @@ public class Main {
     }
 
     public static void test() {
-        DatabaseManager.persistenceUnitName = "Database";
         DatabaseManager.createTag("abc");
         DatabaseManager.createTag("def");
 

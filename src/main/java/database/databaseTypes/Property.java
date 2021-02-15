@@ -1,6 +1,5 @@
 package database.databaseTypes;
 
-import cApi.NativeImported;
 import cApi.interfaces.CConvertible;
 import cApi.structs.PropertyPointer;
 
@@ -42,8 +41,7 @@ public class Property implements Serializable, CConvertible<PropertyPointer> {
         return Objects.hash(name);
     }
 
-    @Override
-    public void writeToPointer(PropertyPointer ptr) {
-        NativeImported.copyStringToPointer(ptr.name(), PropertyPointer.name_size, name);
-    }
+    /*public void writeToPointer(PropertyPointer ptr) {
+        NativeImported.copyStringToPointer(ptr.name(), Constants.DATABASE_LONG_STRING, name);
+    }*/
 }

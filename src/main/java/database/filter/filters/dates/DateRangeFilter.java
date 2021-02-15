@@ -1,6 +1,5 @@
 package database.filter.filters.dates;
 
-import com.sun.istack.NotNull;
 import database.databaseTypes.Document;
 import database.filter.DocumentFilterOperations;
 
@@ -15,7 +14,7 @@ public class DateRangeFilter extends DateFilterBase {
     private final LocalDate begin;
     private final LocalDate end;
 
-    public DateRangeFilter(@NotNull LocalDate begin, @NotNull LocalDate end) {
+    public DateRangeFilter(LocalDate begin, LocalDate end) {
         Objects.requireNonNull(begin);
         Objects.requireNonNull(end);
         this.begin = begin;

@@ -6,7 +6,9 @@ import database.databaseTypes.PropertyValue;
 import database.databaseTypes.Tag;
 import database.filter.DocumentFilter;
 import datatypes.DocumentSearchResult;
+import io.quarkus.hibernate.orm.PersistenceUnit;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -20,15 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 public class DatabaseManager {
-    public static String persistenceUnitName;
-    private static EntityManager manager = null;
+    private static EntityManagerContainer managerContainer = null;
 
     public static synchronized EntityManager getEntityManager() {
-        if (manager == null) {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnitName);
-            manager = emf.createEntityManager();
+        if (managerContainer == null) {
+            managerContainer = new EntityManagerContainer();
         }
-        return manager;
+        return managerContainer.entityManager;
     }
 
     public static synchronized void createDocument(String filename, String path, Map<String, String> properties, LocalDate creationDate, String... tagNames) {
@@ -146,7 +146,24 @@ public class DatabaseManager {
     }
 
     public static synchronized void close() {
-        manager.close();
-        manager = null;
+        if (managerContainer != null) {
+            managerContainer.entityManager.close();
+            managerContainer = null;
+        }
+    }
+
+    private static class EntityManagerContainer {
+        @Inject
+        @PersistenceUnit("documents")
+        EntityManager entityManager;
+
+        @Inject
+        @PersistenceUnit("documents")
+        EntityManagerFactory entityManagerFactory;
+
+        EntityManagerContainer() {
+            entityManagerFactory = Persistence.createEntityManagerFactory("documents");
+            entityManager = entityManagerFactory.createEntityManager();
+        }
     }
 }
