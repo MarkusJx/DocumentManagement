@@ -1,8 +1,5 @@
 package database.databaseTypes;
 
-import cApi.interfaces.CConvertible;
-import cApi.structs.PropertyValuePointer;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -11,13 +8,13 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-public class PropertyValue implements Serializable, CConvertible<PropertyValuePointer> {
+public class PropertyValue implements Serializable {
     @Id
-    public final String value;
+    private String value;
 
     @ManyToOne
     @JoinColumn
-    public final Property property;
+    private Property property;
 
     public PropertyValue() {
         this.value = null;
@@ -27,6 +24,14 @@ public class PropertyValue implements Serializable, CConvertible<PropertyValuePo
     public PropertyValue(String value, Property property) {
         this.value = value;
         this.property = property;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public Property getProperty() {
+        return property;
     }
 
     @Override
@@ -49,10 +54,4 @@ public class PropertyValue implements Serializable, CConvertible<PropertyValuePo
     public int hashCode() {
         return Objects.hash(value, property);
     }
-
-    /*public void writeToPointer(PropertyValuePointer ptr) {
-        if (value == null || property == null) return;
-        NativeImported.copyStringToPointer(ptr.value(), Constants.DATABASE_LONG_STRING, value);
-        property.writeToPointer(ptr.property());
-    }*/
 }

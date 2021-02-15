@@ -3,7 +3,6 @@ package cApi;
 import cApi.structs.DocumentPointerArray;
 import cApi.structs.filters.DocumentFilterBasePointer;
 import cApi.structs.filters.DocumentFilterPointer;
-import database.DatabaseManager;
 import database.filter.DocumentFilter;
 import database.filter.DocumentFilterBase;
 import database.filter.filters.FilenameFilter;
@@ -196,7 +195,7 @@ public class EntryPoints {
     @CEntryPoint(name = "close_database_connection")
     protected static void closeDBConnection(IsolateThread thread) {
         try {
-            DatabaseManager.close();
+            //DatabaseManager.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

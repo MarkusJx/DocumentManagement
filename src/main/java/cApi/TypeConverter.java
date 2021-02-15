@@ -17,15 +17,15 @@ public class TypeConverter {
         DocumentPointerArray res = NativeImported.allocate(SizeOf.get(DocumentPointerArray.class) * documents.size());
         for (int i = 0; i < documents.size(); i++) {
             //documents.get(i).writeToPointer(res.addressOf(i).element());
-            NativeImported.copyStringToPointer(res.addressOf(i).element().filename(), Constants.DATABASE_LONG_STRING, documents.get(i).filename);
-            NativeImported.copyStringToPointer(res.addressOf(i).element().path(), Constants.DATABASE_LONG_STRING, documents.get(i).path);
-            NativeImported.copyStringToPointer(res.addressOf(i).element().date(), Constants.DATABASE_SHORT_STRING, documents.get(i).creationDate.toString());
+            NativeImported.copyStringToPointer(res.addressOf(i).element().filename(), Constants.DATABASE_LONG_STRING, documents.get(i).getFilename());
+            NativeImported.copyStringToPointer(res.addressOf(i).element().path(), Constants.DATABASE_LONG_STRING, documents.get(i).getPath());
+            NativeImported.copyStringToPointer(res.addressOf(i).element().date(), Constants.DATABASE_SHORT_STRING, documents.get(i).getCreationDate().toString());
 
-            res.addressOf(i).element().tags(TypeConverter.convertTagList(documents.get(i).tags));
-            res.addressOf(i).element().properties(TypeConverter.convertPropertyValueList(documents.get(i).properties));
+            res.addressOf(i).element().tags(TypeConverter.convertTagList(documents.get(i).getTags()));
+            res.addressOf(i).element().properties(TypeConverter.convertPropertyValueList(documents.get(i).getProperties()));
 
-            res.addressOf(i).element().tags().numElements(documents.get(i).tags.size());
-            res.addressOf(i).element().properties().numElements(documents.get(i).properties.size());
+            res.addressOf(i).element().tags().numElements(documents.get(i).getTags().size());
+            res.addressOf(i).element().properties().numElements(documents.get(i).getProperties().size());
         }
 
         return res;
@@ -46,7 +46,7 @@ public class TypeConverter {
         TagPointerArray res = NativeImported.allocate(SizeOf.get(TagPointerArray.class) * tags.size());
         for (int i = 0; i < tags.size(); i++) {
             //tags.get(i).writeToPointer(res.addressOf(i).element());
-            NativeImported.copyStringToPointer(res.addressOf(i).element().name(), Constants.DATABASE_LONG_STRING, tags.get(i).name);
+            NativeImported.copyStringToPointer(res.addressOf(i).element().name(), Constants.DATABASE_LONG_STRING, tags.get(i).getName());
         }
 
         return res;
@@ -60,9 +60,9 @@ public class TypeConverter {
         PropertyValuePointerArray res = NativeImported.allocate(SizeOf.get(PropertyValuePointerArray.class) * properties.size());
         for (int i = 0; i < properties.size(); i++) {
             //properties.get(i).writeToPointer(res.addressOf(i).element());
-            if (properties.get(i).value == null || properties.get(i).property == null) continue;
-            NativeImported.copyStringToPointer(res.addressOf(i).element().value(), Constants.DATABASE_LONG_STRING, properties.get(i).value);
-            NativeImported.copyStringToPointer(res.addressOf(i).element().property().name(), Constants.DATABASE_LONG_STRING, properties.get(i).property.name);
+            if (properties.get(i).getValue() == null || properties.get(i).getProperty() == null) continue;
+            NativeImported.copyStringToPointer(res.addressOf(i).element().value(), Constants.DATABASE_LONG_STRING, properties.get(i).getValue());
+            NativeImported.copyStringToPointer(res.addressOf(i).element().property().name(), Constants.DATABASE_LONG_STRING, properties.get(i).getProperty().getName());
         }
 
         return res;

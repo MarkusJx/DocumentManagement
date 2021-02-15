@@ -1,17 +1,14 @@
 package database.databaseTypes;
 
-import cApi.interfaces.CConvertible;
-import cApi.structs.PropertyPointer;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-public class Property implements Serializable, CConvertible<PropertyPointer> {
+public class Property implements Serializable {
     @Id
-    public final String name;
+    private String name;
 
     public Property() {
         this.name = null;
@@ -19,6 +16,10 @@ public class Property implements Serializable, CConvertible<PropertyPointer> {
 
     public Property(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -40,8 +41,4 @@ public class Property implements Serializable, CConvertible<PropertyPointer> {
     public int hashCode() {
         return Objects.hash(name);
     }
-
-    /*public void writeToPointer(PropertyPointer ptr) {
-        NativeImported.copyStringToPointer(ptr.name(), Constants.DATABASE_LONG_STRING, name);
-    }*/
 }

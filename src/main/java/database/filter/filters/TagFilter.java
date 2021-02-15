@@ -5,7 +5,10 @@ import database.databaseTypes.Tag;
 import database.filter.DocumentFilterBase;
 import database.filter.DocumentFilterOperations;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +31,7 @@ public class TagFilter implements DocumentFilterBase {
     @Override
     public int getMatches(Document document) {
         int res = 0;
-        for (Tag t : document.tags) {
+        for (Tag t : document.getTags()) {
             if (tagsContains(t)) res++;
         }
         return res;

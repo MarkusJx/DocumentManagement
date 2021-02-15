@@ -1,17 +1,14 @@
 package database.databaseTypes;
 
-import cApi.interfaces.CConvertible;
-import cApi.structs.TagPointer;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-public class Tag implements Serializable, CConvertible<TagPointer> {
+public class Tag implements Serializable {
     @Id
-    public final String name;
+    private String name;
 
     public Tag() {
         this.name = null;
@@ -19,6 +16,10 @@ public class Tag implements Serializable, CConvertible<TagPointer> {
 
     public Tag(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -40,8 +41,4 @@ public class Tag implements Serializable, CConvertible<TagPointer> {
     public int hashCode() {
         return Objects.hash(name);
     }
-
-    /*public void writeToPointer(TagPointer ptr) {
-        NativeImported.copyStringToPointer(ptr.name(), Constants.DATABASE_LONG_STRING, name);
-    }*/
 }

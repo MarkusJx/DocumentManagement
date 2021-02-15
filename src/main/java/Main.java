@@ -5,31 +5,38 @@ import database.filter.filters.PropertyFilter;
 import database.filter.filters.TagFilter;
 import database.filter.filters.dates.DateFilter;
 import datatypes.DocumentSearchResult;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
 
+import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Main {
-    public static void main(String[] args) {
+@QuarkusMain
+public class Main implements QuarkusApplication {
+    /*public static void main(String[] args) {
         test();
-    }
+    }*/
 
-    public static void test() {
-        DatabaseManager.createTag("abc");
-        DatabaseManager.createTag("def");
+    @Inject
+    DatabaseManager manager;
 
-        DatabaseManager.createProperty("prop1");
-        DatabaseManager.createProperty("prop2");
+    public void test() {
+        manager.createTag("abc");
+        manager.createTag("def");
+
+        manager.createProperty("prop1");
+        manager.createProperty("prop2");
 
         Map<String, String> m = new HashMap<>();
         m.put("prop1", "val1");
         m.put("prop2", "val1");
 
-        DatabaseManager.createDocument("n1", "C/n1",
+        manager.createDocument("n1", "C/n1",
                 m, LocalDate.now(), "abc", "def");
 
-        DocumentSearchResult docs = DatabaseManager.getDocumentBy(DocumentFilter.createFilter(
+        DocumentSearchResult docs = manager.getDocumentBy(DocumentFilter.createFilter(
                 new TagFilter("abc", "def"),
                 new FilenameFilter("1", false),
                 new PropertyFilter("prop1", "val2", "prop2", "val1"),
@@ -40,6 +47,12 @@ public class Main {
         System.out.println(docs);
         System.out.println(docs.size());
 
-        DatabaseManager.close();
+        //manager.close();
+    }
+
+    @Override
+    public int run(String... args) throws Exception {
+        test();
+        return 0;
     }
 }
