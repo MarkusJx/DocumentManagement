@@ -31,7 +31,7 @@ public class TagFilter implements DocumentFilterBase {
     @Override
     public int getMatches(Document document) {
         int res = 0;
-        for (Tag t : document.getTags()) {
+        for (Tag t : document.tags) {
             if (tagsContains(t)) res++;
         }
         return res;

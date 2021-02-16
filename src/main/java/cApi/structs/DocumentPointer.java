@@ -31,4 +31,8 @@ public interface DocumentPointer extends PointerBase {
 
     @CField
     void properties(PropertyValuePointerArray p);
+
+    int filename_size = 255;
+    int path_size = 255;
+    int date_size = 25;
 }

@@ -10,7 +10,7 @@ public class NativeImported {
     protected static native PointerBase malloc(int size);
 
     @CFunction
-    protected static native CCharPointer strcpy_s(CCharPointer dest, int dstSize, CCharPointer src);
+    protected static native CCharPointer strcpy_s(CCharPointer dest, int destSize, CCharPointer src);
 
     @CFunction
     public static native void free(PointerBase ptr);
@@ -19,16 +19,6 @@ public class NativeImported {
     public static <T extends PointerBase> T allocate(int size) {
         return (T) malloc(size);
     }
-
-    /*@SuppressWarnings("unchecked")
-    public static <T extends PointerBase> T allocate(Class<T> c) {
-        return (T) malloc(SizeOf.get(c));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends PointerArray> T allocate(Class<T> c, int size) {
-        return (T) malloc(SizeOf.get(c) * size);
-    }*/
 
     public static void copyStringToPointer(CCharPointer dest, int destSize, CharSequence src) {
         CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(src);

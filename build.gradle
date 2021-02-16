@@ -1,46 +1,29 @@
 plugins {
     id 'java'
-    id 'io.quarkus' version '1.11.3.Final'
+    id "org.mikeneck.graalvm-native-image" version "1.2.0"
 }
 
-group 'io.github.markusjx'
+group 'org.markusjx'
 version '1.0-SNAPSHOT'
 compileJava.options.fork = true
 
 repositories {
     maven { url 'https://jitpack.io' }
-    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    //implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.8.11.2'
-    //implementation group: 'com.github.gwenn', name: 'sqlite-dialect', version: 'master'
-    //implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.28.Final'
-    implementation group: 'org.graalvm.sdk', name: 'graal-sdk', version: '20.3.0'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.34.0'
+    implementation group: 'com.github.gwenn', name: 'sqlite-dialect', version: 'master'
+    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.28.Final'
+    implementation group: 'org.hibernate', name: 'hibernate-graalvm', version: '5.4.28.Final'
     //implementation group: 'log4j', name: 'log4j', version: '1.2.17'
-    //implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    //implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
-    //implementation group: 'javax.security.jacc', name: 'javax.security.jacc-api', version: '1.6'
-
-    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
-    implementation 'io.quarkus:quarkus-hibernate-orm'
-    implementation 'io.quarkus:quarkus-jdbc-h2'
-
-    /*implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
-    implementation 'io.quarkus:quarkus-hibernate-orm'
-    implementation 'io.quarkus:quarkus-arc'
-    implementation 'io.quarkus:quarkus-resteasy'*/
-}
-
-quarkusBuild {
-    nativeArgs {
-        containerBuild = false
-        buildImage = "quay.io/quarkus/ubi-quarkus-native-image:20.3.0-java11"
-        dumpProxies = true
-    }
+    implementation group: 'org.graalvm.sdk', name: 'graal-sdk', version: '20.3.0'
+    implementation group: 'javax.security.jacc', name: 'javax.security.jacc-api', version: '1.6'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
 }
 
 jar {
@@ -58,9 +41,31 @@ jar {
     }
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+nativeImage {
+    graalVmHome = "${System.env.GRAALVM_HOME}"
+    mainClass = 'Main'
+    executableName = 'db.main'
+    outputDirectory = file("$buildDir/bin")
+    arguments {
+        //add '--shared'
+        add '--no-fallback'
+        add '--report-unsupported-elements-at-runtime'
+        add '-J-Dfile.encoding=UTF-8'
+        add '--features=ConfigureAtBuildTime'
+        add '-H:+ReportExceptionStackTraces'
+        add '-H:+JNI'
+        add '-H:-AddAllCharsets'
+        add '-H:+AllowFoldMethods'
+        add '-H:+StackTrace'
+        add '-H:EnableURLProtocols=http'
+        add '-H:+AllowVMInspection'
+        //add '--initialize-at-build-time='
+    }
+}
+
+generateNativeImageConfig {
+    enabled = true
+    byRunningApplicationWithoutArguments()
 }
 
 test {

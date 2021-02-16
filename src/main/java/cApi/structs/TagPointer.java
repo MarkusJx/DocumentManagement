@@ -12,4 +12,6 @@ import org.graalvm.word.PointerBase;
 public interface TagPointer extends PointerBase {
     @CFieldAddress
     CCharPointer name();
+
+    int name_length = 255;
 }

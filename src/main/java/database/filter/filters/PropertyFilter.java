@@ -39,7 +39,7 @@ public class PropertyFilter implements DocumentFilterBase {
 
     private static Property getFromList(List<Property> list, String name) {
         for (Property e : list) {
-            if (e.getName().equals(name)) return e;
+            if (e.name.equals(name)) return e;
         }
         return null;
     }
@@ -66,7 +66,7 @@ public class PropertyFilter implements DocumentFilterBase {
     @Override
     public int getMatches(Document document) {
         int res = 0;
-        for (PropertyValue p : document.getProperties()) {
+        for (PropertyValue p : document.properties) {
             if (propertiesContains(p)) res++;
         }
         return res;

@@ -12,4 +12,6 @@ import org.graalvm.word.PointerBase;
 public interface PropertyPointer extends PointerBase {
     @CFieldAddress
     CCharPointer name();
+
+    int name_size = 255;
 }

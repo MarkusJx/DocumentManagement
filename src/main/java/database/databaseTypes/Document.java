@@ -1,5 +1,10 @@
 package database.databaseTypes;
 
+import cApi.NativeImported;
+import cApi.TypeConverter;
+import cApi.interfaces.CConvertible;
+import cApi.structs.DocumentPointer;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -7,24 +12,24 @@ import java.util.Arrays;
 import java.util.List;
 
 @Entity
-public class Document implements Serializable {
+public class Document implements Serializable, CConvertible<DocumentPointer> {
     @Column(nullable = false)
-    private String filename;
+    public final String filename;
 
     @Id
     @Column(nullable = false)
-    private String path;
+    public final String path;
 
     @ManyToMany
     @JoinColumn
-    private List<Tag> tags;
+    public final List<Tag> tags;
 
     @ManyToMany
     @JoinColumn
-    private List<PropertyValue> properties;
+    public final List<PropertyValue> properties;
 
     @Column(columnDefinition = "DATE")
-    private LocalDate creationDate;
+    public final LocalDate creationDate;
 
     public Document() {
         this.filename = null;
@@ -42,29 +47,28 @@ public class Document implements Serializable {
         this.tags = Arrays.asList(tags);
     }
 
-    public String getFilename() {
-        return filename;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public List<Tag> getTags() {
-        return tags;
-    }
-
-    public List<PropertyValue> getProperties() {
-        return properties;
-    }
-
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
-
     @Override
     public String toString() {
         return "database.databaseTypes.Document{filename='" + filename + "', path='" + path + "', properties=" +
                 properties + ", creation date=" + creationDate + ", tag=" + tags + "}";
+    }
+
+    @Override
+    public void writeToPointer(DocumentPointer ptr) {
+        NativeImported.copyStringToPointer(ptr.filename(), DocumentPointer.filename_size, filename);
+        NativeImported.copyStringToPointer(ptr.path(), DocumentPointer.path_size, path);
+        NativeImported.copyStringToPointer(ptr.date(), DocumentPointer.date_size, creationDate.toString());
+
+        ptr.tags(TypeConverter.convertTagList(tags));
+        ptr.properties(TypeConverter.convertPropertyValueList(properties));
+
+        ptr.tags().numElements(tags.size());
+        ptr.properties().numElements(properties.size());
+    }
+
+    @Override
+    public void freePointer(DocumentPointer toFree) {
+        TypeConverter.freeTagArray(toFree.tags());
+        TypeConverter.freePropertyValueArray(toFree.properties());
     }
 }

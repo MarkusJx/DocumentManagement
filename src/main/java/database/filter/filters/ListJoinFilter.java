@@ -3,7 +3,10 @@ package database.filter.filters;
 import database.databaseTypes.Document;
 import database.filter.DocumentFilterOperations;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Predicate;
 import java.util.List;
 
 class ListJoinFilter <T> implements DocumentFilterOperations {

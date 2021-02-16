@@ -15,4 +15,6 @@ public interface PropertyValuePointer extends PointerBase {
 
     @CFieldAddress
     PropertyPointer property();
+
+    int value_size = 255;
 }
