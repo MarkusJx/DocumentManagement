@@ -1,8 +1,6 @@
 package database.databaseTypes;
 
-import cApi.NativeImported;
-import cApi.interfaces.CConvertible;
-import cApi.structs.TagPointer;
+import database.persistence.CustomPersistenceUnit;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,7 +8,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-public class Tag implements Serializable, CConvertible<TagPointer> {
+@CustomPersistenceUnit(unitName = "documents")
+public class Tag implements Serializable {
     @Id
     public final String name;
 
@@ -40,10 +39,5 @@ public class Tag implements Serializable, CConvertible<TagPointer> {
     @Override
     public int hashCode() {
         return Objects.hash(name);
-    }
-
-    @Override
-    public void writeToPointer(TagPointer ptr) {
-        NativeImported.copyStringToPointer(ptr.name(), TagPointer.name_length, name);
     }
 }

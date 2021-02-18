@@ -40,24 +40,23 @@ public class DocumentFilter {
 
         List<Predicate> where = new ArrayList<>();
         List<Expression<?>> groupBy = new ArrayList<>();
-        List<Predicate> having = new ArrayList<>();
+        int havingCountGe = 0;
         for (DocumentFilterBase fb : filters) {
             DocumentFilterOperations f = fb.getFilter(cb, root);
             Predicate w = f.where();
             Expression<?> g = f.groupBy();
-            Predicate h = f.having();
 
             if (w != null) where.add(w);
             if (g != null) groupBy.add(g);
-            if (h != null) having.add(h);
+            havingCountGe += f.havingCountGe();
         }
 
         if (!where.isEmpty())
             query.where(where.toArray(new Predicate[0]));
         if (!groupBy.isEmpty())
             query.groupBy(groupBy);
-        if (!having.isEmpty())
-            query.having(having.toArray(new Predicate[0]));
+        if (havingCountGe > 0)
+            query.having(cb.ge(cb.count(root), havingCountGe));
 
         return query;
     }

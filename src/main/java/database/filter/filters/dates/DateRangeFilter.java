@@ -34,11 +34,6 @@ public class DateRangeFilter extends DateFilterBase {
             public Expression<?> groupBy() {
                 return null;
             }
-
-            @Override
-            public Predicate having() {
-                return null;
-            }
         };
     }
 

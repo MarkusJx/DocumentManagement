@@ -12,16 +12,17 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import static database.EntityManagerFactoryManager.closeEntityManager;
-import static database.EntityManagerFactoryManager.getEntityManager;
+import java.util.*;
 
 public class DatabaseManager {
-    public static synchronized void createDocument(String filename, String path, Map<String, String> properties, LocalDate creationDate, String... tagNames) {
+    private final EntityManager manager;
+
+    public DatabaseManager(EntityManager manager) {
+        Objects.requireNonNull(manager);
+        this.manager = manager;
+    }
+
+    public void createDocument(String filename, String path, Map<String, String> properties, LocalDate creationDate, String... tagNames) {
         List<PropertyValue> propList = new ArrayList<>();
         for (Map.Entry<String, String> e : properties.entrySet()) {
             if (!propertyValueExists(e.getValue())) {
@@ -44,98 +45,89 @@ public class DatabaseManager {
 
         Document doc = new Document(filename, path, propList, creationDate, tags);
 
-        EntityManager man = getEntityManager();
-        man.getTransaction().begin();
-        man.persist(doc);
-        man.getTransaction().commit();
+        manager.getTransaction().begin();
+        manager.persist(doc);
+        manager.getTransaction().commit();
     }
 
-    public static synchronized void createTag(String name) {
+    public void createTag(String name) {
         Tag t = new Tag(name);
 
-        EntityManager man = getEntityManager();
-        man.getTransaction().begin();
-        man.persist(t);
-        man.getTransaction().commit();
+        manager.getTransaction().begin();
+        manager.persist(t);
+        manager.getTransaction().commit();
     }
 
-    public static synchronized void createProperty(String name) {
+    public void createProperty(String name) {
         Property t = new Property(name);
 
-        EntityManager man = getEntityManager();
-        man.getTransaction().begin();
-        man.persist(t);
-        man.getTransaction().commit();
+        manager.getTransaction().begin();
+        manager.persist(t);
+        manager.getTransaction().commit();
     }
 
-    public static synchronized void createPropertyValue(String property, String name) {
+    public void createPropertyValue(String property, String name) {
         if (!propertyExists(property)) {
             throw new IllegalArgumentException("A property with the name " + property + " does not exist");
         }
 
-        PropertyValue pv = new PropertyValue(name, new Property(property));
+        Property p = manager.createQuery("select p from Property as p where p.name = :propertyName", Property.class)
+                .setParameter("propertyName", property)
+                .getSingleResult();
 
-        EntityManager man = getEntityManager();
-        man.getTransaction().begin();
-        man.persist(pv);
-        man.getTransaction().commit();
+        p.addValue(name);
+
+        manager.getTransaction().begin();
+        manager.persist(p);
+        manager.getTransaction().commit();
     }
 
-    public static synchronized boolean tagExists(String tagName) {
-        EntityManager man = getEntityManager();
-        TypedQuery<Long> res = man.createQuery("select count(*) from Tag t where t.name = :tName", Long.class);
+    public boolean tagExists(String tagName) {
+        TypedQuery<Long> res = manager.createQuery("select count(*) from Tag t where t.name = :tName", Long.class);
         res.setParameter("tName", tagName);
 
         return res.getSingleResult() > 0;
     }
 
-    public static synchronized boolean propertyExists(String name) {
-        EntityManager man = getEntityManager();
-        TypedQuery<Long> res = man.createQuery("select count(*) from Property p where p.name = :name", Long.class);
+    public boolean propertyExists(String name) {
+        TypedQuery<Long> res = manager.createQuery("select count(*) from Property p where p.name = :name", Long.class);
         res.setParameter("name", name);
 
         return res.getSingleResult() > 0;
     }
 
-    public static synchronized boolean propertyValueExists(String value) {
-        EntityManager man = getEntityManager();
-        return man.createQuery("select count(*) from PropertyValue pv where pv.value = :value", Long.class)
+    public boolean propertyValueExists(String value) {
+        /*return manager.createQuery("select count(*) from PropertyValue pv where pv.value = :value", Long.class)
                 .setParameter("value", value)
-                .getSingleResult() > 0;
+                .getSingleResult() > 0;*/
+        return true;
     }
 
-    public static synchronized List<Document> getDocumentsWithName(String name) {
-        EntityManager man = getEntityManager();
-        TypedQuery<Document> res = man.createQuery("select d from Document d where d.filename = :name", Document.class);
+    public List<Document> getDocumentsWithName(String name) {
+        TypedQuery<Document> res = manager.createQuery("select d from Document d where d.filename = :name", Document.class);
         res.setParameter("name", name);
 
         return res.getResultList();
     }
 
-    public static DocumentSearchResult getDocumentBy(DocumentFilter filter) {
-        EntityManager man = getEntityManager();
-        CriteriaBuilder cb = man.getCriteriaBuilder();
+    public DocumentSearchResult getDocumentBy(DocumentFilter filter) {
+        CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Document> query = filter.getFilterRequest(cb);
 
-        List<Document> documents = man.createQuery(query).getResultList();
+        List<Document> documents = manager.createQuery(query).getResultList();
         return new DocumentSearchResult(documents, filter.getFilters());
     }
 
-    public static synchronized List<Document> getDocumentsByTags(String... tagNames) {
+    public List<Document> getDocumentsByTags(String... tagNames) {
         Collection<Tag> tags = new ArrayList<>();
         for (String t : tagNames) {
             tags.add(new Tag(t));
         }
 
-        EntityManager man = getEntityManager();
-        return man.createQuery("select distinct d from Document d left join d.tags ts " +
+        return manager.createQuery("select distinct d from Document d left join d.tags ts " +
                 "where ts in :tags group by d having count(ts) = :tagsSize", Document.class)
                 .setParameter("tags", tags)
                 .setParameter("tagsSize", (long) tags.size())
                 .getResultList();
-    }
-
-    public static void close() {
-        closeEntityManager();
     }
 }

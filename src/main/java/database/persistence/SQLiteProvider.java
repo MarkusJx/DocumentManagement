@@ -1,5 +1,6 @@
 package database.persistence;
 
+import datatypes.ChainedHashMap;
 import org.hibernate.dialect.SQLiteDialect;
 import org.hibernate.tool.schema.Action;
 
@@ -13,12 +14,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.hibernate.cfg.AvailableSettings.*;
 
 public final class SQLiteProvider extends PersistenceProvider {
     private final Map<String, Object> properties;
-    private final List<String> managedClassNames;
+    private final ChainedHashMap<String, String> managedClassNames;
 
     public SQLiteProvider() {
         this("database.db", Action.CREATE);
@@ -26,9 +28,6 @@ public final class SQLiteProvider extends PersistenceProvider {
 
     public SQLiteProvider(String databaseFile, Action action, String... managedClassNames) {
         Objects.requireNonNull(databaseFile);
-        if (databaseFile.length() == 0) {
-            throw new IllegalArgumentException("The database file name was empty");
-        }
 
         this.properties = new HashMap<>();
         this.properties.put(JPA_JDBC_DRIVER, "org.sqlite.JDBC");
@@ -37,11 +36,7 @@ public final class SQLiteProvider extends PersistenceProvider {
         this.properties.put(HBM2DDL_AUTO, action);
         this.properties.put(SHOW_SQL, true);
 
-        if (managedClassNames == null || managedClassNames.length == 0) {
-            this.managedClassNames = null;
-        } else {
-            this.managedClassNames = Arrays.asList(managedClassNames);
-        }
+        this.managedClassNames = PersistenceProvider.loadManagedClasses(managedClassNames);
     }
 
     @Override
@@ -79,7 +74,7 @@ public final class SQLiteProvider extends PersistenceProvider {
 
             @Override
             public List<java.net.URL> getJarFileUrls() {
-                if (managedClassNames == null) {
+                if (managedClassNames.isEmpty()) {
                     try {
                         return Collections.list(this.getClass()
                                 .getClassLoader()
@@ -99,10 +94,17 @@ public final class SQLiteProvider extends PersistenceProvider {
 
             @Override
             public List<String> getManagedClassNames() {
-                if (managedClassNames == null) {
+                if (managedClassNames.isEmpty()) {
                     return Collections.emptyList();
                 } else {
-                    return managedClassNames;
+                    List<String> classNames = new ArrayList<>();
+                    managedClassNames.forEach((k, v) -> {
+                        if (k == null || k.equals(unitName)) {
+                            classNames.addAll(v);
+                        }
+                    });
+
+                    return classNames.stream().distinct().collect(Collectors.toList());
                 }
             }
 

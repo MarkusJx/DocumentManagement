@@ -1,23 +1,18 @@
 package database.databaseTypes;
 
-import cApi.NativeImported;
-import cApi.interfaces.CConvertible;
-import cApi.structs.PropertyValuePointer;
+import database.persistence.CustomPersistenceUnit;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
+import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Entity
-public class PropertyValue implements Serializable, CConvertible<PropertyValuePointer> {
-    @Id
+@Embeddable
+@CustomPersistenceUnit(unitName = "documents")
+public class PropertyValue implements Serializable {
     public final String value;
 
     @ManyToOne
-    @JoinColumn
     public final Property property;
 
     public PropertyValue() {
@@ -34,8 +29,8 @@ public class PropertyValue implements Serializable, CConvertible<PropertyValuePo
     public String toString() {
         return "PropertyValue{" +
                 "value='" + value + '\'' +
-                ", property=" + property +
-                '}';
+                ", property='" + (property == null ? "null" : property.name) +
+                "'}";
     }
 
     @Override
@@ -43,18 +38,11 @@ public class PropertyValue implements Serializable, CConvertible<PropertyValuePo
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PropertyValue that = (PropertyValue) o;
-        return Objects.equals(value, that.value) && Objects.equals(property, that.property);
+        return false;// Objects.equals(value, that.value) && Objects.equals(property, that.property);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, property);
-    }
-
-    @Override
-    public void writeToPointer(PropertyValuePointer ptr) {
-        if (value == null || property == null) return;
-        NativeImported.copyStringToPointer(ptr.value(), PropertyValuePointer.value_size, value);
-        property.writeToPointer(ptr.property());
+        return Objects.hash(value);
     }
 }

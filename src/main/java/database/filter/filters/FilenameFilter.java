@@ -34,11 +34,6 @@ public class FilenameFilter implements DocumentFilterBase {
             public Expression<?> groupBy() {
                 return null;
             }
-
-            @Override
-            public Predicate having() {
-                return null;
-            }
         };
     }
 

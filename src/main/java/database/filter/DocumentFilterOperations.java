@@ -4,9 +4,15 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 
 public interface DocumentFilterOperations {
-    Predicate where();
+    default Predicate where() {
+        return null;
+    }
 
-    Expression<?> groupBy();
+    default Expression<?> groupBy() {
+        return null;
+    }
 
-    Predicate having();
+    default int havingCountGe() {
+        return 0;
+    }
 }

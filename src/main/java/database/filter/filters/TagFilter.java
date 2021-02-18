@@ -24,8 +24,8 @@ public class TagFilter implements DocumentFilterBase {
 
     @Override
     public DocumentFilterOperations getFilter(CriteriaBuilder cb, Root<Document> root) {
-        Join<Document, List<Tag>> join = root.join("tags", JoinType.LEFT);
-        return new ListJoinFilter<>(join, cb, tags);
+        Join<Document, List<Tag>> join = root.join("tags", JoinType.INNER);
+        return new ListJoinFilter<>(join, cb, tags, root);
     }
 
     @Override

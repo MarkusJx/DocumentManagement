@@ -18,4 +18,8 @@ public class ChainedHashMap<K, V> extends HashMap<K, List<V>> {
             super.put(key, list);
         }
     }
+
+    public void set(K key, List<V> values) {
+        super.put(key, values);
+    }
 }
