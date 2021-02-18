@@ -1,4 +1,5 @@
 import database.DatabaseManager;
+import database.databaseTypes.Document;
 import database.filter.DocumentFilter;
 import database.filter.filters.FilenameFilter;
 import database.filter.filters.PropertyFilter;
@@ -6,13 +7,13 @@ import database.filter.filters.TagFilter;
 import database.filter.filters.dates.DateFilter;
 import database.persistence.CustomPersistence;
 import database.persistence.SQLiteProvider;
-import datatypes.DocumentSearchResult;
 import org.hibernate.tool.schema.Action;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Main {
@@ -34,7 +35,7 @@ public class Main {
         manager.createDocument("n1", "C/n1",
                 m, LocalDate.now(), "abc", "def");
 
-        DocumentSearchResult docs = manager.getDocumentBy(DocumentFilter.createFilter(
+        List<Document> docs = manager.getDocumentsBy(DocumentFilter.createFilter(
                 new TagFilter("abc", "def"),
                 new FilenameFilter("1", false),
                 new PropertyFilter("prop1", "val2", "prop2", "val1"),

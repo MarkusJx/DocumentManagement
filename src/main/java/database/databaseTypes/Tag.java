@@ -7,16 +7,30 @@ import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * A tag entity
+ */
 @Entity
 @CustomPersistenceUnit(unitName = "documents")
 public class Tag implements Serializable {
+    /**
+     * The tag name
+     */
     @Id
     public final String name;
 
+    /**
+     * Create an empty tag instance
+     */
     public Tag() {
         this.name = null;
     }
 
+    /**
+     * Create a new tag instance
+     *
+     * @param name the name of the tag
+     */
     public Tag(String name) {
         this.name = name;
     }

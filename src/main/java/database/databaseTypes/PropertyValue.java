@@ -2,35 +2,44 @@ package database.databaseTypes;
 
 import database.persistence.CustomPersistenceUnit;
 
-import javax.persistence.Embeddable;
-import javax.persistence.ManyToOne;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Embeddable
+/**
+ * A property value
+ */
+@Entity
 @CustomPersistenceUnit(unitName = "documents")
 public class PropertyValue implements Serializable {
+    /**
+     * The actual value
+     */
+    @Id
     public final String value;
 
-    @ManyToOne
-    public final Property property;
-
+    /**
+     * Create an empty property value
+     */
     public PropertyValue() {
         this.value = null;
-        this.property = null;
     }
 
-    public PropertyValue(String value, Property property) {
+    /**
+     * Create a property value
+     *
+     * @param value the property value
+     */
+    public PropertyValue(String value) {
         this.value = value;
-        this.property = property;
     }
 
     @Override
     public String toString() {
         return "PropertyValue{" +
                 "value='" + value + '\'' +
-                ", property='" + (property == null ? "null" : property.name) +
-                "'}";
+                '}';
     }
 
     @Override
@@ -38,7 +47,7 @@ public class PropertyValue implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PropertyValue that = (PropertyValue) o;
-        return false;// Objects.equals(value, that.value) && Objects.equals(property, that.property);
+        return Objects.equals(value, that.value);
     }
 
     @Override

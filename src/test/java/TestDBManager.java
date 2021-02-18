@@ -7,7 +7,6 @@ import database.filter.filters.TagFilter;
 import database.filter.filters.dates.DateFilter;
 import database.persistence.CustomPersistence;
 import database.persistence.SQLiteProvider;
-import datatypes.DocumentSearchResult;
 import org.hibernate.tool.schema.Action;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -68,37 +67,37 @@ public class TestDBManager {
 
     @Test
     void testTagSearch() {
-        List<Document> documents = manager.getDocumentsByTags("tag1");
+        List<Document> documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1")));
         System.out.println(documents);
         Assertions.assertEquals(3, documents.size());
 
-        documents = manager.getDocumentsByTags("tag1", "tag2");
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1", "tag2")));
         System.out.println(documents);
         Assertions.assertEquals(2, documents.size());
 
-        documents = manager.getDocumentsByTags("tag1", "tag2", "tag3");
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1", "tag2", "tag3")));
         System.out.println(documents);
         Assertions.assertEquals(1, documents.size());
 
-        documents = manager.getDocumentsByTags("tag3");
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3")));
         System.out.println(documents);
         Assertions.assertEquals(3, documents.size());
 
-        documents = manager.getDocumentsByTags("tag3", "tag4");
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3", "tag4")));
         System.out.println(documents);
         Assertions.assertEquals(1, documents.size());
     }
 
     @Test
     void testFilter() {
-        DocumentSearchResult docs = manager.getDocumentBy(DocumentFilter.createFilter(
+        List<Document> docs = manager.getDocumentsBy(DocumentFilter.createFilter(
                 new TagFilter("tag1"),
                 new FilenameFilter("n", false),
                 new PropertyFilter("prop1", "val1", "prop2", "val1"),
                 DateFilter.today()
         ));
 
-        for (Document d : docs.getAsSortedList()) {
+        for (Document d : docs) {
             System.out.println(d);
         }
     }

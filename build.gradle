@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    //id "org.mikeneck.graalvm-native-image" version "1.2.0"
 }
 
 group 'org.markusjx'
@@ -19,14 +18,6 @@ dependencies {
     implementation group: 'com.github.gwenn', name: 'sqlite-dialect', version: 'master'
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.28.Final'
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
-    //implementation group: 'org.hibernate', name: 'hibernate-graalvm', version: '5.4.28.Final'
-    //implementation group: 'log4j', name: 'log4j', version: '1.2.17'
-    //implementation group: 'org.graalvm.sdk', name: 'graal-sdk', version: '20.3.0'
-    //implementation group: 'javax.security.jacc', name: 'javax.security.jacc-api', version: '1.6'
-    //implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
-    //implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-
-    //compileOnly group: 'com.oracle.substratevm', name: 'svm', version: '19.2.1'
 }
 
 jar {
@@ -44,46 +35,11 @@ jar {
     }
 }
 
-/*nativeImage {
-    graalVmHome = "${System.env.GRAALVM_HOME}"
-    mainClass = 'Main'
-    executableName = 'db.main'
-    outputDirectory = file("$buildDir/bin")
-    arguments {
-        //add '--shared'
-        add '--no-fallback'
-        add '--report-unsupported-elements-at-runtime'
-        add '-J-Dfile.encoding=UTF-8'
-        add '-H:+ReportExceptionStackTraces'
-        add '-H:+JNI'
-        add '-H:-AddAllCharsets'
-        //add '-H:+AllowFoldMethods'
-        add '-H:+StackTrace'
-        add '-H:EnableURLProtocols=http'
-        add '-H:+AllowVMInspection'
-        add '--initialize-at-build-time=' +
-                'org.hibernate.boot.registry.classloading.internal.AggregatedServiceLoader$ClassPathAndModulePathAggregatedServiceLoader,' +
-                'javax.xml.stream.FactoryFinder,' +
-                'org.hibernate.boot.registry.classloading.internal.AggregatedServiceLoader,' +
-                'org.hibernate.event.service.internal.EventListenerGroupImpl,' +
-                'jdk.xml.internal.SecuritySupport,' +
-                'org.hibernate.jpa.event.internal.CallbackBuilderLegacyImpl,' +
-                'org.hibernate.jpa.internal.util.CacheModeHelper$1,' +
-                'org.hibernate.metamodel.internal.MetadataContext,' +
-                'org.hibernate.event.service.internal.PostCommitEventListenerGroupImpl,' +
-                'org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator$4,' +
-                'org.hibernate.tool.schema.internal.SchemaCreatorImpl$4,' +
-                'org.jboss.jandex.Utils,' +
-                'org.jboss.jandex.GenericSignatureParser,' +
-                'org.hibernate.engine.jdbc.env.internal.QualifiedObjectNameFormatterStandardImpl$1'
-        add '--trace-object-instantiation=java.lang.Thread'
-    }
-}
 
-generateNativeImageConfig {
-    enabled = true
-    byRunningApplicationWithoutArguments()
-}*/
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
 test {
     useJUnitPlatform()

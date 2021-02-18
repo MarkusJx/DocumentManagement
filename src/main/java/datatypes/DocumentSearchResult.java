@@ -3,28 +3,42 @@ package datatypes;
 import database.databaseTypes.Document;
 import database.filter.DocumentFilterBase;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class DocumentSearchResult extends ChainedHashMap<Integer, Document> {
-    public DocumentSearchResult(List<Document> documents, List<DocumentFilterBase> filters) {
-        super();
-        for (Document document : documents) {
-            int numMatches = 0;
-            for (DocumentFilterBase f : filters) {
-                numMatches += f.getMatches(document);
-            }
+/**
+ * A document search result
+ */
+public final class DocumentSearchResult implements Comparable<DocumentSearchResult> {
+    /**
+     * The match accuracy
+     */
+    public final int accuracy;
 
-            super.putValue(numMatches, document);
+    /**
+     * The document returned by the search
+     */
+    public final Document document;
+
+    /**
+     * Create a new DocumentSearchResult instance
+     *
+     * @param document the document
+     * @param filters  the filters
+     */
+    public DocumentSearchResult(Document document, List<DocumentFilterBase> filters) {
+        this.document = document;
+
+        // Get the accuracy
+        int acc = 0;
+        for (DocumentFilterBase f : filters) {
+            acc += f.getAccuracy(document);
         }
+
+        this.accuracy = acc;
     }
 
-    public List<Document> getAsSortedList() {
-        List<Document> list = new ArrayList<>();
-        for (Entry<Integer, List<Document>> e : super.entrySet()) {
-            list.addAll(e.getValue());
-        }
-
-        return list;
+    @Override
+    public int compareTo(DocumentSearchResult o) {
+        return accuracy - o.accuracy;
     }
 }

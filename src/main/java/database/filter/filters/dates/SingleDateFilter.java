@@ -1,42 +1,62 @@
 package database.filter.filters.dates;
 
-import com.sun.istack.NotNull;
 import database.databaseTypes.Document;
 import database.filter.DocumentFilterOperations;
 
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * A filter to filter documents by
+ * searching for an exact date
+ */
 public class SingleDateFilter extends DateFilterBase {
+    /**
+     * The date to search for
+     */
     private final LocalDate date;
 
-    public SingleDateFilter(@NotNull LocalDate date) {
+    /**
+     * Create a new SingleDateFilter instance
+     *
+     * @param date the date to search for
+     */
+    public SingleDateFilter(LocalDate date) {
         Objects.requireNonNull(date);
         this.date = date;
     }
 
+    /**
+     * Get the filter operations
+     *
+     * @param cb   the criteria builder object
+     * @param root the root object
+     * @return the filter operations
+     */
     @Override
     public DocumentFilterOperations getFilter(CriteriaBuilder cb, Root<Document> root) {
+        // Return the filter operations
         return new DocumentFilterOperations() {
             @Override
             public Predicate where() {
+                // Document.date must match this.date
                 return cb.equal(root.get("creationDate"), date);
-            }
-
-            @Override
-            public Expression<?> groupBy() {
-                return null;
             }
         };
     }
 
+    /**
+     * Get the match accuracy
+     *
+     * @param document the document object to match
+     * @return zero
+     */
     @Override
-    public int getMatches(Document document) {
-        // This is more worth than a range match
-        return 2;
+    public int getAccuracy(Document document) {
+        // This is more accurate than a range match
+        return 0;
     }
 }

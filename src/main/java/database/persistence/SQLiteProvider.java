@@ -18,17 +18,40 @@ import java.util.stream.Collectors;
 
 import static org.hibernate.cfg.AvailableSettings.*;
 
+/**
+ * An SQLite persistence provider
+ */
 public final class SQLiteProvider extends PersistenceProvider {
+    /**
+     * The property map
+     */
     private final Map<String, Object> properties;
+
+    /**
+     * All by this provider managed classes
+     */
     private final ChainedHashMap<String, String> managedClassNames;
 
+    /**
+     * Create a new SQLite provider instance.
+     * Creates a database file with the name "database.db"
+     * and the action drop-and-create.
+     */
     public SQLiteProvider() {
         this("database.db", Action.CREATE);
     }
 
+    /**
+     * Create a new SQLite provider instance
+     *
+     * @param databaseFile      the name of the database file
+     * @param action            the database creation action
+     * @param managedClassNames the names of the managed classes
+     */
     public SQLiteProvider(String databaseFile, Action action, String... managedClassNames) {
         Objects.requireNonNull(databaseFile);
 
+        // Create a new property map
         this.properties = new HashMap<>();
         this.properties.put(JPA_JDBC_DRIVER, "org.sqlite.JDBC");
         this.properties.put(JPA_JDBC_URL, "jdbc:sqlite:" + databaseFile);
@@ -36,11 +59,13 @@ public final class SQLiteProvider extends PersistenceProvider {
         this.properties.put(HBM2DDL_AUTO, action);
         this.properties.put(SHOW_SQL, true);
 
+        // Set all managed classes
         this.managedClassNames = PersistenceProvider.loadManagedClasses(managedClassNames);
     }
 
     @Override
     protected PersistenceUnitInfo getPersistenceUnitInfo(String unitName) {
+        // return a new persistence unit info
         return new PersistenceUnitInfo() {
             @Override
             public String getPersistenceUnitName() {
@@ -74,6 +99,7 @@ public final class SQLiteProvider extends PersistenceProvider {
 
             @Override
             public List<java.net.URL> getJarFileUrls() {
+                // If managedClassNames is empty, return all resource urls
                 if (managedClassNames.isEmpty()) {
                     try {
                         return Collections.list(this.getClass()
@@ -94,9 +120,11 @@ public final class SQLiteProvider extends PersistenceProvider {
 
             @Override
             public List<String> getManagedClassNames() {
+                // If managedClassNames is empty, return an empty list
                 if (managedClassNames.isEmpty()) {
                     return Collections.emptyList();
                 } else {
+                    // Get all class names managed by this persistence unit
                     List<String> classNames = new ArrayList<>();
                     managedClassNames.forEach((k, v) -> {
                         if (k == null || k.equals(unitName)) {
