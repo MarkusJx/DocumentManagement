@@ -31,7 +31,7 @@ describe('Database test', function () {
     let manager: DatabaseManager = null;
 
     it('should create the SQLiteProvider', async function () {
-        provider = await SQLiteProvider.create("database.db", Action.UPDATE, false);
+        provider = await SQLiteProvider.create("database.db", Action.CREATE_DROP, true);
     });
 
     it('should create the EntityManager', async function () {
@@ -42,7 +42,7 @@ describe('Database test', function () {
         manager = await DatabaseManager.create(em);
     });
 
-    /*it('should create new Documents', async function () {
+    it('should create new Documents', async function () {
         await manager.createDocument("n1", "p/n1",
             PropertyMap.of("p1", "v1", "p2", "v2"),
             new Date(), "t1", "t2");
@@ -53,7 +53,7 @@ describe('Database test', function () {
                 new Date(),
                 ...generateTagNames());
         }
-    }).timeout(0);*/
+    }).timeout(60000);
 
     let filter: DocumentFilter = null;
     it('should create a DocumentFilter', async function () {

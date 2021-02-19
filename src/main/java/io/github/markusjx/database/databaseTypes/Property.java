@@ -5,6 +5,7 @@ import io.github.markusjx.database.persistence.CustomPersistenceUnit;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +38,16 @@ public class Property implements Serializable {
     }
 
     /**
+     * Create a property with just a name
+     *
+     * @param name the name of the property
+     */
+    public Property(String name) {
+        this.name = name;
+        this.values = new ArrayList<>();
+    }
+
+    /**
      * Create a property instance
      *
      * @param name   the property name
@@ -51,6 +62,17 @@ public class Property implements Serializable {
     }
 
     /**
+     * Create a new property instance
+     *
+     * @param name       the property name
+     * @param properties the property values
+     */
+    public Property(String name, PropertyValue... properties) {
+        this.name = name;
+        this.values = new ArrayList<>(Arrays.asList(properties));
+    }
+
+    /**
      * Add a property value to this property
      *
      * @param value the value to add
@@ -62,6 +84,18 @@ public class Property implements Serializable {
             values.add(pv);
 
         return pv;
+    }
+
+    /**
+     * Add a property value to this property.
+     * Only adds the value if it hasn't already been added.
+     *
+     * @param propertyValue the {@link PropertyValue} to add
+     */
+    public void addValue(PropertyValue propertyValue) {
+        if (!values.contains(propertyValue)) {
+            values.add(propertyValue);
+        }
     }
 
     @Override

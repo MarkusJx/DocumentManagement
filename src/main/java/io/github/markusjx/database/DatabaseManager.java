@@ -6,7 +6,6 @@ import io.github.markusjx.datatypes.ChainedHashMap;
 import io.github.markusjx.datatypes.DocumentSearchResult;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.time.LocalDate;
@@ -43,11 +42,9 @@ public class DatabaseManager {
         Tag[] tags = new Tag[tagNames.length];
         for (int i = 0; i < tagNames.length; i++) {
             // If the tag does not exist, create it
-            if (!tagExists(tagNames[i])) {
-                tags[i] = createTag(tagNames[i]);
-            } else {
-                // Just put a tag with the same name into the list
-                tags[i] = new Tag(tagNames[i]);
+            tags[i] = getTagByName(tagNames[i]);
+            if (tags[i] == null) {
+                tags[i] = createTag(tagNames[i], false);
             }
         }
 
@@ -64,6 +61,7 @@ public class DatabaseManager {
      * @param tagNames     the tag names. Will be created if not existing
      */
     public void createDocument(String filename, String path, ChainedHashMap<String, String> properties, LocalDate creationDate, String... tagNames) {
+        manager.getTransaction().begin();
         // Create a PropertyValueSet list
         List<PropertyValueSet> propList = new ArrayList<>();
         for (Map.Entry<String, List<String>> e : properties.entrySet()) {
@@ -83,7 +81,6 @@ public class DatabaseManager {
         Document doc = new Document(filename, path, propList, creationDate, tags);
 
         // Persist the document
-        manager.getTransaction().begin();
         manager.persist(doc);
         manager.getTransaction().commit();
     }
@@ -105,6 +102,17 @@ public class DatabaseManager {
         return t;
     }
 
+    public Tag createTag(String name, boolean singleTransaction) {
+        if (singleTransaction) {
+            return createTag(name);
+        } else {
+            Tag t = new Tag(name);
+            manager.persist(t);
+
+            return t;
+        }
+    }
+
     /**
      * Create a new Property and persist it
      *
@@ -112,14 +120,14 @@ public class DatabaseManager {
      * @return the just created property
      */
     public Property createProperty(String name) {
-        Property t = new Property(name);
+        Property p = new Property(name);
 
         // Persist the property
         manager.getTransaction().begin();
-        manager.persist(t);
+        manager.persist(p);
         manager.getTransaction().commit();
 
-        return t;
+        return p;
     }
 
     /**
@@ -131,9 +139,7 @@ public class DatabaseManager {
     public PropertyValue getPropertyValue(String value) {
         try {
             // Create a query to get the value
-            return manager.createQuery("select p from PropertyValue as p where p.value = :propertyValue", PropertyValue.class)
-                    .setParameter("propertyValue", value)
-                    .getSingleResult();
+            return manager.find(PropertyValue.class, value);
         } catch (Exception ignored) {
             return null;
         }
@@ -147,7 +153,10 @@ public class DatabaseManager {
      * @return true, if the {@link Property} has a {@link PropertyValue} in its {@link Property#values} list
      */
     public boolean propertyValueIsInProperty(String propertyName, String propertyValue) {
-        return getPropertyByName(propertyName).values.contains(new PropertyValue(propertyValue));
+        Property p = getPropertyByName(propertyName);
+        if (p == null || p.values == null) return false;
+
+        return p.values.contains(new PropertyValue(propertyValue));
     }
 
     /**
@@ -161,60 +170,31 @@ public class DatabaseManager {
      * @return the created {@link PropertyValueSet}
      */
     public PropertyValueSet createPropertyValueSet(String property, String value) {
-        Property p;
-        if (!propertyExists(property)) {
-            // If the property does not exist, create the property
-            p = createProperty(property);
-        } else {
-            // Get the property
-            p = getPropertyByName(property);
+        Property p = manager.getReference(Property.class, property);
+        PropertyValue pv;
+
+        try {
+            pv = manager.getReference(PropertyValue.class, value).get();
+        } catch (Exception ignored) {
+            pv = new PropertyValue(value);
         }
 
-        PropertyValue pv = getPropertyValue(value);
-        if (pv == null || !propertyValueIsInProperty(property, value)) {
-            PropertyValue nPv = null;
-            if (pv == null) {
-                nPv = p.addValue(value);
-                pv = nPv;
-            } else {
-                p.addValue(value);
-            }
-
-            // Persist the property value
-            manager.getTransaction().begin();
-            manager.persist(p);
-            if (nPv != null)
-                manager.persist(nPv);
-            manager.getTransaction().commit();
+        try {
+            p.addValue(pv);
+        } catch (Exception ignored) {
+            p = new Property(property, pv);
         }
 
         // Return the property value set
         return new PropertyValueSet(p, pv);
     }
 
-    /**
-     * Check if a {@link Tag} with a name is already in the io.github.markusjx.database
-     *
-     * @param tagName the tag name to search for
-     * @return true, if the {@link Tag} with the name {@code tagName} is in the io.github.markusjx.database
-     */
-    public boolean tagExists(String tagName) {
-        TypedQuery<Long> res = manager.createQuery("select count(*) from Tag t where t.name = :tName", Long.class);
-        res.setParameter("tName", tagName);
-
-        return res.getSingleResult() > 0;
-    }
-
-    /**
-     * Check if a {@link Property} with a name is already in the io.github.markusjx.database
-     *
-     * @param name the name of the {@link Property}
-     * @return true, if the {@link Property} is persisted
-     */
-    public boolean propertyExists(String name) {
-        return manager.createQuery("select count(*) from Property p where p.name = :name", Long.class)
-                .setParameter("name", name)
-                .getSingleResult() > 0;
+    public Tag getTagByName(String name) {
+        try {
+            return manager.find(Tag.class, name);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     /**
@@ -224,21 +204,11 @@ public class DatabaseManager {
      * @return the property
      */
     public Property getPropertyByName(String name) {
-        return manager.createQuery("select p from Property as p where p.name = :name", Property.class)
-                .setParameter("name", name)
-                .getSingleResult();
-    }
-
-    /**
-     * Check if a {@link PropertyValue} exists in the io.github.markusjx.database
-     *
-     * @param value the value of the {@link PropertyValue}
-     * @return true, if the value exists
-     */
-    public boolean propertyValueExists(String value) {
-        return manager.createQuery("select count(*) from PropertyValue pv where pv.value = :value", Long.class)
-                .setParameter("value", value)
-                .getSingleResult() > 0;
+        try {
+            return manager.find(Property.class, name);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     /**

@@ -35,6 +35,17 @@ public class PropertyValue implements Serializable {
         this.value = value;
     }
 
+    /**
+     * Get this instance.
+     * Only exists to check if {@link javax.persistence.EntityManager#getReference(Class, Object)}
+     * found a {@link PropertyValue} with the given name.
+     *
+     * @return this
+     */
+    public PropertyValue get() {
+        return this;
+    }
+
     @Override
     public String toString() {
         return "PropertyValue{" +
