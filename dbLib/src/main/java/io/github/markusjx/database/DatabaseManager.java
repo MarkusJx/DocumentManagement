@@ -1,6 +1,5 @@
 package io.github.markusjx.database;
 
-import io.github.markusjx.database.databaseTypes.*;
 import io.github.markusjx.database.filter.DocumentFilter;
 import io.github.markusjx.datatypes.ChainedHashMap;
 import io.github.markusjx.datatypes.DocumentSearchResult;
@@ -9,7 +8,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.time.LocalDate;
-import java.util.*;
 import java.util.stream.Collectors;
 
 /**

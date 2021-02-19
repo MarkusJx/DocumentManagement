@@ -6,6 +6,7 @@
   "scripts": {
     "prestart": "tsc",
     "start": "node out/index.js",
+    "pretest": "tsc",
     "test": "mocha"
   },
   "author": "",

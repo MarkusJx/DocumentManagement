@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Random;
 
 public class TestDBManager {
+    private static final Random r = new Random();
     private static DatabaseManager manager;
     private static EntityManager entityManager;
-    private static final Random r = new Random();
 
     private static String[] generateRandomTags() {
         int numTags = r.nextInt(100);

@@ -1,7 +1,7 @@
 import java from "java";
 import {promisify} from "util";
 
-java.classpath.push('db-1.0-SNAPSHOT.jar');
+java.classpath.push('dbLib/build/libs/dbLib-1.0-SNAPSHOT.jar');
 
 export enum Action {
     NONE,

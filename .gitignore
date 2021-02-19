@@ -1,12 +1,7 @@
-# Project exclude paths
-/.gradle/
-/build/
-/build/classes/java/main/
-/build/classes/java/test/
-out/
-.idea
-sample.db
-io.github.markusjx.database.db
-node_modules/
-database.db
-db-1.0-SNAPSHOT.jar
+/node_modules/
+/out/
+/database.db
+/dbLib/database.db
+/dbLib/build/
+/dbLib/.gradle/
+/.idea/

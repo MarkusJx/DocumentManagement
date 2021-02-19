@@ -1,4 +1,4 @@
-import {Action, CustomPersistence, database, EntityManager, PropertyMap, SQLiteProvider} from "./databaseWrapper";
+import {Action, CustomPersistence, database, EntityManager, PropertyMap, SQLiteProvider} from "./src/databaseWrapper";
 import DatabaseManager = database.DatabaseManager;
 import DocumentFilter = database.DocumentFilter;
 import FilenameFilter = database.filters.FilenameFilter;
@@ -31,7 +31,7 @@ describe('Database test', function () {
     let manager: DatabaseManager = null;
 
     it('should create the SQLiteProvider', async function () {
-        provider = await SQLiteProvider.create("database.db", Action.CREATE_DROP, true);
+        provider = await SQLiteProvider.create("database.db", Action.CREATE_DROP, false);
     });
 
     it('should create the EntityManager', async function () {

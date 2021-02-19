@@ -13,7 +13,6 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hibernate.cfg.AvailableSettings.*;
