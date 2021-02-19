@@ -1,7 +1,7 @@
 package cApi.config;
 
-import database.persistence.CustomPersistence;
-import database.persistence.SQLiteProvider;
+import io.github.markusjx.database.persistence.CustomPersistence;
+import io.github.markusjx.database.persistence.SQLiteProvider;
 import org.hibernate.tool.schema.Action;
 
 public final class StaticClassLoader {

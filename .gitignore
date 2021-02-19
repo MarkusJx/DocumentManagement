@@ -3,7 +3,10 @@
 /build/
 /build/classes/java/main/
 /build/classes/java/test/
-/out/
+out/
 .idea
 sample.db
+io.github.markusjx.database.db
+node_modules/
 database.db
+db-1.0-SNAPSHOT.jar

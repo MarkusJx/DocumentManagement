@@ -3,9 +3,9 @@ package cApi;
 import cApi.structs.DocumentPointerArray;
 import cApi.structs.PropertyValuePointerArray;
 import cApi.structs.TagPointerArray;
-import database.databaseTypes.Document;
-import database.databaseTypes.PropertyValue;
-import database.databaseTypes.Tag;
+import io.github.markusjx.database.databaseTypes.Document;
+import io.github.markusjx.database.databaseTypes.PropertyValue;
+import io.github.markusjx.database.databaseTypes.Tag;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 
 import java.util.List;
