@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'idea'
 }
 
 group 'io.github.markusjx'
@@ -38,6 +39,9 @@ jar {
     }
 }
 
+build {
+
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11

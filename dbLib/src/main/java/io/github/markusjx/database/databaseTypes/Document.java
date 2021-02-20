@@ -72,7 +72,12 @@ public class Document implements Serializable {
         this.path = path;
         this.properties = properties;
         this.creationDate = creationDate;
-        this.tags = Arrays.asList(tags);
+
+        if (tags != null) {
+            this.tags = Arrays.asList(tags);
+        } else {
+            this.tags = null;
+        }
     }
 
     @Override

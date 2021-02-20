@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 @Entity
 @CustomPersistenceUnit(unitName = "documents")
-public class Tag implements Serializable {
+public class Tag implements Serializable, Comparable<Tag> {
     /**
      * The tag name
      */
@@ -53,5 +53,20 @@ public class Tag implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public int compareTo(Tag o) {
+        if (this.name == null || o.name == null) {
+            if (this.name == null && o.name != null) {
+                return -1;
+            } else if (this.name != null) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return this.name.compareTo(o.name);
+        }
     }
 }

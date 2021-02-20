@@ -5,7 +5,7 @@ import javax.persistence.criteria.Predicate;
 
 /**
  * An interface containing all important operations
- * to filter an object from the io.github.markusjx.database
+ * to filter an object from the database
  */
 public interface DocumentFilterOperations {
     /**

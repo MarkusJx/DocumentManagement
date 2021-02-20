@@ -1,5 +1,6 @@
 import io.github.markusjx.database.DatabaseManager;
 import io.github.markusjx.database.databaseTypes.Document;
+import io.github.markusjx.database.databaseTypes.Tag;
 import io.github.markusjx.database.filter.DocumentFilter;
 import io.github.markusjx.database.filter.filters.FilenameFilter;
 import io.github.markusjx.database.filter.filters.TagFilter;
@@ -48,7 +49,7 @@ public class TestDBManager {
 
     @BeforeAll
     static void fillDB() {
-        SQLiteProvider provider = new SQLiteProvider("database.db", Action.CREATE, false);
+        SQLiteProvider provider = new SQLiteProvider("database.db", Action.CREATE_DROP, false);
         EntityManagerFactory factory = CustomPersistence.createEntityManagerFactory("documents", provider);
         entityManager = factory.createEntityManager();
         manager = new DatabaseManager(entityManager);
@@ -109,6 +110,27 @@ public class TestDBManager {
         documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3", "tag4")));
         System.out.println(documents);
         Assertions.assertEquals(1, documents.size());
+    }
+
+    @Test
+    void persistTags() {
+        List<Tag> tags = new ArrayList<>(100000);
+        //entityManager.getTransaction().begin();
+        for (int i = 0; i < 100000; i++) {
+            //entityManager.persist(new Tag("t" + i));
+            tags.add(new Tag("t" + i));
+        }
+        //entityManager.getTransaction().commit();
+
+        System.out.println(manager.persistTags(tags));
+
+        tags = new ArrayList<>(100000);
+        for (int i = 50000; i < 150000; i++) {
+            //entityManager.persist(new Tag("t" + i));
+            tags.add(new Tag("t" + i));
+        }
+
+        System.out.println(manager.persistTags(tags));
     }
 
     @Test

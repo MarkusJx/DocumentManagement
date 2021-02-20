@@ -1,13 +1,19 @@
 package io.github.markusjx.database;
 
+import io.github.markusjx.database.databaseTypes.*;
 import io.github.markusjx.database.filter.DocumentFilter;
 import io.github.markusjx.datatypes.ChainedHashMap;
 import io.github.markusjx.datatypes.DocumentSearchResult;
+import io.github.markusjx.util.ListUtils;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import java.sql.PreparedStatement;
 import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -81,6 +87,59 @@ public class DatabaseManager {
         // Persist the document
         manager.persist(doc);
         manager.getTransaction().commit();
+    }
+
+    public void persistDocuments(List<Document> documents) {
+        for (Document d : documents) {
+            for (PropertyValueSet pvs : d.properties) {
+                createPropertyValueSet(pvs.property.name, pvs.propertyValue.value);
+            }
+
+            String[] tags = new String[d.tags.size()];
+            for (int i = 0; i < tags.length; i++) {
+                tags[i] = d.tags.get(i).name;
+            }
+
+            convertTagName(tags);
+
+            manager.getTransaction().begin();
+            manager.persist(d);
+            manager.getTransaction().commit();
+        }
+    }
+
+    public List<Tag> getAllTagsIn(final List<Tag> tags) {
+        return manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
+                .setParameter("tags", tags)
+                .getResultList();
+    }
+
+    public boolean persistTags(final List<Tag> tags) {
+        Session session = manager.unwrap(Session.class);
+        Transaction transaction = session.beginTransaction();
+        try {
+            List<Tag> tagCopy = tags.stream().distinct().collect(Collectors.toList());
+            List<Tag> ts = ListUtils.removeAll(tagCopy, getAllTagsIn(tagCopy));
+            //ts.removeAll(getAllTagsIn(tagCopy));
+            System.out.println(ts.size() + ", " + ts.get(0) + ", " + ts.get(ts.size() - 1));
+
+            session.doWork(connection -> {
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO Tag(name) values (?)");
+                for (Tag t : ts) {
+                    statement.setString(1, t.name);
+                    statement.addBatch();
+                }
+
+                statement.executeBatch();
+            });
+
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            transaction.rollback();
+            return false;
+        }
     }
 
     /**
