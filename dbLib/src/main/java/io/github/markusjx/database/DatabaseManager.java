@@ -118,9 +118,7 @@ public class DatabaseManager {
         Session session = manager.unwrap(Session.class);
         Transaction transaction = session.beginTransaction();
         try {
-            List<Tag> tagCopy = tags.stream().distinct().collect(Collectors.toList());
-            List<Tag> ts = ListUtils.removeAll(tagCopy, getAllTagsIn(tagCopy));
-            //ts.removeAll(getAllTagsIn(tagCopy));
+            List<Tag> ts = ListUtils.removeAll(tags, getAllTagsIn(tags), true);
             System.out.println(ts.size() + ", " + ts.get(0) + ", " + ts.get(ts.size() - 1));
 
             session.doWork(connection -> {
