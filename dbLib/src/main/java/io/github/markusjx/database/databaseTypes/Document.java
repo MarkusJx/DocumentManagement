@@ -1,6 +1,7 @@
 package io.github.markusjx.database.databaseTypes;
 
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
+import io.github.markusjx.util.CompareHelper;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,7 +14,7 @@ import java.util.List;
  */
 @Entity
 @CustomPersistenceUnit(unitName = "documents")
-public class Document implements Serializable {
+public class Document implements Serializable, Comparable<Document> {
     /**
      * The file name. Must not be null.
      */
@@ -84,5 +85,10 @@ public class Document implements Serializable {
     public String toString() {
         return "io.github.markusjx.database.databaseTypes.Document{filename='" + filename + "', path='" + path + "', properties=" +
                 properties + ", creation date=" + creationDate + ", tag=" + tags + "}";
+    }
+
+    @Override
+    public int compareTo(Document o) {
+        return CompareHelper.compareTo(this.path, o.path);
     }
 }

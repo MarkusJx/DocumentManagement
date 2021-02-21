@@ -1,9 +1,6 @@
 package io.github.markusjx.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A class for List operations
@@ -20,28 +17,33 @@ public final class ListUtils {
      * Complexity: {@code O(n + n*log(n)) = O(n*log(n))}<br>
      * Requires {@code O(2n)} additional memory
      *
-     * @param in  the input list
-     * @param <T> the type of the input list
+     * @param in        the input list
+     * @param alterList whether to alter the original list (only sorts it, does not remove anything from it)
+     * @param <T>       the type of the input list
      * @return a sorted list with only distinct values
      */
-    public static <T extends Comparable<T>> List<T> distinctSorted(final List<T> in) {
-        // Make a copy of the original list
-        List<T> cpy = new ArrayList<>(in);
+    public static <T extends Comparable<? super T>> List<T> distinctSorted(List<T> in, boolean alterList) {
+        Objects.requireNonNull(in);
+
+        if (!alterList) {
+            // Make a copy of the original list
+            in = new ArrayList<>(in);
+        }
 
         // Sort it
-        Collections.sort(cpy);
+        Collections.sort(in);
 
         // Create the result list
-        List<T> res = new ArrayList<>(cpy.size());
+        List<T> res = new ArrayList<>((int) (in.size() * 0.75));
 
         // Iterate over the list and add only
         // distinct values to the result list
-        for (int i = 0; i < cpy.size(); i++) {
-            T val = cpy.get(i);
+        for (int i = 0; i < in.size(); i++) {
+            final T val = in.get(i);
             res.add(val);
 
             // While val equals cpy[i + 1], increase i by one
-            while ((i + 1) < cpy.size() && val.compareTo(cpy.get(i + 1)) == 0) {
+            while ((i + 1) < in.size() && val.compareTo(in.get(i + 1)) == 0) {
                 i++;
             }
         }
@@ -61,24 +63,35 @@ public final class ListUtils {
      * @param in       the {@link List<T>} to remove the objects from
      * @param toRemove the {@link List<T>} of objects to remove
      * @param distinct whether to only return distinct values
+     * @param alterLists whether to alter the input lists (only sorts them, doesn't remove anything)
      * @param <T>      the type of the arrays
      * @return a new {@link java.util.ArrayList<T>} wil all objects except those from toRemove
      */
-    public static <T extends Comparable<T>> List<T> removeAll(List<T> in, List<T> toRemove, boolean distinct) {
-        // If toRemove is empty, there's nothing to remove
-        if (toRemove.isEmpty()) return in;
+    public static <T extends Comparable<? super T>> List<T> removeAll(List<T> in, List<T> toRemove, boolean distinct, boolean alterLists) {
+        Objects.requireNonNull(in);
+        Objects.requireNonNull(toRemove);
 
-        // Copy toRemove
-        toRemove = new ArrayList<>(toRemove);
+        // If toRemove is empty, there's nothing to remove
+        if (toRemove.isEmpty()) {
+            if (distinct) in = distinctSorted(in, alterLists);
+            return in;
+        }
+
+        if (!alterLists) {
+            // Copy toRemove
+            toRemove = new ArrayList<>(toRemove);
+        }
 
         // Sort the toRemove list
         Collections.sort(toRemove);
 
         // Do the same for the input list
         if (distinct) {
-            in = distinctSorted(in);
+            in = distinctSorted(in, alterLists);
         } else {
-            in = new ArrayList<>(in);
+            if (!alterLists) {
+                in = new ArrayList<>(in);
+            }
             Collections.sort(in);
         }
 
@@ -94,7 +107,7 @@ public final class ListUtils {
         // has a complexity of O(n + m) = O(2n) with n being the size of the input
         // list and m being the size of the toRemove list; In the worst-case
         // scenario both lists are the same size.
-        for (T el : in) {
+        for (final T el : in) {
             // Increase i as long as toRemove[i] is smaller than el and
             // i is smaller than toRemove.size.
             // This loop in total only runs toRemove.size times.

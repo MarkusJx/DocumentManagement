@@ -4,11 +4,11 @@ import io.github.markusjx.database.databaseTypes.*;
 import io.github.markusjx.database.filter.DocumentFilter;
 import io.github.markusjx.datatypes.ChainedHashMap;
 import io.github.markusjx.datatypes.DocumentSearchResult;
+import io.github.markusjx.util.DatabaseUtils;
 import io.github.markusjx.util.ListUtils;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.sql.PreparedStatement;
@@ -89,55 +89,135 @@ public class DatabaseManager {
         manager.getTransaction().commit();
     }
 
-    public void persistDocuments(List<Document> documents) {
-        for (Document d : documents) {
-            for (PropertyValueSet pvs : d.properties) {
-                createPropertyValueSet(pvs.property.name, pvs.propertyValue.value);
-            }
-
-            String[] tags = new String[d.tags.size()];
-            for (int i = 0; i < tags.length; i++) {
-                tags[i] = d.tags.get(i).name;
-            }
-
-            convertTagName(tags);
-
-            manager.getTransaction().begin();
-            manager.persist(d);
-            manager.getTransaction().commit();
-        }
-    }
-
     public List<Tag> getAllTagsIn(final List<Tag> tags) {
-        return manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
-                .setParameter("tags", tags)
-                .getResultList();
+        try {
+            return manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
+                    .setParameter("tags", tags)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public boolean persistTags(final List<Tag> tags) {
-        Session session = manager.unwrap(Session.class);
-        Transaction transaction = session.beginTransaction();
+        List<Tag> toRemove = getAllTagsIn(tags);
+        if (toRemove == null) return false;
+
+        final List<Tag> ts = ListUtils.removeAll(tags, toRemove, true, true);
+        if (ts.isEmpty()) return true;
+
+        return DatabaseUtils.doSessionWork(manager, connection -> {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO Tag(name) values (?)");
+            for (Tag t : ts) {
+                statement.setString(1, t.name);
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+        });
+    }
+
+    public List<Property> getAllPropertiesIn(final List<Property> properties) {
         try {
-            List<Tag> ts = ListUtils.removeAll(tags, getAllTagsIn(tags), true);
-            System.out.println(ts.size() + ", " + ts.get(0) + ", " + ts.get(ts.size() - 1));
-
-            session.doWork(connection -> {
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO Tag(name) values (?)");
-                for (Tag t : ts) {
-                    statement.setString(1, t.name);
-                    statement.addBatch();
-                }
-
-                statement.executeBatch();
-            });
-
-            transaction.commit();
-            return true;
+            return manager.createQuery("select p from Property as p where p in :props", Property.class)
+                    .setParameter("props", properties)
+                    .getResultList();
         } catch (Exception e) {
             e.printStackTrace();
-            transaction.rollback();
-            return false;
+            return null;
         }
+    }
+
+    public boolean persistProperties(final List<Property> properties) {
+        List<Property> toRemove = getAllPropertiesIn(properties);
+        if (toRemove == null) return false;
+
+        final List<Property> ps = ListUtils.removeAll(properties, toRemove, true, true);
+        return DatabaseUtils.doSessionWork(manager, connection -> {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO Property(name) values (?)");
+            for (Property p : ps) {
+                statement.setString(1, p.name);
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+        });
+    }
+
+    public List<PropertyValue> getAllPropertyValuesIn(final List<PropertyValue> propertyValues) {
+        try {
+            return manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
+                    .setParameter("values", propertyValues)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean persistPropertyValues(final List<PropertyValue> propertyValues) {
+        List<PropertyValue> toRemove = getAllPropertyValuesIn(propertyValues);
+        if (toRemove == null) return false;
+
+        final List<PropertyValue> ps = ListUtils.removeAll(propertyValues, toRemove, true, true);
+        return DatabaseUtils.doSessionWork(manager, connection -> {
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO PropertyValue(value) values (?)");
+            for (PropertyValue p : ps) {
+                statement.setString(1, p.value);
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+        });
+    }
+
+    public List<Document> getAllDocumentsIn(final List<Document> documents) {
+        try {
+            return manager.createQuery("select d from Document as d where d in :docs", Document.class)
+                    .setParameter("docs", documents)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean persistDocuments(List<Document> documents) {
+        List<Tag> tags = new ArrayList<>();
+        List<Property> properties = new ArrayList<>();
+        List<PropertyValue> propertyValues = new ArrayList<>();
+
+        for (Document d : documents) {
+            if (d.properties != null) {
+                for (PropertyValueSet pvs : d.properties) {
+                    properties.add(pvs.property);
+                    propertyValues.add(pvs.propertyValue);
+                }
+            }
+
+            if (d.tags != null) {
+                tags.addAll(d.tags);
+            }
+        }
+
+        if (!persistTags(tags)) return false;
+        if (!persistProperties(properties)) return false;
+        if (!persistPropertyValues(propertyValues)) return false;
+
+        List<Document> toRemove = getAllDocumentsIn(documents);
+        if (toRemove == null) return false;
+
+        documents = ListUtils.removeAll(documents, toRemove, true, true);
+
+        manager.setFlushMode(FlushModeType.COMMIT);
+        manager.getTransaction().begin();
+        for (Document d : documents) {
+            manager.persist(d);
+        }
+        manager.getTransaction().commit();
+
+        return true;
     }
 
     /**

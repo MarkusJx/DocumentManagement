@@ -1,6 +1,7 @@
 package io.github.markusjx.database.databaseTypes;
 
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
+import io.github.markusjx.util.CompareHelper;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -12,7 +13,7 @@ import java.util.Objects;
  */
 @Entity
 @CustomPersistenceUnit(unitName = "documents")
-public class PropertyValue implements Serializable {
+public class PropertyValue implements Serializable, Comparable<PropertyValue> {
     /**
      * The actual value
      */
@@ -64,5 +65,10 @@ public class PropertyValue implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public int compareTo(PropertyValue o) {
+        return CompareHelper.compareTo(this.value, o.value);
     }
 }

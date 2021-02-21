@@ -1,6 +1,7 @@
 package io.github.markusjx.database.databaseTypes;
 
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
+import io.github.markusjx.util.CompareHelper;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -57,16 +58,6 @@ public class Tag implements Serializable, Comparable<Tag> {
 
     @Override
     public int compareTo(Tag o) {
-        if (this.name == null || o.name == null) {
-            if (this.name == null && o.name != null) {
-                return -1;
-            } else if (this.name != null) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
-            return this.name.compareTo(o.name);
-        }
+        return CompareHelper.compareTo(this.name, o.name);
     }
 }
