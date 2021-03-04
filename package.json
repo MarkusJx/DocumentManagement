@@ -2,24 +2,27 @@
   "name": "docman",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "out/main.js",
   "scripts": {
     "prestart": "tsc",
-    "start": "node out/index.js",
+    "start": "electron .",
     "pretest": "tsc",
-    "test": "mocha"
+    "test": "mocha",
+    "rebuild": "electron-rebuild -p -f -w java"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "find-java-home": "^1.1.0",
-    "java": "^0.12.1",
-    "typescript": "^4.1.5"
+    "java": "^0.12.1"
   },
   "devDependencies": {
     "@types/java": "^0.9.1",
     "@types/mocha": "^8.2.1",
     "@types/node": "^14.14.30",
-    "mocha": "^8.3.0"
+    "electron": "^11.1.1",
+    "electron-rebuild": "^2.3.5",
+    "mocha": "^8.3.0",
+    "typescript": "^4.2.2"
   }
 }
