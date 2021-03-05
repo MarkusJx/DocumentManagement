@@ -1,13 +1,13 @@
 package io.github.markusjx.database.databaseTypes;
 
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
-import io.github.markusjx.util.CompareHelper;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A document entity
@@ -25,8 +25,11 @@ public class Document implements Serializable, Comparable<Document> {
      * The file path
      */
     @Id
-    @Column(nullable = false)
-    public final String path;
+    @Column
+    public final String absolutePath;
+
+    @Column
+    public final String parentPath;
 
     /**
      * The tags of this documents
@@ -53,10 +56,11 @@ public class Document implements Serializable, Comparable<Document> {
      */
     public Document() {
         this.filename = null;
-        this.path = null;
+        this.absolutePath = null;
         this.properties = null;
         this.creationDate = null;
         this.tags = null;
+        this.parentPath = null;
     }
 
     /**
@@ -70,9 +74,10 @@ public class Document implements Serializable, Comparable<Document> {
      */
     public Document(String filename, String path, List<PropertyValueSet> properties, LocalDate creationDate, Tag... tags) {
         this.filename = filename;
-        this.path = path;
+        this.absolutePath = path;
         this.properties = properties;
         this.creationDate = creationDate;
+        this.parentPath = getParentPath();
 
         if (tags != null) {
             this.tags = Arrays.asList(tags);
@@ -81,14 +86,35 @@ public class Document implements Serializable, Comparable<Document> {
         }
     }
 
+    private String getParentPath() {
+        try {
+            return this.absolutePath.substring(0, this.absolutePath.length() - (this.filename.length() + 1));
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     @Override
     public String toString() {
-        return "io.github.markusjx.database.databaseTypes.Document{filename='" + filename + "', path='" + path + "', properties=" +
+        return "io.github.markusjx.database.databaseTypes.Document{filename='" + filename + "', path='" + absolutePath + "', properties=" +
                 properties + ", creation date=" + creationDate + ", tag=" + tags + "}";
     }
 
     @Override
     public int compareTo(Document o) {
-        return CompareHelper.compareTo(this.path, o.path);
+        return this.absolutePath.compareTo(o.absolutePath);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Document document = (Document) o;
+        return Objects.equals(absolutePath, document.absolutePath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(absolutePath);
     }
 }

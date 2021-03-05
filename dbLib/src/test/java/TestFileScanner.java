@@ -1,6 +1,8 @@
 import io.github.markusjx.database.DatabaseManager;
+import io.github.markusjx.database.databaseTypes.Directory;
 import io.github.markusjx.database.databaseTypes.Document;
 import io.github.markusjx.database.filter.DocumentFilter;
+import io.github.markusjx.database.filter.filters.DirectoryFilter;
 import io.github.markusjx.database.filter.filters.FilenameFilter;
 import io.github.markusjx.database.persistence.CustomPersistence;
 import io.github.markusjx.database.persistence.SQLiteProvider;
@@ -22,10 +24,14 @@ public class TestFileScanner {
     @Test
     void testScanner() {
         FileScanner scanner = new FileScanner("C:\\Users\\marku\\CloudStation");
-        List<Document> documents = scanner.scan();
-        System.out.println(documents.size());
+        Directory source = scanner.scan();
+        List<Document> allDocuments = source.getAllDocuments();
+        System.out.println(allDocuments.size());
 
-        Assertions.assertTrue(manager.persistDocuments(documents));
+        Assertions.assertTrue(manager.persistDirectory(source));
+        System.out.println(manager.getDocumentsBy(DocumentFilter.createFilter(new DirectoryFilter("Code"))));
+
+        System.out.println(manager.getDirectory(""));
     }
 
     @Test

@@ -220,6 +220,45 @@ public class DatabaseManager {
         return true;
     }
 
+    public List<Directory> getAllDirectoriesIn(final List<Directory> directories) {
+        try {
+            return manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
+                    .setParameter("dirs", directories)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean persistDirectories(List<Directory> directories) {
+        List<Directory> toRemove = getAllDirectoriesIn(directories);
+        if (toRemove == null) return false;
+
+        directories = ListUtils.removeAll(directories, toRemove, true, true);
+
+        manager.setFlushMode(FlushModeType.COMMIT);
+        manager.getTransaction().begin();
+        for (Directory d : directories) {
+            manager.persist(d);
+        }
+        manager.getTransaction().commit();
+
+        return true;
+    }
+
+    public boolean persistDirectory(Directory directory) {
+        return persistDocuments(directory.getAllDocuments()) && persistDirectories(directory.getAllDirectories());
+    }
+
+    public Directory getDirectory(String path) {
+        try {
+            return manager.find(Directory.class, path);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     /**
      * Create a new Tag and persist it
      *
