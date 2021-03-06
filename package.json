@@ -8,18 +8,23 @@
     "start": "electron .",
     "pretest": "tsc",
     "test": "mocha",
-    "rebuild": "electron-rebuild -p -f -w java"
+    "rebuild": "electron-rebuild -p -f -w java && node -e \"require('java/postInstall')\"",
+    "postinstall": "npm run-script rebuild"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "find-java-home": "^1.1.0",
-    "java": "^0.12.1"
+    "java": "^0.12.1",
+    "material-components-web": "^10.0.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
   },
   "devDependencies": {
     "@types/java": "^0.9.1",
     "@types/mocha": "^8.2.1",
     "@types/node": "^14.14.30",
+    "@types/react-dom": "^17.0.1",
     "electron": "^11.1.1",
     "electron-rebuild": "^2.3.5",
     "mocha": "^8.3.0",

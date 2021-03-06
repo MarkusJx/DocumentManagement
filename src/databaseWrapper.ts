@@ -35,13 +35,13 @@ function actionToJavaAction(action: Action): any {
     }
 }
 
-type java_call_method_t = (instance: any, methodName: string, ...args: any[]) => void;
+type java_call_method_t = (instance: any, methodName: string, ...args: any[]) => any;
 const java_callMethod: java_call_method_t = promisify(java.callMethod.bind(java));
 
-type java_call_static_method_t = (className: string, methodName: string, ...args: any[]) => void;
+type java_call_static_method_t = (className: string, methodName: string, ...args: any[]) => any;
 const java_callStaticMethod: java_call_static_method_t = promisify(java.callStaticMethod.bind(java));
 
-type java_new_instance_t = (className: string, ...args: any[]) => void;
+type java_new_instance_t = (className: string, ...args: any[]) => any;
 const java_newInstance: java_new_instance_t = promisify(java.newInstance.bind(java));
 
 async function dateToJavaLocalDate(date: Date): Promise<any> {
@@ -168,6 +168,19 @@ export class PropertyMap {
     }
 }
 
+export class FileScanner {
+    readonly #impl: any;
+
+    constructor(source: string) {
+        this.#impl = java.newInstanceSync("io.github.markusjx.scanning.FileScanner", source);
+    }
+
+    async scan(): Promise<database.Directory> {
+        const dir: any = await java_callMethod(this.#impl, "scan");
+        return await database.Directory.fromJavaDirectory(dir);
+    }
+}
+
 export namespace database {
     export class PropertyValueSet {
         readonly propertyName: string;
@@ -189,22 +202,29 @@ export namespace database {
 
     export class Document {
         readonly filename: string;
-        readonly path: string;
+        readonly absolutePath: string;
+        readonly parentPath: string;
         readonly tags: Tag[];
         readonly properties: PropertyValueSet[];
         readonly creationDate: Date;
 
-        constructor(filename: string, path: string, tags: Tag[], properties: PropertyValueSet[], creationDate: Date) {
+        constructor(filename: string, absolutePath: string, tags: Tag[], properties: PropertyValueSet[], creationDate: Date, parentPath: string = null) {
             this.filename = filename;
-            this.path = path;
+            this.absolutePath = absolutePath;
             this.tags = tags;
             this.properties = properties;
             this.creationDate = creationDate;
+            if (parentPath === null) {
+                this.parentPath = this.getParentPath();
+            } else {
+                this.parentPath = parentPath;
+            }
         }
 
         static async fromJavaDocument(document: any): Promise<Document> {
-            const filename = document.filename;
-            const path = document.path;
+            const filename: string = document.filename;
+            const absolutePath: string = document.absolutePath;
+            const parentPath: string = document.parentPath;
 
             const jTags: any = document.tags;
             const tags: Tag[] = [];
@@ -220,7 +240,51 @@ export namespace database {
             }
 
             const date: Date = await javaDateToDate(document.creationDate);
-            return new Document(filename, path, tags, properties, date);
+            return new Document(filename, absolutePath, tags, properties, date, parentPath);
+        }
+
+        getParentPath(): string {
+            try {
+                return this.absolutePath.substring(0, this.absolutePath.length - (this.filename.length + 1));
+            } catch (e) {
+                return "";
+            }
+        }
+    }
+
+    export class Directory {
+        readonly path: string;
+        readonly name: string;
+        readonly documents: Document[];
+        readonly directories: Directory[];
+
+        constructor(path: string, name: string, documents: Document[], directories: Directory[]) {
+            this.path = path;
+            this.name = name;
+            this.documents = documents;
+            this.directories = directories;
+        }
+
+        static async fromJavaDirectory(directory: any): Promise<Directory> {
+            const path: string = directory.path;
+            const name: string = directory.name;
+
+            const jDocs: any = directory.documents;
+            const jDirs: any = directory.directories;
+
+            const documents: Document[] = [];
+            for (let i: number = 0; i < await getListSize(jDocs); i++) {
+                let el: any = await getListElementAt(jDocs, i);
+                documents.push(await Document.fromJavaDocument(el));
+            }
+
+            const directories: Directory[] = [];
+            for (let i: number = 0; i < await getListSize(jDirs); i++) {
+                let el: any = await getListElementAt(jDirs, i);
+                directories.push(await Directory.fromJavaDirectory(el));
+            }
+
+            return new Directory(path, name, documents, directories);
         }
     }
 

@@ -5,6 +5,7 @@ import io.github.markusjx.database.persistence.CustomPersistenceUnit;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -80,9 +81,9 @@ public class Document implements Serializable, Comparable<Document> {
         this.parentPath = getParentPath();
 
         if (tags != null) {
-            this.tags = Arrays.asList(tags);
+            this.tags = new ArrayList<>(Arrays.asList(tags));
         } else {
-            this.tags = null;
+            this.tags = new ArrayList<>();
         }
     }
 
@@ -96,7 +97,7 @@ public class Document implements Serializable, Comparable<Document> {
 
     @Override
     public String toString() {
-        return "io.github.markusjx.database.databaseTypes.Document{filename='" + filename + "', path='" + absolutePath + "', properties=" +
+        return "Document{filename='" + filename + "', path='" + absolutePath + "', properties=" +
                 properties + ", creation date=" + creationDate + ", tag=" + tags + "}";
     }
 

@@ -1,7 +1,36 @@
-import {app, BrowserWindow} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain} from 'electron';
 import path from 'path';
 
 app.allowRendererProcessReuse = false;
+
+ipcMain.handle('select-directory', async () => {
+    const result = await dialog.showOpenDialog({properties: ['openDirectory']});
+    if (result.canceled) {
+        return null;
+    } else {
+        return result.filePaths[0];
+    }
+});
+
+ipcMain.handle('select-database', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openFile', 'promptToCreate'],
+        filters: [
+            {
+                name: 'database files',
+                extensions: [
+                    "db"
+                ]
+            }
+        ]
+    });
+
+    if (result.canceled) {
+        return null;
+    } else {
+        return result.filePaths[0];
+    }
+});
 
 function createWindow(): void {
     // Create the browser window.
