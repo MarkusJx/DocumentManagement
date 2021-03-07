@@ -8,9 +8,20 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+/**
+ * A filter to filter by directories
+ */
 public class DirectoryFilter implements DocumentFilterBase {
+    /**
+     * The path to the directory to find all files in
+     */
     private final String path;
 
+    /**
+     * Create a directory filter
+     *
+     * @param path the path to find all documents in
+     */
     public DirectoryFilter(String path) {
         this.path = path;
     }

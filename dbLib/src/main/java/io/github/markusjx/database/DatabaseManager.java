@@ -89,6 +89,12 @@ public class DatabaseManager {
         manager.getTransaction().commit();
     }
 
+    /**
+     * Get all {@link Tag}s both in a list and the database
+     *
+     * @param tags the {@link Tag}s to search for
+     * @return the overlapping tags
+     */
     public List<Tag> getAllTagsIn(final List<Tag> tags) {
         try {
             return manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
@@ -100,13 +106,22 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Persist a list of {@link Tag}s
+     *
+     * @param tags the {@link Tag}s to persist
+     * @return true, if the operation was successful
+     */
     public boolean persistTags(final List<Tag> tags) {
+        // Get all tags already in the database
         List<Tag> toRemove = getAllTagsIn(tags);
         if (toRemove == null) return false;
 
+        // Remove all tags already in the database
         final List<Tag> ts = ListUtils.removeAll(tags, toRemove, true, true);
         if (ts.isEmpty()) return true;
 
+        // Insert the tags manually into the database
         return DatabaseUtils.doSessionWork(manager, connection -> {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO Tag(name) values (?)");
             for (Tag t : ts) {
@@ -118,6 +133,12 @@ public class DatabaseManager {
         });
     }
 
+    /**
+     * Get all properties both in a list and the database
+     *
+     * @param properties the properties to search for
+     * @return the overlapping properties
+     */
     public List<Property> getAllPropertiesIn(final List<Property> properties) {
         try {
             return manager.createQuery("select p from Property as p where p in :props", Property.class)
@@ -129,11 +150,21 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Persist a list of properties
+     *
+     * @param properties the properties to persist
+     * @return true, if the operation was successful
+     */
     public boolean persistProperties(final List<Property> properties) {
+        // Get all already inserted properties
         List<Property> toRemove = getAllPropertiesIn(properties);
         if (toRemove == null) return false;
 
+        // Remove all already persisted properties
         final List<Property> ps = ListUtils.removeAll(properties, toRemove, true, true);
+
+        // Persist all properties manually
         return DatabaseUtils.doSessionWork(manager, connection -> {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO Property(name) values (?)");
             for (Property p : ps) {
@@ -145,6 +176,12 @@ public class DatabaseManager {
         });
     }
 
+    /**
+     * Get all {@link PropertyValue}s both in a list and the database
+     *
+     * @param propertyValues the values to search for
+     * @return the overlapping values
+     */
     public List<PropertyValue> getAllPropertyValuesIn(final List<PropertyValue> propertyValues) {
         try {
             return manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
@@ -156,11 +193,21 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Persist multiple {@link PropertyValue}s
+     *
+     * @param propertyValues the {@link PropertyValue}s to persist
+     * @return whether the operation was successful
+     */
     public boolean persistPropertyValues(final List<PropertyValue> propertyValues) {
+        // Get all already existing property values
         List<PropertyValue> toRemove = getAllPropertyValuesIn(propertyValues);
         if (toRemove == null) return false;
 
+        // Remove all already existing property values
         final List<PropertyValue> ps = ListUtils.removeAll(propertyValues, toRemove, true, true);
+
+        // Insert the values manually
         return DatabaseUtils.doSessionWork(manager, connection -> {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO PropertyValue(value) values (?)");
             for (PropertyValue p : ps) {
@@ -172,6 +219,12 @@ public class DatabaseManager {
         });
     }
 
+    /**
+     * Get all documents that are both in a list and the database
+     *
+     * @param documents the documents to search for
+     * @return the overlapping documents
+     */
     public List<Document> getAllDocumentsIn(final List<Document> documents) {
         try {
             return manager.createQuery("select d from Document as d where d in :docs", Document.class)
@@ -183,11 +236,18 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Persist a list of documents
+     *
+     * @param documents the documents to persist
+     * @return true, if the operation was successful
+     */
     public boolean persistDocuments(List<Document> documents) {
         List<Tag> tags = new ArrayList<>();
         List<Property> properties = new ArrayList<>();
         List<PropertyValue> propertyValues = new ArrayList<>();
 
+        // Get all tags, properties and property values from the documents
         for (Document d : documents) {
             if (d.properties != null) {
                 for (PropertyValueSet pvs : d.properties) {
@@ -201,25 +261,41 @@ public class DatabaseManager {
             }
         }
 
+        // Persist the tags, properties and property values
         if (!persistTags(tags)) return false;
         if (!persistProperties(properties)) return false;
         if (!persistPropertyValues(propertyValues)) return false;
 
+        // Get all documents already existing in the database
+        // and also existing in the list of documents to persist
         List<Document> toRemove = getAllDocumentsIn(documents);
         if (toRemove == null) return false;
 
+        // Remove all documents already existing in the database
         documents = ListUtils.removeAll(documents, toRemove, true, true);
 
-        manager.setFlushMode(FlushModeType.COMMIT);
-        manager.getTransaction().begin();
-        for (Document d : documents) {
-            manager.persist(d);
+        // Start a transaction and persist all documents
+        try {
+            manager.setFlushMode(FlushModeType.COMMIT);
+            manager.getTransaction().begin();
+            for (Document d : documents) {
+                manager.persist(d);
+            }
+            manager.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        manager.getTransaction().commit();
 
         return true;
     }
 
+    /**
+     * Get all directories in the database matching those in the given list
+     *
+     * @param directories the directories to search for
+     * @return the overlapping directories
+     */
     public List<Directory> getAllDirectoriesIn(final List<Directory> directories) {
         try {
             return manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
@@ -231,26 +307,87 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Persist a list of Directories
+     *
+     * @param directories the directories to persist
+     * @return true, if the operation was successful
+     */
     public boolean persistDirectories(List<Directory> directories) {
         List<Directory> toRemove = getAllDirectoriesIn(directories);
         if (toRemove == null) return false;
 
+        // Remove all already existing directories
         directories = ListUtils.removeAll(directories, toRemove, true, true);
 
-        manager.setFlushMode(FlushModeType.COMMIT);
-        manager.getTransaction().begin();
-        for (Directory d : directories) {
-            manager.persist(d);
+        // Begin a transaction and persist the directories
+        try {
+            manager.setFlushMode(FlushModeType.COMMIT);
+            manager.getTransaction().begin();
+            for (Directory d : directories) {
+                manager.persist(d);
+            }
+            manager.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        manager.getTransaction().commit();
 
         return true;
     }
 
-    public boolean persistDirectory(Directory directory) {
-        return persistDocuments(directory.getAllDocuments()) && persistDirectories(directory.getAllDirectories());
+    /**
+     * Get the {@link DatabaseInfo} for this database
+     *
+     * @return the retrieved {@link DatabaseInfo}
+     */
+    @SuppressWarnings("unused")
+    public DatabaseInfo getDatabaseInfo() {
+        try {
+            return manager.find(DatabaseInfo.class, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
+    /**
+     * Persist a {@link DatabaseInfo} instance
+     *
+     * @param info the {@link DatabaseInfo} to persist
+     * @return true, if the operation was successful
+     */
+    public boolean persistDatabaseInfo(DatabaseInfo info) {
+        try {
+            manager.getTransaction().begin();
+            manager.persist(info);
+            manager.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Persist a directory, its subdirectory and all stored files
+     *
+     * @param directory  the directory to persist
+     * @param sourcePath the source path of the directory
+     * @return whether all objects could be persisted
+     */
+    public boolean persistDirectory(Directory directory, String sourcePath) {
+        return persistDatabaseInfo(new DatabaseInfo(sourcePath)) &&
+                persistDocuments(directory.getAllDocuments()) &&
+                persistDirectories(directory.getAllDirectories());
+    }
+
+    /**
+     * Get a directory element by a path
+     *
+     * @param path the path of the directory
+     * @return the retrieved directory
+     */
     public Directory getDirectory(String path) {
         try {
             return manager.find(Directory.class, path);
@@ -276,6 +413,13 @@ public class DatabaseManager {
         return t;
     }
 
+    /**
+     * Create a {@link Tag} and persist it
+     *
+     * @param name              the name of the tag
+     * @param singleTransaction whether to begin and commit a new transaction
+     * @return the newly created tag
+     */
     public Tag createTag(String name, boolean singleTransaction) {
         if (singleTransaction) {
             return createTag(name);

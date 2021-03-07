@@ -29,6 +29,9 @@ public class Document implements Serializable, Comparable<Document> {
     @Column
     public final String absolutePath;
 
+    /**
+     * The path of the directory this document is in
+     */
     @Column
     public final String parentPath;
 
@@ -87,6 +90,11 @@ public class Document implements Serializable, Comparable<Document> {
         }
     }
 
+    /**
+     * Get the parent path from the absolute path
+     *
+     * @return the parent directory path
+     */
     private String getParentPath() {
         try {
             return this.absolutePath.substring(0, this.absolutePath.length() - (this.filename.length() + 1));

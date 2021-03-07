@@ -1,5 +1,6 @@
 import java from "java";
 import {promisify} from "util";
+import * as fs from "fs";
 
 java.classpath.push('dbLib/build/libs/dbLib-1.0-SNAPSHOT.jar');
 
@@ -170,14 +171,16 @@ export class PropertyMap {
 
 export class FileScanner {
     readonly #impl: any;
+    readonly source: string;
 
     constructor(source: string) {
         this.#impl = java.newInstanceSync("io.github.markusjx.scanning.FileScanner", source);
+        this.source = source;
     }
 
-    async scan(): Promise<database.Directory> {
+    async scan(): Promise<database.DirectoryImpl> {
         const dir: any = await java_callMethod(this.#impl, "scan");
-        return await database.Directory.fromJavaDirectory(dir);
+        return new database.DirectoryImpl(dir, this.source);
     }
 }
 
@@ -207,13 +210,15 @@ export namespace database {
         readonly tags: Tag[];
         readonly properties: PropertyValueSet[];
         readonly creationDate: Date;
+        readonly exists: boolean;
 
-        constructor(filename: string, absolutePath: string, tags: Tag[], properties: PropertyValueSet[], creationDate: Date, parentPath: string = null) {
+        constructor(filename: string, absolutePath: string, tags: Tag[], properties: PropertyValueSet[], creationDate: Date, baseDir: string, parentPath: string = null) {
             this.filename = filename;
             this.absolutePath = absolutePath;
             this.tags = tags;
             this.properties = properties;
             this.creationDate = creationDate;
+            this.exists = fs.existsSync(`${baseDir}/${this.absolutePath}`);
             if (parentPath === null) {
                 this.parentPath = this.getParentPath();
             } else {
@@ -221,7 +226,7 @@ export namespace database {
             }
         }
 
-        static async fromJavaDocument(document: any): Promise<Document> {
+        static async fromJavaDocument(document: any, baseDir: string): Promise<Document> {
             const filename: string = document.filename;
             const absolutePath: string = document.absolutePath;
             const parentPath: string = document.parentPath;
@@ -240,7 +245,7 @@ export namespace database {
             }
 
             const date: Date = await javaDateToDate(document.creationDate);
-            return new Document(filename, absolutePath, tags, properties, date, parentPath);
+            return new Document(filename, absolutePath, tags, properties, date, baseDir, parentPath);
         }
 
         getParentPath(): string {
@@ -252,39 +257,51 @@ export namespace database {
         }
     }
 
-    export class Directory {
+    export class DirectoryImpl {
+        readonly impl: any;
         readonly path: string;
         readonly name: string;
-        readonly documents: Document[];
-        readonly directories: Directory[];
+        readonly exists: boolean;
 
-        constructor(path: string, name: string, documents: Document[], directories: Directory[]) {
-            this.path = path;
-            this.name = name;
+        constructor(impl: any, baseDir: string) {
+            this.impl = impl;
+            this.path = impl.path;
+            this.name = impl.name;
+            this.exists = fs.existsSync(`${baseDir}/${this.path}`);
+        }
+    }
+
+    export class Directory extends DirectoryImpl {
+        readonly documents: Document[];
+        readonly directories: DirectoryImpl[];
+
+        constructor(documents: Document[], directories: DirectoryImpl[], impl: any, baseDir: string) {
+            super(impl, baseDir);
             this.documents = documents;
             this.directories = directories;
         }
 
-        static async fromJavaDirectory(directory: any): Promise<Directory> {
-            const path: string = directory.path;
-            const name: string = directory.name;
+        static async fromImpl(impl: DirectoryImpl, baseDir: string): Promise<Directory> {
+            return await Directory.fromJavaDirectory(impl.impl, baseDir);
+        }
 
+        static async fromJavaDirectory(directory: any, baseDir: string): Promise<Directory> {
             const jDocs: any = directory.documents;
             const jDirs: any = directory.directories;
 
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(jDocs); i++) {
                 let el: any = await getListElementAt(jDocs, i);
-                documents.push(await Document.fromJavaDocument(el));
+                documents.push(await Document.fromJavaDocument(el, baseDir));
             }
 
-            const directories: Directory[] = [];
+            const directories: DirectoryImpl[] = [];
             for (let i: number = 0; i < await getListSize(jDirs); i++) {
                 let el: any = await getListElementAt(jDirs, i);
-                directories.push(await Directory.fromJavaDirectory(el));
+                directories.push(new DirectoryImpl(el, baseDir));
             }
 
-            return new Directory(path, name, documents, directories);
+            return new Directory(documents, directories, directory, baseDir);
         }
     }
 
@@ -365,11 +382,23 @@ export namespace database {
         }
     }
 
+    export class DatabaseInfo {
+        readonly sourcePath: string;
+
+        constructor(impl: any) {
+            this.sourcePath = impl.sourcePath;
+        }
+    }
+
     export class DatabaseManager {
         readonly #impl: any;
+        databaseInfo: DatabaseInfo;
 
         constructor(impl: any) {
             this.#impl = impl;
+            this.databaseInfo = null;
+
+            this.setDatabaseInfo();
         }
 
         static async create(entityManager: EntityManager): Promise<DatabaseManager> {
@@ -378,6 +407,16 @@ export namespace database {
                 entityManager.impl);
 
             return new DatabaseManager(impl);
+        }
+
+        async setDatabaseInfo(): Promise<boolean> {
+            const info = await this.getDatabaseInfo();
+            if (info != null) {
+                this.databaseInfo = info;
+                return true;
+            } else {
+                return false;
+            }
         }
 
         createTag(name: string): void {
@@ -397,10 +436,35 @@ export namespace database {
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(docList); i++) {
                 const listEl: any = await getListElementAt(docList, i);
-                documents.push(await Document.fromJavaDocument(listEl));
+                documents.push(await Document.fromJavaDocument(listEl, this.databaseInfo.sourcePath));
             }
 
             return documents;
         }
+
+        async persistDirectory(directory: DirectoryImpl, sourcePath: string): Promise<boolean> {
+            return await java_callMethod(this.#impl, "persistDirectory", directory.impl, sourcePath) &&
+                await this.setDatabaseInfo();
+        }
+
+        async getDirectory(path: string): Promise<Directory> {
+            const impl = await java_callMethod(this.#impl, "getDirectory", path);
+
+            if (impl != null) {
+                return Directory.fromJavaDirectory(impl, this.databaseInfo.sourcePath);
+            } else {
+                return null;
+            }
+        }
+
+        async getDatabaseInfo(): Promise<DatabaseInfo> {
+            return new DatabaseInfo(await java_callMethod(this.#impl, "getDatabaseInfo"));
+        }
+    }
+
+    export async function createSQLiteDatabaseManager(databaseFile: string, action: Action, showSQL: boolean = false): Promise<DatabaseManager> {
+        const provider = await SQLiteProvider.create(databaseFile, action, showSQL);
+        const em = await CustomPersistence.createEntityManager("documents", provider);
+        return await database.DatabaseManager.create(em);
     }
 }

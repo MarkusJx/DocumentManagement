@@ -28,10 +28,10 @@ public class TestFileScanner {
         List<Document> allDocuments = source.getAllDocuments();
         System.out.println(allDocuments.size());
 
-        Assertions.assertTrue(manager.persistDirectory(source));
+        Assertions.assertTrue(manager.persistDirectory(source, "C:\\Users\\marku\\CloudStation"));
         System.out.println(manager.getDocumentsBy(DocumentFilter.createFilter(new DirectoryFilter("Code"))));
 
-        System.out.println(manager.getDirectory(""));
+        System.out.println(manager.getDirectory("Bank"));
     }
 
     @Test

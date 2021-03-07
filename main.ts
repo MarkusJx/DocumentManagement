@@ -3,8 +3,11 @@ import path from 'path';
 
 app.allowRendererProcessReuse = false;
 
-ipcMain.handle('select-directory', async () => {
-    const result = await dialog.showOpenDialog({properties: ['openDirectory']});
+ipcMain.handle('select-directory', async (event, ...args) => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openDirectory'],
+        title: args[0]
+    });
     if (result.canceled) {
         return null;
     } else {
@@ -12,9 +15,16 @@ ipcMain.handle('select-directory', async () => {
     }
 });
 
-ipcMain.handle('select-database', async () => {
+ipcMain.handle('select-database', async (event, ...args) => {
+    let props;
+    if (args[0]) {
+        props = ['openFile', 'promptToCreate'];
+    } else {
+        props = ['openFile'];
+    }
+
     const result = await dialog.showOpenDialog({
-        properties: ['openFile', 'promptToCreate'],
+        properties: props,
         filters: [
             {
                 name: 'database files',
@@ -22,7 +32,8 @@ ipcMain.handle('select-database', async () => {
                     "db"
                 ]
             }
-        ]
+        ],
+        title: args[1]
     });
 
     if (result.canceled) {
@@ -38,12 +49,13 @@ function createWindow(): void {
         width: 800,
         height: 600,
         webPreferences: {
-            preload: path.join(__dirname, 'src', 'preload.js')
+            preload: path.join(__dirname, 'src', 'preload.js'),
+            contextIsolation: true
         }
     });
 
     // and load the index.html of the app.
-    mainWindow.loadFile('index.html');
+    mainWindow.loadFile('ui/index.html');
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()

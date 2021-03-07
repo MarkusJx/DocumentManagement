@@ -6,6 +6,9 @@ import org.hibernate.jdbc.Work;
 
 import javax.persistence.EntityManager;
 
+/**
+ * Some database utilities
+ */
 public final class DatabaseUtils {
     /**
      * Don't.
@@ -13,6 +16,13 @@ public final class DatabaseUtils {
     private DatabaseUtils() {
     }
 
+    /**
+     * Do manual work on the database
+     *
+     * @param manager the entity manager to use
+     * @param work    the work to do
+     * @return true, if the operation was successful
+     */
     public static boolean doSessionWork(EntityManager manager, Work work) {
         Session session = manager.unwrap(Session.class);
         Transaction transaction = session.beginTransaction();

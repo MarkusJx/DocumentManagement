@@ -17,7 +17,13 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Stack;
 
+/**
+ * A class for scanning through file trees and discovering all files
+ */
 public class FileScanner {
+    /**
+     * Whether the host os is windows
+     */
     public static final boolean isWindows;
 
     static {
@@ -29,14 +35,33 @@ public class FileScanner {
         }
     }
 
+    /**
+     * The source file to start scanning from
+     */
     private final File source;
+
+    /**
+     * The length of the (full) path to the source file
+     */
     private final int sourcePathLength;
 
+    /**
+     * Create a file scanner
+     *
+     * @param source the directory to start scanning from
+     */
     public FileScanner(String source) {
         this.source = new File(source);
         this.sourcePathLength = source.length();
     }
 
+    /**
+     * Get the create time of a file
+     *
+     * @param file the file
+     * @return the create time as a {@link LocalDate}
+     * @throws IOException if the file could not be found
+     */
     private static LocalDate getCreateTime(File file) throws IOException {
         Path path = Paths.get(file.getPath());
         BasicFileAttributeView basicfile = Files.getFileAttributeView(path,
@@ -47,23 +72,39 @@ public class FileScanner {
         return LocalDate.ofInstant(instant, ZoneId.systemDefault());
     }
 
+    /**
+     * Scan through the directory tree
+     *
+     * @return the start directory
+     */
     public Directory scan() {
+        // Create the source directory
         Directory src = new Directory("", source.getName());
+
+        // Create a stack of files to scan
         Stack<File_Directory> toScan = new Stack<>();
         toScan.push(new File_Directory(source, src));
 
         while (!toScan.isEmpty()) {
+            // Get the current directory to work on
             File_Directory cur = toScan.pop();
+
+            // Get all files in this directory, if there are none, continue
             File[] files = cur.file.listFiles();
             if (files == null) continue;
+
+            // Go through all files in the directory
             for (File f : files) {
+                // If the file is a directory create a directory object
+                // and add it to the files to scan
                 if (f.isDirectory()) {
-                    Directory dir = new Directory(getAbsolutePath(f), f.getName());
+                    Directory dir = new Directory(getRelativePath(f), f.getName());
                     cur.directory.directories.add(dir);
                     toScan.push(new File_Directory(f, dir));
                 } else {
+                    // Try creating a new document
                     try {
-                        cur.directory.documents.add(new Document(f.getName(), getAbsolutePath(f), new ArrayList<>(0),
+                        cur.directory.documents.add(new Document(f.getName(), getRelativePath(f), new ArrayList<>(0),
                                 getCreateTime(f)));
                     } catch (Exception ignored) {
                     }
@@ -74,7 +115,13 @@ public class FileScanner {
         return src;
     }
 
-    private String getAbsolutePath(File src) {
+    /**
+     * Get the relative path to a file starting from the source directory
+     *
+     * @param src the file to get the path to
+     * @return the relative path
+     */
+    private String getRelativePath(File src) {
         String path = src.getAbsolutePath().substring(sourcePathLength + 1);
         if (isWindows) {
             return path.replace('\\', '/');
@@ -83,32 +130,29 @@ public class FileScanner {
         }
     }
 
+    /**
+     * A class for storing a {@link File} and {@link Directory}
+     */
     private static final class File_Directory {
+        /**
+         * The actual directory in the file system
+         */
         private final File file;
+
+        /**
+         * The {@link Directory} instance to persist
+         */
         private final Directory directory;
 
+        /**
+         * Create a File_Directory instance from a file and a directory object
+         *
+         * @param file      the directory in the file system
+         * @param directory the directory information object
+         */
         private File_Directory(File file, Directory directory) {
             this.file = file;
             this.directory = directory;
         }
     }
-
-    /*private Directory scan(File src) {
-        File[] files = src.listFiles();
-        Directory res = new Directory(getAbsolutePath(src));
-        if (files != null) {
-            for (File f : files) {
-                res.addAll(scan(f));
-            }
-
-            return res;
-        } else {
-            try {
-                return Collections.singletonList(new Document(src.getName(), getAbsolutePath(src),
-                        new ArrayList<>(0), getCreateTime(src)));
-            } catch (Exception ignored) {
-                return new ArrayList<>(0);
-            }
-        }
-    }*/
 }
