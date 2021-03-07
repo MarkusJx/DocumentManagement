@@ -2,6 +2,7 @@ import React from "react";
 import * as ReactDOM from "react-dom";
 
 import * as util from "../util";
+import * as constants from "../constants";
 import {database} from "../databaseWrapper";
 import {MainDataTable} from "./MainDataTable";
 import {MDCTooltip} from "@material/tooltip";
@@ -30,21 +31,20 @@ class EditDocumentButton extends React.Component {
         super(props);
         this.document = props.document;
         this.dataTable = props.dataTable;
+
+        this.onEditButtonClick = this.onEditButtonClick.bind(this);
+    }
+
+    onEditButtonClick(): void {
+        constants.fileEditor.open(this.document, this.dataTable);
     }
 
     render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons">
+            <button className="mdc-icon-button material-icons" onClick={this.onEditButtonClick}>
                 <div className="mdc-button__icon">create</div>
             </button>
         );
-    }
-
-    componentDidMount(): void {
-        const $this = ReactDOM.findDOMNode(this);
-        $this.addEventListener('click', () => {
-            // TODO: edit the document
-        });
     }
 }
 

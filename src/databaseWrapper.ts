@@ -458,7 +458,13 @@ export namespace database {
         }
 
         async getDatabaseInfo(): Promise<DatabaseInfo> {
-            return new DatabaseInfo(await java_callMethod(this.#impl, "getDatabaseInfo"));
+            const impl: any = await java_callMethod(this.#impl, "getDatabaseInfo");
+
+            if (impl != null) {
+                return new DatabaseInfo(impl);
+            } else {
+                return null;
+            }
         }
     }
 
