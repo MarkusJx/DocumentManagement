@@ -46,8 +46,8 @@ ipcMain.handle('select-database', async (event, ...args) => {
 function createWindow(): void {
     // Create the browser window.
     const mainWindow: BrowserWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1600,
+        height: 1200,
         webPreferences: {
             preload: path.join(__dirname, 'src', 'preload.js'),
             contextIsolation: true
@@ -58,7 +58,7 @@ function createWindow(): void {
     mainWindow.loadFile('ui/index.html');
 
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished

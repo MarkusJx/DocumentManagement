@@ -1,45 +1,95 @@
 import React from "react";
-import * as ReactDOM from "react-dom";
+import ReactDOM from "react-dom";
 
 import {MDCChip} from "@material/chips";
 import {MDCTextField} from "@material/textfield";
 import {MDCRipple} from "@material/ripple";
 import {MDCList} from '@material/list';
-import {MDCTooltip} from "@material/tooltip";
+import {Tooltip} from "./Tooltip";
 
+/**
+ * A function to check if a chip value exists
+ */
 type ChipValueExists_t = (value: string) => boolean;
 
+/**
+ * The properties for an InputChip
+ */
 type InputChipProps = {
+    // The id of the input chip
     id: string,
+    // The inner text of the chip
     text: string,
+    // The parent element
     parent: ChipTextArea,
+    // The tooltip text
     tooltipText?: string,
+    // A function to check whether the chip value exists
     chipValueExists?: ChipValueExists_t
 };
 
+/**
+ * A mdc chip an a {@link ChipTextArea}
+ */
 class InputChip extends React.Component<InputChipProps> {
-    private readonly chipValueExists: boolean;
+    /**
+     * Whether a tooltip should be created
+     * @private
+     */
+    private readonly requiresTooltip: boolean;
+
+    /**
+     * The parent element
+     * @private
+     */
     private readonly parent: ChipTextArea;
+
+    /**
+     * The text of the tooltip
+     * @private
+     */
     private readonly tooltipText: string;
+
+    /**
+     * The id of the tooltip (if created)
+     * @private
+     */
+    private readonly tooltipId: string
+
+    /**
+     * The text of the chip
+     * @private
+     */
     private readonly text: string;
+
+    /**
+     * The id of the chip
+     * @private
+     */
     private readonly id: string;
+
+    /**
+     * The chip implementation
+     * @private
+     */
     private chip: MDCChip;
 
-    constructor(props: InputChipProps) {
+    /**
+     * Create an InputChip
+     *
+     * @param props the properties
+     */
+    public constructor(props: InputChipProps) {
         super(props);
         this.text = props.text;
         this.parent = props.parent;
         this.chip = null;
         this.id = props.id;
         this.tooltipText = props.tooltipText;
+        this.tooltipId = this.id + '-tooltip';
+        this.requiresTooltip = props.chipValueExists && props.tooltipText && !props.chipValueExists(this.text);
 
-        if (props.chipValueExists) {
-            this.chipValueExists = props.chipValueExists(this.text);
-        } else {
-            this.chipValueExists = null;
-        }
-
-        this.onDelete = this.onDelete.bind(this);
+        this.destroy = this.destroy.bind(this);
     }
 
     public render(): React.ReactNode {
@@ -62,7 +112,7 @@ class InputChip extends React.Component<InputChipProps> {
                 </span>
                 <span role="gridcell">
                     <i className="material-icons mdc-chip__icon mdc-chip__icon--trailing" role="button"
-                       onClick={this.onDelete}>
+                       onClick={this.destroy}>
                         cancel
                     </i>
                 </span>
@@ -74,39 +124,45 @@ class InputChip extends React.Component<InputChipProps> {
         const $this = ReactDOM.findDOMNode(this) as Element;
         this.chip = new MDCChip($this);
 
-        if (this.chipValueExists != null && !this.chipValueExists) {
-            MDCTooltip.attachTo($this.querySelector('.mdc-tooltip--rich'));
+        if (this.requiresTooltip) {
+            // Create the tooltip
+            Tooltip.create({
+                id: this.tooltipId,
+                text: this.tooltipText
+            });
         }
     }
 
-    private onDelete(): void {
-        this.parent.currentTags.splice(this.parent.currentTags.indexOf(this.text), 1);
+    public componentWillUnmount() {
+        if (this.requiresTooltip) {
+            // Delete the tooltip associated with this chip
+            Tooltip.delete(this.tooltipId);
+        }
+    }
+
+    /**
+     * Destroy the input chip and remove it from its parent
+     * @private
+     */
+    private destroy(): void {
+        this.parent.currentChipValues.splice(this.parent.currentChipValues.indexOf(this.text), 1);
         this.chip.destroy();
 
         this.parent.forceUpdate();
     }
 
+    /**
+     * Get the leading icon. Only created if the tooltip will also be created
+     *
+     * @return the generated icon node
+     * @private
+     */
     private getLeadingIcon(): React.ReactNode {
-        if (this.chipValueExists != null && !this.chipValueExists) {
-            const tooltipId: string = this.id + '-tooltip';
-            const tooltipWrapperStyle: React.CSSProperties = {
-                width: '20px',
-                height: '20px'
-            }
-
+        if (this.requiresTooltip) {
             return (
-                <div className="mdc-tooltip-wrapper--rich" style={tooltipWrapperStyle}>
-                    <i className="material-icons mdc-chip__icon mdc-chip__icon--leading" aria-describedby={tooltipId}>
-                        info
-                    </i>
-                    <div id={tooltipId} className="mdc-tooltip--rich" aria-hidden="true" role="tooltip">
-                        <div className="mdc-tooltip__surface">
-                            <p className="mdc-tooltip__content">
-                                {this.tooltipText}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <i className="material-icons mdc-chip__icon mdc-chip__icon--leading" aria-describedby={this.tooltipId}>
+                    info
+                </i>
             );
         } else {
             return null;
@@ -114,21 +170,48 @@ class InputChip extends React.Component<InputChipProps> {
     }
 }
 
+/**
+ * A function to get autocomplete options for an input
+ */
 type getAutoCompleteOptions_t = (input: string) => string[];
 
+/**
+ * Properties for {@link TextFieldAutoComplete}
+ */
 type TextFieldAutoCompleteProps = {
+    // A function to get the auto complete options
     getAutoCompleteOptions: getAutoCompleteOptions_t,
+    // The parent element
     parent: ChipTextAreaWithAutoComplete
 };
 
+/**
+ * Properties for an {@link TextFieldAutoComplete.MenuItem}
+ */
 type MenuItemProps = {
     text: string
 };
 
+/**
+ * An autocomplete suggestion element for a text field
+ */
 class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> {
+    /**
+     * A menu item in the autocomplete menu
+     * @protected
+     */
     protected static readonly MenuItem = class extends React.Component<MenuItemProps> {
+        /**
+         * The text of the menu item
+         * @private
+         */
         private readonly text: string;
 
+        /**
+         * Create a menu item
+         *
+         * @param props the properties
+         */
         public constructor(props: MenuItemProps) {
             super(props);
             this.text = props.text;
@@ -150,14 +233,45 @@ class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> 
             MDCRipple.attachTo($this);
         }
     }
+
+    /**
+     * The html element created by this class
+     */
     public $this: HTMLDivElement;
+
+    /**
+     * The function to get the auto complete options
+     * @private
+     */
     private readonly getAutoCompleteOptions: getAutoCompleteOptions_t;
+
+    /**
+     * The parent class
+     * @private
+     */
     private readonly parent: ChipTextAreaWithAutoComplete;
+
+    /**
+     * The number of child menu elements this has
+     * @private
+     */
+    private numChildren: number;
+
+    /**
+     * The id for the next child menu item to be generated
+     * @private
+     */
     private currentKey: number;
 
+    /**
+     * Create a autocomplete menu
+     *
+     * @param props the properties
+     */
     public constructor(props: TextFieldAutoCompleteProps) {
         super(props);
         this.parent = props.parent;
+        this.numChildren = 0;
         this.currentKey = 0;
         this.$this = null;
 
@@ -165,8 +279,10 @@ class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> 
     }
 
     public render(): React.ReactNode {
+        // Calculate the top value
         const top: string = (this.parent.$this != null) ? this.parent.$this.offsetHeight + 'px' : '76px';
 
+        // Set the css style
         const style: React.CSSProperties = {
             position: 'absolute',
             borderRadius: '5px',
@@ -196,82 +312,170 @@ class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> 
         MDCList.attachTo(this.$this.querySelector('.mdc-list'));
     }
 
-    public show(): void {
-        this.$this.style.top = (this.parent.$this != null) ? this.parent.$this.offsetHeight + 'px' : '76px'
-        this.$this.style.visibility = 'visible';
-        this.$this.style.opacity = '1';
+    /**
+     * Update the values
+     */
+    public update(): void {
+        this.forceUpdate();
+        this.componentDidMount();
     }
 
+    /**
+     * Show the autocomplete menu if there are items to display
+     */
+    public show(): void {
+        if (this.numChildren > 0) {
+            this.$this.style.top = (this.parent.$this != null) ? this.parent.$this.offsetHeight + 'px' : '76px'
+            this.$this.style.visibility = 'visible';
+            this.$this.style.opacity = '1';
+        } else {
+            this.hide();
+        }
+    }
+
+    /**
+     * Hide the menu
+     */
     public hide(): void {
         this.$this.style.opacity = '0';
         this.$this.style.visibility = 'hidden';
         this.$this.style.top = '0';
     }
 
+    /**
+     * Generate the menu items
+     *
+     * @return the menu items node
+     * @private
+     */
     private generateMenuItems(): React.ReactNode {
         if (this.parent.textArea != null) {
             const options = this.getAutoCompleteOptions(this.parent.textArea.getTextFieldValues()[0]);
+            this.numChildren = options.length;
+
             return (
                 options.map((option: string, index: number) =>
                     <TextFieldAutoComplete.MenuItem text={option} key={index + '-' + this.currentKey++}/>
                 )
             );
         } else {
+            this.numChildren = 0;
             return null;
         }
     }
 }
 
+/**
+ * Css properties for material.io components
+ */
 export interface MDCCSSProperties extends React.CSSProperties {
     "--mdc-theme-primary": string
 }
 
+/**
+ * Properties for a {@link ChipTextArea}
+ */
 export type ChipTextAreaProps = {
+    // The function to be called when a value is typed in
     onInputCallback: () => void,
+    // A function to check if a chip value exists
     chipValueExists?: ChipValueExists_t,
+    // A tooltip for the chip if the value does not exist
     chipTooltipText?: string
 };
 
+/**
+ * A text area where the whole input gets converted to a chip when enter is pressed
+ */
 export class ChipTextArea extends React.Component<ChipTextAreaProps> {
+    /**
+     * The splitter function for the values
+     * @private
+     */
     private static readonly textFieldValue_splitter: RegExp = /[\n]+/gi;
-    public currentTags: string[];
+
+    /**
+     * The text field implementation
+     */
     public textField: MDCTextField;
+
+    /**
+     * The element created by this class
+     */
     public $this: HTMLLabelElement;
+
+    /**
+     * The values of the chips created
+     */
+    public currentChipValues: string[];
+
+    /**
+     * The function to check if a chip value exists
+     * @private
+     */
     private readonly chipValueExists: ChipValueExists_t;
+
+    /**
+     * The callback to be called on input
+     * @private
+     */
     private readonly onInputCallback: () => void;
+
+    /**
+     * The chip tooltip text
+     * @private
+     */
     private readonly chipTooltipText: string;
+
+    /**
+     * The id of the next chip to generate
+     * @private
+     */
     private lastChipId: number;
 
+    /**
+     * Create a chip text area
+     *
+     * @param props the properites
+     */
     public constructor(props: ChipTextAreaProps) {
         super(props);
         this.onInputCallback = props.onInputCallback;
         this.chipValueExists = props.chipValueExists ? props.chipValueExists.bind(this) : null;
         this.chipTooltipText = props.chipTooltipText;
         this.textField = null;
-        this.currentTags = [];
+        this.currentChipValues = [];
         this.lastChipId = 0;
         this.$this = null;
 
         this.onInput = this.onInput.bind(this);
     }
 
+    /**
+     * Clear the text area
+     */
     public clear(): void {
         this.textField.value = "";
-        this.currentTags = [];
+        this.currentChipValues = [];
 
         this.forceUpdate();
     }
 
+    /**
+     * Get the values in the text field
+     */
     public getTextFieldValues(): string[] {
         return this.textField.value.split(ChipTextArea.textFieldValue_splitter).map(s => s.trim());
     }
 
     public render(): React.ReactNode {
+        // The style for the main element
         const style: MDCCSSProperties = {
             marginTop: "20px",
             "--mdc-theme-primary": "#4a6eff"
         };
 
+        // The style for the chip container
         const tagChipContainer_style: React.CSSProperties = {
             marginRight: "auto"
         }
@@ -286,10 +490,10 @@ export class ChipTextArea extends React.Component<ChipTextAreaProps> {
                     <span className="mdc-notched-outline__trailing"/>
                 </span>
                 <div style={tagChipContainer_style}>
-                    {this.generateTagItems()}
+                    {this.generateChips()}
                 </div>
                 <textarea className="mdc-text-field__input" rows={1} cols={40} aria-label="tag-text-area-label"
-                          onInput={this.onInput} autoComplete="on"/>
+                          onInput={this.onInput}/>
             </label>
         );
     }
@@ -299,7 +503,7 @@ export class ChipTextArea extends React.Component<ChipTextAreaProps> {
         this.textField = new MDCTextField(this.$this);
 
         this.$this.addEventListener('focusout', () => {
-            if (this.currentTags.length > 0 && this.textField.value.length === 0) {
+            if (this.currentChipValues.length > 0 && this.textField.value.length === 0) {
                 this.textField.value = " ";
             }
         });
@@ -311,16 +515,26 @@ export class ChipTextArea extends React.Component<ChipTextAreaProps> {
         });
     }
 
+    /**
+     * The function to be called on input
+     *
+     * @param event the input event
+     * @private
+     */
     private onInput(event: any): void {
         const inputEvent = event.nativeEvent as InputEvent;
+
+        // Check if enter was pressed
         if (inputEvent.data === null && (inputEvent.inputType === "insertLineBreak" || inputEvent.inputType === "insertText")) {
             const tags: string[] = this.getTextFieldValues();
             for (let i = 0; i < tags.length; i++) {
-                if (tags[i].length > 0 && this.currentTags.indexOf(tags[i]) === -1) {
-                    this.currentTags.push(tags[i]);
+                // Push all unique values to this.currentChipValues
+                if (tags[i].length > 0 && this.currentChipValues.indexOf(tags[i]) === -1) {
+                    this.currentChipValues.push(tags[i]);
                 }
             }
 
+            // Clear the text field and update
             this.textField.value = "";
             this.forceUpdate();
             this.componentDidMount();
@@ -329,32 +543,78 @@ export class ChipTextArea extends React.Component<ChipTextAreaProps> {
         this.onInputCallback();
     }
 
-    private generateTagItems(): React.ReactNode {
-        const id: string = 'chip-text-area-input-chip-' + this.lastChipId++;
-
+    /**
+     * Generate the chips
+     *
+     * @return the generated chips node
+     * @private
+     */
+    private generateChips(): React.ReactNode {
         return (
-            this.currentTags.map((tag: string) =>
-                <InputChip text={tag} parent={this} key={id} id={id} chipValueExists={this.chipValueExists}
-                           tooltipText={this.chipTooltipText}/>
-            )
+            this.currentChipValues.map((tag: string) => {
+                // Get the chip id
+                const id: string = 'chip-text-area-input-chip-' + this.lastChipId++;
+                return <InputChip text={tag} parent={this} key={id} id={id} chipValueExists={this.chipValueExists}
+                                  tooltipText={this.chipTooltipText}/>
+            })
         );
     }
 }
 
+/**
+ * Properties for a {@link ChipTextAreaWithAutoComplete}
+ */
 export type ChipTextAreaWithAutoCompleteProps = {
+    // A function to get the auto complete options
     getAutoCompleteOptions: getAutoCompleteOptions_t,
+    // A function to check if a chip value exists
     chipValueExists?: ChipValueExists_t,
+    // The tooltip for a chip if the value does not exist
     chipTooltipText?: string
 };
 
+/**
+ * A chip text area with autocomplete suggestions
+ */
 export class ChipTextAreaWithAutoComplete extends React.Component<ChipTextAreaWithAutoCompleteProps> {
-    public textArea: ChipTextArea;
-    public autoComplete: TextFieldAutoComplete;
+    /**
+     * The HTML element created by this class
+     */
     public $this: HTMLDivElement;
+
+    /**
+     * The actual text area
+     */
+    public textArea: ChipTextArea;
+
+    /**
+     * The auto complete suggestion element
+     */
+    public autoComplete: TextFieldAutoComplete;
+
+    /**
+     * The function to get the auto complete options
+     * @private
+     */
     private readonly getAutoCompleteOptions: getAutoCompleteOptions_t;
+
+    /**
+     * The function to check if a chip value exists
+     * @private
+     */
     private readonly chipValueExists: ChipValueExists_t;
+
+    /**
+     * The tooltip for a chip if the value does not exist
+     * @private
+     */
     private readonly chipTooltipText: string;
 
+    /**
+     * Create the chip text area with autocomplete suggestions
+     *
+     * @param props the properties
+     */
     public constructor(props: ChipTextAreaWithAutoCompleteProps) {
         super(props);
         this.getAutoCompleteOptions = props.getAutoCompleteOptions;
@@ -368,6 +628,9 @@ export class ChipTextAreaWithAutoComplete extends React.Component<ChipTextAreaWi
         this.onInput = this.onInput.bind(this);
     }
 
+    /**
+     * Clear the text field
+     */
     public clear(): void {
         this.$this = null;
 
@@ -377,7 +640,16 @@ export class ChipTextAreaWithAutoComplete extends React.Component<ChipTextAreaWi
         this.componentDidMount();
     }
 
-    public render() {
+    /**
+     * Get the chip values
+     *
+     * @return the chip values
+     */
+    public getChipValues(): string[] {
+        return this.textArea.currentChipValues;
+    }
+
+    public render(): React.ReactNode {
         return (
             <div className="mdc-menu-surface--anchor">
                 <ChipTextArea ref={e => this.textArea = e} onInputCallback={this.onInput}
@@ -388,7 +660,7 @@ export class ChipTextAreaWithAutoComplete extends React.Component<ChipTextAreaWi
         );
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         this.$this = ReactDOM.findDOMNode(this) as HTMLDivElement;
 
         this.textArea.$this.addEventListener('focusin', () => {
@@ -402,10 +674,13 @@ export class ChipTextAreaWithAutoComplete extends React.Component<ChipTextAreaWi
         });
     }
 
+    /**
+     * A function to be called on input
+     * @private
+     */
     private onInput(): void {
         if (this.textArea.textField.value.trim().length > 0) {
-            this.autoComplete.forceUpdate();
-            this.autoComplete.componentDidMount();
+            this.autoComplete.update();
             this.autoComplete.show();
         } else {
             this.autoComplete.hide();
