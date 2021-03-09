@@ -515,6 +515,20 @@ public class DatabaseManager {
         }
     }
 
+    @SuppressWarnings("unused")
+    public boolean tagExists(String name) {
+        return manager.createQuery("select distinct count(*) from Tag as t where t.name = :name", Long.class)
+                .setParameter("name", name)
+                .getSingleResult() > 0;
+    }
+
+    @SuppressWarnings("unused")
+    public List<Tag> getTagsLike(String name) {
+        return manager.createQuery("select t from Tag as t where t.name like :name", Tag.class)
+                .setParameter("name", name + '%')
+                .getResultList();
+    }
+
     /**
      * Get a {@link Property} by a name
      *

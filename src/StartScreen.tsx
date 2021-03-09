@@ -4,6 +4,7 @@ import {MDCRipple} from '@material/ripple';
 import {ipcRenderer} from "electron";
 import {Action, database, FileScanner} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
+import * as constants from "./constants";
 
 export class MainComponent extends React.Component {
     currentPage: React.CElement<any, any>;
@@ -27,6 +28,8 @@ export class MainComponent extends React.Component {
         const file: string = await ipcRenderer.invoke('select-database', true, "Select or create a database file");
         if (file != null) {
             this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.CREATE_DROP);
+            constants.init(this.databaseManager);
+
             this.currentPage = React.createElement(StartScanScreen, {
                 onStartClickImpl: this.startScan
             }, null);
@@ -46,6 +49,7 @@ export class MainComponent extends React.Component {
 
             this.forceUpdate();
             this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.UPDATE, true);
+            constants.init(this.databaseManager);
 
             this.currentPage = React.createElement(MainDataTable, {
                 directory: await this.databaseManager.getDirectory(""),

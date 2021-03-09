@@ -36,7 +36,7 @@ class EditDocumentButton extends React.Component {
     }
 
     onEditButtonClick(): void {
-        constants.fileEditor.open(this.document, this.dataTable);
+        constants.fileEditor.open(this.document);
     }
 
     render(): JSX.Element {

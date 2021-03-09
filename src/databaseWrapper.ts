@@ -398,7 +398,7 @@ export namespace database {
             this.#impl = impl;
             this.databaseInfo = null;
 
-            this.setDatabaseInfo();
+            this.setDatabaseInfo().then();
         }
 
         static async create(entityManager: EntityManager): Promise<DatabaseManager> {
@@ -465,6 +465,21 @@ export namespace database {
             } else {
                 return null;
             }
+        }
+
+        tagExists(name: string): boolean {
+            return this.#impl.tagExistsSync(name);
+        }
+
+        getTagsLike(name: string): Tag[] {
+            const tagList = this.#impl.getTagsLikeSync(name);
+
+            const result: Tag[] = [];
+            for (let i = 0; i < tagList.size(); i++) {
+                result.push(tagList.get(i).name);
+            }
+
+            return result;
         }
     }
 
