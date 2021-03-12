@@ -13,21 +13,19 @@ function getId(): string {
     return 'tooltip-' + lastId++;
 }
 
-abstract class DataTableElement extends React.Component {
-    /*componentDidMount(): void {
-        const $this: Element = ReactDOM.findDOMNode(this) as Element;
-        const buttons = $this.getElementsByClassName('mdc-icon-button');
-        for (let i = 0; i < buttons.length; i++) {
-            MDCRipple.attachTo(buttons[i]);
-        }
-    }*/
+abstract class DataTableElement<T> extends React.Component<T> {
 }
 
-class EditDocumentButton extends React.Component {
-    readonly document: database.Document;
-    readonly dataTable: MainDataTable;
+type EditDocumentButtonProps = {
+    document: database.Document,
+    dataTable: MainDataTable
+}
 
-    constructor(props: any) {
+class EditDocumentButton extends React.Component<EditDocumentButtonProps> {
+    private readonly document: database.Document;
+    private readonly dataTable: MainDataTable;
+
+    public constructor(props: EditDocumentButtonProps) {
         super(props);
         this.document = props.document;
         this.dataTable = props.dataTable;
@@ -35,24 +33,29 @@ class EditDocumentButton extends React.Component {
         this.onEditButtonClick = this.onEditButtonClick.bind(this);
     }
 
-    onEditButtonClick(): void {
-        constants.fileEditor.open(this.document);
-    }
-
-    render(): JSX.Element {
+    public render(): JSX.Element {
         return (
             <button className="mdc-icon-button material-icons" onClick={this.onEditButtonClick}>
                 <div className="mdc-button__icon">create</div>
             </button>
         );
     }
+
+    private onEditButtonClick(): void {
+        constants.fileEditor.open(this.document);
+    }
 }
 
-class OpenDocumentButton extends React.Component {
-    readonly documentPath: string;
-    readonly dataTable: MainDataTable;
+type OpenDocumentButtonProps = {
+    documentPath: string,
+    dataTable: MainDataTable
+};
 
-    constructor(props: any) {
+class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
+    private readonly documentPath: string;
+    private readonly dataTable: MainDataTable;
+
+    public constructor(props: OpenDocumentButtonProps) {
         super(props);
         this.documentPath = props.documentPath;
         this.dataTable = props.dataTable;
@@ -60,30 +63,35 @@ class OpenDocumentButton extends React.Component {
         this.openDocument = this.openDocument.bind(this);
     }
 
-    async openDocument(): Promise<void> {
-        util.openFileUsingDefaultProgram(this.dataTable.databaseManager.databaseInfo.sourcePath + '/' + this.documentPath);
-    }
-
-    render(): JSX.Element {
+    public render(): JSX.Element {
         return (
             <button className="mdc-icon-button material-icons" onClick={this.openDocument}>
                 <div className="mdc-button__icon">open_in_new</div>
             </button>
         );
     }
+
+    private async openDocument(): Promise<void> {
+        util.openFileUsingDefaultProgram(this.dataTable.databaseManager.databaseInfo.sourcePath + '/' + this.documentPath);
+    }
 }
 
-class Tooltip extends React.Component {
-    readonly id: string;
-    readonly title: string;
+type TooltipProps = {
+    id: string,
+    title: string
+};
 
-    constructor(props: any) {
+class Tooltip extends React.Component<TooltipProps> {
+    private readonly id: string;
+    private readonly title: string;
+
+    public constructor(props: TooltipProps) {
         super(props);
         this.id = props.id;
         this.title = props.title;
     }
 
-    render(): React.ReactNode {
+    public render(): React.ReactNode {
         return (
             <div id={this.id} className="mdc-tooltip" role="tooltip" aria-hidden="true">
                 <div className="mdc-tooltip__surface">
@@ -93,21 +101,25 @@ class Tooltip extends React.Component {
         );
     }
 
-    componentDidMount(): void {
+    public componentDidMount(): void {
         const $this = ReactDOM.findDOMNode(this) as Element;
         MDCTooltip.attachTo($this);
     }
 }
 
-class TableCellOkErrorIcon extends React.Component {
-    readonly ok: boolean;
+type TableCellOkErrorIconProps = {
+    ok: boolean;
+}
 
-    constructor(props: any) {
+class TableCellOkErrorIcon extends React.Component<TableCellOkErrorIconProps> {
+    private readonly ok: boolean;
+
+    public constructor(props: TableCellOkErrorIconProps) {
         super(props);
         this.ok = props.ok;
     }
 
-    render(): React.ReactNode {
+    public render(): React.ReactNode {
         const style: React.CSSProperties = {
             color: this.ok ? "green" : "red"
         };
@@ -119,75 +131,61 @@ class TableCellOkErrorIcon extends React.Component {
                 <span className="material-icons" aria-describedby={tooltip_id}>
                     {this.ok ? "check_circle" : "error"}
                 </span>
-                {
-                    React.createElement(Tooltip, {
-                        id: tooltip_id,
-                        title: this.ok ? "The file exists" : "The file does not exist"
-                    }, null)
-                }
+                <Tooltip id={tooltip_id} title={this.ok ? "The file exists" : "The file does not exist"}/>
             </td>
         );
     }
 }
 
-export class DataTableDocumentElement extends DataTableElement {
-    readonly document: database.Document;
-    readonly parent: MainDataTable;
+export type DataTableDocumentElementProps = {
+    document: database.Document,
+    parent: MainDataTable
+}
 
-    constructor(props: any) {
+export class DataTableDocumentElement extends DataTableElement<DataTableDocumentElementProps> {
+    private readonly document: database.Document;
+    private readonly parent: MainDataTable;
+
+    public constructor(props: DataTableDocumentElementProps) {
         super(props);
         this.document = props.document;
         this.parent = props.parent;
     }
 
-    render(): JSX.Element {
+    public render(): JSX.Element {
         const tooltipId: string = getId();
 
         return (
             <tr className="mdc-data-table__row" key={this.document.absolutePath}>
                 <th className="mdc-data-table__cell" scope="row">{this.document.filename}</th>
-                {
-                    React.createElement(TableCellOkErrorIcon, {
-                        ok: this.document.exists
-                    }, null)
-                }
+                <TableCellOkErrorIcon ok={this.document.exists}/>
                 <td className="mdc-data-table__cell">
                     <div className="material-icons" aria-describedby={tooltipId}>
                         insert_drive_file
                     </div>
-                    {
-                        React.createElement(Tooltip, {
-                            id: tooltipId,
-                            title: "File"
-                        }, null)
-                    }
+                    <Tooltip id={tooltipId} title={"File"}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    {
-                        React.createElement(EditDocumentButton, {
-                            document: this.document,
-                            dataTable: this.parent
-                        }, null)
-                    }
+                    <EditDocumentButton document={this.document} dataTable={this.parent}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    {
-                        React.createElement(OpenDocumentButton, {
-                            documentPath: this.document.absolutePath,
-                            dataTable: this.parent
-                        }, null)
-                    }
+                    <OpenDocumentButton documentPath={this.document.absolutePath} dataTable={this.parent}/>
                 </td>
             </tr>
         );
     }
 }
 
-class OpenDirectoryButton extends React.Component {
-    readonly dirPath: string;
-    readonly dataTable: MainDataTable;
+type OpenDirectoryButtonProps = {
+    dirPath: string,
+    dataTable: MainDataTable
+};
 
-    constructor(props: any) {
+class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
+    private readonly dirPath: string;
+    private readonly dataTable: MainDataTable;
+
+    public constructor(props: OpenDirectoryButtonProps) {
         super(props);
         this.dirPath = props.dirPath
         this.dataTable = props.dataTable;
@@ -195,11 +193,11 @@ class OpenDirectoryButton extends React.Component {
         this.onDirectoryOpen = this.onDirectoryOpen.bind(this);
     }
 
-    async onDirectoryOpen(): Promise<void> {
+    public async onDirectoryOpen(): Promise<void> {
         await this.dataTable.setDirectory(this.dirPath);
     }
 
-    render(): JSX.Element {
+    public render(): JSX.Element {
         return (
             <button className="mdc-icon-button material-icons" onClick={this.onDirectoryOpen}>
                 <div className="mdc-button__icon">
@@ -210,46 +208,69 @@ class OpenDirectoryButton extends React.Component {
     }
 }
 
-export class DataTableDirectoryElement extends DataTableElement {
-    readonly directory: database.DirectoryImpl;
-    readonly parent: MainDataTable;
+export type DataTableDirectoryElementProps = {
+    directory: database.DirectoryImpl,
+    parent: MainDataTable
+};
 
-    constructor(props: any) {
+export class DataTableDirectoryElement extends DataTableElement<DataTableDirectoryElementProps> {
+    private readonly directory: database.DirectoryImpl;
+    private readonly parent: MainDataTable;
+
+    public constructor(props: DataTableDirectoryElementProps) {
         super(props);
         this.directory = props.directory;
         this.parent = props.parent;
     }
 
-    render(): JSX.Element {
+    public render(): JSX.Element {
         const tooltipId: string = getId();
 
         return (
             <tr className="mdc-data-table__row">
                 <th className="mdc-data-table__cell" scope="row">{this.directory.name}</th>
-                {
-                    React.createElement(TableCellOkErrorIcon, {
-                        ok: this.directory.exists
-                    }, null)
-                }
+                <TableCellOkErrorIcon ok={this.directory.exists}/>
                 <td className="mdc-data-table__cell">
                     <div className="material-icons" aria-describedby={tooltipId}>
                         folder
                     </div>
-                    {
-                        React.createElement(Tooltip, {
-                            id: tooltipId,
-                            title: "Folder"
-                        }, null)
-                    }
+                    <Tooltip id={tooltipId} title={"Folder"}/>
                 </td>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell">
-                    {
-                        React.createElement(OpenDirectoryButton, {
-                            dirPath: this.directory.path,
-                            dataTable: this.parent
-                        }, null)
-                    }
+                    <OpenDirectoryButton dirPath={this.directory.path} dataTable={this.parent}/>
+                </td>
+            </tr>
+        );
+    }
+}
+
+export type DirectoryUpElementProps = {
+    parent: MainDataTable,
+    currentDirectory: database.Directory
+};
+
+export class DirectoryUpElement extends React.Component<DirectoryUpElementProps> {
+    private readonly parent: MainDataTable;
+    private readonly upPath: string;
+
+    public constructor(props: DirectoryUpElementProps) {
+        super(props);
+
+        this.parent = props.parent;
+        const path = props.currentDirectory.path;
+        this.upPath = path.substring(0, path.lastIndexOf('/'));
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <tr className="mdc-data-table__row">
+                <th className="mdc-data-table__cell" scope="row">Directory up</th>
+                <td className="mdc-data-table__cell"/>
+                <td className="mdc-data-table__cell"/>
+                <td className="mdc-data-table__cell"/>
+                <td className="mdc-data-table__cell">
+                    <OpenDirectoryButton dirPath={this.upPath} dataTable={this.parent}/>
                 </td>
             </tr>
         );

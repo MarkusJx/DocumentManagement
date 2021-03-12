@@ -5,3 +5,4 @@
 /dbLib/build/
 /dbLib/.gradle/
 /.idea/
+.gradle

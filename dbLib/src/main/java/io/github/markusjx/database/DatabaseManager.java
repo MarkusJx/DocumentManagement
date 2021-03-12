@@ -290,6 +290,13 @@ public class DatabaseManager {
         return true;
     }
 
+    @SuppressWarnings("unused")
+    public void persistDocument(Document document) {
+        manager.getTransaction().begin();
+        manager.persist(document);
+        manager.getTransaction().commit();
+    }
+
     /**
      * Get all directories in the database matching those in the given list
      *

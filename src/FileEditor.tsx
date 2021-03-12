@@ -72,8 +72,10 @@ export class FileEditor extends React.Component<FileEditorProps> {
         const $this = ReactDOM.findDOMNode(this) as Element;
         this.dialog = new MDCDialog($this);
 
-        this.dialog.listen('MDCDialog:closing', (event: Event) => {
-            if ((event as any).detail.action === "accept") {
+        this.dialog.listen('MDCDialog:closing', (event: CustomEvent<{ action: string }>) => {
+            if (event.detail.action === "accept") {
+                this.currentDocument.tags = this.chipTextArea.chipValues.map(value => new database.Tag(value));
+                //this.currentDocument.persist().then();
                 // TODO: Clear all inputs
             }
             this.chipTextArea.clear();
@@ -82,6 +84,9 @@ export class FileEditor extends React.Component<FileEditorProps> {
 
     public open(document: database.Document): void {
         this.currentDocument = document;
+
+        this.chipTextArea.chipValues = this.currentDocument.tags.map(tag => tag.name);
+
         this.dialog.open();
     }
 

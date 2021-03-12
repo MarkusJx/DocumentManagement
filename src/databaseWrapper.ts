@@ -4,6 +4,10 @@ import * as fs from "fs";
 
 java.classpath.push('dbLib/build/libs/dbLib-1.0-SNAPSHOT.jar');
 
+const ArrayList = java.import('java.util.ArrayList');
+const Arrays = java.import('java.util.Arrays');
+const LocalDate = java.import('java.time.LocalDate');
+
 export enum Action {
     NONE,
     CREATE_ONLY,
@@ -185,40 +189,65 @@ export class FileScanner {
 }
 
 export namespace database {
-    export class PropertyValueSet {
-        readonly propertyName: string;
-        readonly propertyValue: string;
+    export interface Persistable {
+        persist(): Promise<void>;
+    }
 
-        constructor(name: string, value: string) {
+    export interface JavaConvertible {
+        toJavaValue(): any;
+    }
+
+    export class PropertyValueSet implements JavaConvertible {
+        public readonly propertyName: string;
+        public readonly propertyValue: string;
+        public readonly impl: any;
+
+        public constructor(name: string, value: string, impl: any) {
             this.propertyName = name;
             this.propertyValue = value;
+            this.impl = impl;
+        }
+
+        public toJavaValue(): any {
+            return this.impl;
         }
     }
 
-    export class Tag {
-        readonly name: string;
+    export class Tag implements JavaConvertible {
+        private static readonly Tag_impl: any = java.import("io.github.markusjx.database.databaseTypes.Tag");
 
-        constructor(name: string) {
+        public readonly name: string;
+
+        public constructor(name: string) {
             this.name = name;
         }
+
+        public toJavaValue(): any {
+            return new Tag.Tag_impl(this.name);
+        }
     }
 
-    export class Document {
-        readonly filename: string;
-        readonly absolutePath: string;
-        readonly parentPath: string;
-        readonly tags: Tag[];
-        readonly properties: PropertyValueSet[];
-        readonly creationDate: Date;
-        readonly exists: boolean;
+    export class Document implements Persistable, JavaConvertible {
+        public readonly absolutePath: string;
+        public readonly parentPath: string;
+        public readonly filename: string;
+        public readonly exists: boolean;
+        private readonly dbManager: DatabaseManager;
+        private readonly impl: any;
+        private propertyArray: PropertyValueSet[];
+        private creationDate: Date;
+        private tagArray: Tag[];
 
-        constructor(filename: string, absolutePath: string, tags: Tag[], properties: PropertyValueSet[], creationDate: Date, baseDir: string, parentPath: string = null) {
+        public constructor(filename: string, absolutePath: string, tags: Tag[], properties: PropertyValueSet[],
+                           creationDate: Date, baseDir: string, impl: any, dbManager: DatabaseManager, parentPath: string = null) {
             this.filename = filename;
             this.absolutePath = absolutePath;
-            this.tags = tags;
-            this.properties = properties;
+            this.tagArray = tags;
+            this.propertyArray = properties;
             this.creationDate = creationDate;
             this.exists = fs.existsSync(`${baseDir}/${this.absolutePath}`);
+            this.dbManager = dbManager;
+            this.impl = impl;
             if (parentPath === null) {
                 this.parentPath = this.getParentPath();
             } else {
@@ -226,7 +255,27 @@ export namespace database {
             }
         }
 
-        static async fromJavaDocument(document: any, baseDir: string): Promise<Document> {
+        get tags(): Tag[] {
+            return this.tagArray;
+        }
+
+        set tags(tags: Tag[]) {
+            this.tagArray = tags;
+            this.dbManager.persistTags(this.tagArray).then(
+                this.persistArray.bind(this, this.tagArray, this.impl.tags));
+        }
+
+        get properties(): PropertyValueSet[] {
+            return this.propertyArray;
+        }
+
+        set properties(properties: PropertyValueSet[]) {
+            this.propertyArray = properties;
+            this.dbManager.persistPropertyValues(this.propertyArray).then(
+                this.persistArray.bind(this, this.propertyArray, this.impl.properties));
+        }
+
+        static async fromJavaDocument(document: any, baseDir: string, dbManager: DatabaseManager): Promise<Document> {
             const filename: string = document.filename;
             const absolutePath: string = document.absolutePath;
             const parentPath: string = document.parentPath;
@@ -241,14 +290,32 @@ export namespace database {
             const properties: PropertyValueSet[] = [];
             for (let i: number = 0; i < await getListSize(jProperties); i++) {
                 let set: any = await getListElementAt(jProperties, i);
-                properties.push(new PropertyValueSet(set.property.name, set.propertyValue.value));
+                properties.push(new PropertyValueSet(set.property.name, set.propertyValue.value, set));
             }
 
             const date: Date = await javaDateToDate(document.creationDate);
-            return new Document(filename, absolutePath, tags, properties, date, baseDir, parentPath);
+            return new Document(filename, absolutePath, tags, properties, date, baseDir, document, dbManager, parentPath);
         }
 
-        getParentPath(): string {
+        public toJavaValue(): any {
+            return this.impl;
+        }
+
+        public persist(): Promise<void> {
+            return this.dbManager.persistDocument(this);
+        }
+
+        private async persistArray<T extends JavaConvertible>(toPersist: T[], nativeArray: any): Promise<void> {
+            await promisify(nativeArray.clear.bind(nativeArray))();
+
+            const javaValues: any[] = toPersist.map(v => v.toJavaValue());
+            const valueList: any = await promisify(Arrays.asList.bind(Arrays))(...javaValues);
+            await promisify(nativeArray.addAll.bind(nativeArray))(valueList);
+
+            await this.persist();
+        }
+
+        private getParentPath(): string {
             try {
                 return this.absolutePath.substring(0, this.absolutePath.length - (this.filename.length + 1));
             } catch (e) {
@@ -281,18 +348,18 @@ export namespace database {
             this.directories = directories;
         }
 
-        static async fromImpl(impl: DirectoryImpl, baseDir: string): Promise<Directory> {
-            return await Directory.fromJavaDirectory(impl.impl, baseDir);
+        static async fromImpl(impl: DirectoryImpl, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
+            return await Directory.fromJavaDirectory(impl.impl, baseDir, dbManager);
         }
 
-        static async fromJavaDirectory(directory: any, baseDir: string): Promise<Directory> {
+        static async fromJavaDirectory(directory: any, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
             const jDocs: any = directory.documents;
             const jDirs: any = directory.directories;
 
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(jDocs); i++) {
                 let el: any = await getListElementAt(jDocs, i);
-                documents.push(await Document.fromJavaDocument(el, baseDir));
+                documents.push(await Document.fromJavaDocument(el, baseDir, dbManager));
             }
 
             const directories: DirectoryImpl[] = [];
@@ -419,10 +486,6 @@ export namespace database {
             }
         }
 
-        createTag(name: string): void {
-            java.callMethodSync(this.#impl, "createTag", name);
-        }
-
         async createDocument(filename: string, path: string, properties: PropertyMap, creationDate: Date, ...tagNames: string[]): Promise<void> {
             await java_callMethod(this.#impl, "createDocument", filename, path,
                 (await properties.toJavaChainedHashMap()).impl,
@@ -436,7 +499,7 @@ export namespace database {
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(docList); i++) {
                 const listEl: any = await getListElementAt(docList, i);
-                documents.push(await Document.fromJavaDocument(listEl, this.databaseInfo.sourcePath));
+                documents.push(await Document.fromJavaDocument(listEl, this.databaseInfo.sourcePath, this));
             }
 
             return documents;
@@ -451,7 +514,7 @@ export namespace database {
             const impl = await java_callMethod(this.#impl, "getDirectory", path);
 
             if (impl != null) {
-                return Directory.fromJavaDirectory(impl, this.databaseInfo.sourcePath);
+                return Directory.fromJavaDirectory(impl, this.databaseInfo.sourcePath, this);
             } else {
                 return null;
             }
@@ -475,11 +538,30 @@ export namespace database {
             const tagList = this.#impl.getTagsLikeSync(name);
 
             const result: Tag[] = [];
-            for (let i = 0; i < tagList.size(); i++) {
-                result.push(tagList.get(i).name);
+            for (let i = 0; i < tagList.sizeSync(); i++) {
+                result.push(new Tag(tagList.getSync(i).name));
             }
 
             return result;
+        }
+
+        public async persistTags(tags: Tag[]): Promise<void> {
+            const javaTags: any[] = tags.map(t => t.toJavaValue());
+            const tagList = await promisify(Arrays.asList.bind(Arrays))(...javaTags);
+
+            await java_callMethod(this.#impl, "persistTags", tagList);
+        }
+
+        public async persistPropertyValues(propertyValues: PropertyValueSet[]): Promise<void> {
+            const javaValues: any[] = propertyValues.map(p => p.toJavaValue());
+            const valueList = await promisify(Arrays.asList.bind(Arrays))(...javaValues);
+
+            await java_callMethod(this.#impl, "persistPropertyValues", valueList);
+        }
+
+        public async persistDocument(document: Document): Promise<void> {
+            const javaDocument = document.toJavaValue();
+            await java_callMethod(this.#impl, "persistDocument", javaDocument);
         }
     }
 

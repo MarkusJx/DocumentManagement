@@ -2,15 +2,15 @@ import React from "react";
 import * as ReactDOM from "react-dom";
 import {MDCDataTable} from "@material/data-table";
 import {database} from "../databaseWrapper";
-import {DataTableDirectoryElement, DataTableDocumentElement} from "./DataTableElement";
+import {DataTableDirectoryElement, DataTableDocumentElement, DirectoryUpElement} from "./DataTableElement";
 
 export class MainDataTable extends React.Component {
-    dataTable: MDCDataTable;
-    directory: database.Directory;
-    showProgress: boolean;
-    readonly databaseManager: database.DatabaseManager;
+    public readonly databaseManager: database.DatabaseManager;
+    private dataTable: MDCDataTable;
+    private directory: database.Directory;
+    private showProgress: boolean;
 
-    constructor(props: any) {
+    public constructor(props: any) {
         super(props);
         this.dataTable = null;
         this.directory = props.directory;
@@ -22,7 +22,7 @@ export class MainDataTable extends React.Component {
         }
     }
 
-    setLoading(loading: boolean): void {
+    public setLoading(loading: boolean): void {
         const $this: Element = ReactDOM.findDOMNode(this) as Element;
         const buttons = $this.getElementsByTagName('button');
         if (loading) {
@@ -40,7 +40,7 @@ export class MainDataTable extends React.Component {
         }
     }
 
-    async setDirectory(directoryPath: string): Promise<void> {
+    public async setDirectory(directoryPath: string): Promise<void> {
         this.setLoading(true);
 
         this.directory = await this.databaseManager.getDirectory(directoryPath);
@@ -50,41 +50,7 @@ export class MainDataTable extends React.Component {
         this.setLoading(false);
     }
 
-    getTableBody(): JSX.Element {
-        console.log(this.directory);
-        if (this.directory == null) {
-            return (
-                <tbody className="mdc-data-table__content">
-                <tr className="mdc-data-table__row">
-                    <th className="mdc-data-table__cell" scope="row">Loading...</th>
-                    <td className="mdc-data-table__cell"/>
-                    <td className="mdc-data-table__cell"/>
-                    <td className="mdc-data-table__cell"/>
-                    <td className="mdc-data-table__cell"/>
-                </tr>
-                </tbody>
-            );
-        } else {
-            return (
-                <tbody className="mdc-data-table__content">
-                {
-                    this.directory.documents.map(doc => (
-                        // @ts-ignore
-                        <DataTableDocumentElement document={doc} parent={this} key={doc.absolutePath}/>
-                    ))
-                }
-                {
-                    this.directory.directories.map(dir => (
-                        // @ts-ignore
-                        <DataTableDirectoryElement directory={dir} parent={this} key={dir.name}/>
-                    ))
-                }
-                </tbody>
-            );
-        }
-    }
-
-    render(): JSX.Element {
+    public render(): JSX.Element {
         return (
             <div className="mdc-data-table">
                 <div className="mdc-data-table__table-container">
@@ -98,7 +64,6 @@ export class MainDataTable extends React.Component {
                             <th className="mdc-data-table__header-cell" role="columnheader" scope="col">Open</th>
                         </tr>
                         </thead>
-
                         {this.getTableBody()}
                     </table>
                 </div>
@@ -124,7 +89,7 @@ export class MainDataTable extends React.Component {
         );
     }
 
-    componentDidMount(): void {
+    public componentDidMount(): void {
         const $this: Element = ReactDOM.findDOMNode(this) as Element;
         this.dataTable = new MDCDataTable($this);
 
@@ -132,6 +97,42 @@ export class MainDataTable extends React.Component {
             this.dataTable.showProgress();
         } else {
             this.dataTable.hideProgress();
+        }
+    }
+
+    private getTableBody(): JSX.Element {
+        if (this.directory == null) {
+            return (
+                <tbody className="mdc-data-table__content">
+                <tr className="mdc-data-table__row">
+                    <th className="mdc-data-table__cell" scope="row">Loading...</th>
+                    <td className="mdc-data-table__cell"/>
+                    <td className="mdc-data-table__cell"/>
+                    <td className="mdc-data-table__cell"/>
+                    <td className="mdc-data-table__cell"/>
+                </tr>
+                </tbody>
+            );
+        } else {
+            return (
+                <tbody className="mdc-data-table__content">
+                {
+                    this.directory.path.length > 0 ?
+                        <DirectoryUpElement parent={this} currentDirectory={this.directory}
+                                            key={this.directory.path}/> : null
+                }
+                {
+                    this.directory.documents.map(doc => (
+                        <DataTableDocumentElement document={doc} parent={this} key={doc.absolutePath}/>
+                    ))
+                }
+                {
+                    this.directory.directories.map(dir => (
+                        <DataTableDirectoryElement directory={dir} parent={this} key={dir.name}/>
+                    ))
+                }
+                </tbody>
+            );
         }
     }
 }
