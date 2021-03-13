@@ -101,6 +101,7 @@ export class MainDataTable extends React.Component {
     }
 
     private getTableBody(): JSX.Element {
+        console.log(this.directory);
         if (this.directory == null) {
             return (
                 <tbody className="mdc-data-table__content">
@@ -117,7 +118,7 @@ export class MainDataTable extends React.Component {
             return (
                 <tbody className="mdc-data-table__content">
                 {
-                    this.directory.path.length > 0 ?
+                    (this.directory.path != null && this.directory.path.length > 0) ?
                         <DirectoryUpElement parent={this} currentDirectory={this.directory}
                                             key={this.directory.path}/> : null
                 }

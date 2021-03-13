@@ -3,10 +3,7 @@ package io.github.markusjx.database.databaseTypes;
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
 import io.github.markusjx.util.CompareHelper;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +31,14 @@ public class Directory implements Serializable, Comparable<Directory> {
      * The documents in the directory
      */
     @Column
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REFRESH)
     public final List<Document> documents;
 
     /**
      * The sub-directories in this directory
      */
     @Column
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REFRESH)
     public final List<Directory> directories;
 
     /**

@@ -4,6 +4,7 @@ import {MDCDialog} from '@material/dialog';
 
 import {database} from "./databaseWrapper";
 import {ChipTextAreaWithAutoComplete, MDCCSSProperties} from "./ChipTextArea";
+import {PropertyField} from "./PropertyField";
 
 export {MDCCSSProperties};
 
@@ -47,7 +48,10 @@ export class FileEditor extends React.Component<FileEditorProps> {
                             <ChipTextAreaWithAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions}
                                                           ref={e => this.chipTextArea = e}
                                                           chipValueExists={this.chipValueExists}
-                                                          chipTooltipText="This tag does not exist. It will be created on committing."/>
+                                                          chipTooltipText="This tag does not exist. It will be created on committing."
+                                                          title={"Select tags"}/>
+
+                            <PropertyField databaseManager={this.databaseManager}/>
                         </div>
                         <div className="mdc-dialog__actions">
                             <button type="button" className="mdc-button mdc-dialog__button"
@@ -75,8 +79,6 @@ export class FileEditor extends React.Component<FileEditorProps> {
         this.dialog.listen('MDCDialog:closing', (event: CustomEvent<{ action: string }>) => {
             if (event.detail.action === "accept") {
                 this.currentDocument.tags = this.chipTextArea.chipValues.map(value => new database.Tag(value));
-                //this.currentDocument.persist().then();
-                // TODO: Clear all inputs
             }
             this.chipTextArea.clear();
         });

@@ -4,9 +4,7 @@ import * as fs from "fs";
 
 java.classpath.push('dbLib/build/libs/dbLib-1.0-SNAPSHOT.jar');
 
-const ArrayList = java.import('java.util.ArrayList');
 const Arrays = java.import('java.util.Arrays');
-const LocalDate = java.import('java.time.LocalDate');
 
 export enum Action {
     NONE,
@@ -198,17 +196,66 @@ export namespace database {
     }
 
     export class PropertyValueSet implements JavaConvertible {
+        private static readonly PropertyValueSetImpl = java.import("io.github.markusjx.database.databaseTypes.PropertyValueSet");
+
         public readonly propertyName: string;
         public readonly propertyValue: string;
         public readonly impl: any;
 
-        public constructor(name: string, value: string, impl: any) {
+        public constructor(name: string, value: string, impl?: any) {
             this.propertyName = name;
             this.propertyValue = value;
-            this.impl = impl;
+
+            if (impl) {
+                this.impl = impl;
+            } else {
+                this.impl = new PropertyValueSet.PropertyValueSetImpl(new Property(name).toJavaValue(), new PropertyValue(value).toJavaValue());
+            }
         }
 
         public toJavaValue(): any {
+            return this.impl;
+        }
+    }
+
+    export class Property implements JavaConvertible {
+        private static readonly PropertyImpl = java.import("io.github.markusjx.database.databaseTypes.Property");
+
+        public readonly name: string;
+        private readonly impl: any;
+
+        public constructor(name: string, impl?: any) {
+            this.name = name;
+
+            if (impl) {
+                this.impl = impl;
+            } else {
+                this.impl = new Property.PropertyImpl(name);
+            }
+        }
+
+        public toJavaValue(): any {
+            return this.impl;
+        }
+    }
+
+    export class PropertyValue implements JavaConvertible {
+        private static readonly PropertyValueImpl = java.import("io.github.markusjx.database.databaseTypes.PropertyValue");
+
+        public readonly value: string;
+        private readonly impl: any;
+
+        public constructor(value: string, impl?: any) {
+            this.value = value;
+
+            if (impl) {
+                this.impl = impl;
+            } else {
+                this.impl = new PropertyValue.PropertyValueImpl(value);
+            }
+        }
+
+        toJavaValue(): any {
             return this.impl;
         }
     }
@@ -325,12 +372,12 @@ export namespace database {
     }
 
     export class DirectoryImpl {
-        readonly impl: any;
-        readonly path: string;
-        readonly name: string;
-        readonly exists: boolean;
+        public readonly impl: any;
+        public readonly path: string;
+        public readonly name: string;
+        public readonly exists: boolean;
 
-        constructor(impl: any, baseDir: string) {
+        public constructor(impl: any, baseDir: string) {
             this.impl = impl;
             this.path = impl.path;
             this.name = impl.name;
@@ -339,20 +386,20 @@ export namespace database {
     }
 
     export class Directory extends DirectoryImpl {
-        readonly documents: Document[];
-        readonly directories: DirectoryImpl[];
+        public readonly documents: Document[];
+        public readonly directories: DirectoryImpl[];
 
-        constructor(documents: Document[], directories: DirectoryImpl[], impl: any, baseDir: string) {
+        public constructor(documents: Document[], directories: DirectoryImpl[], impl: any, baseDir: string) {
             super(impl, baseDir);
             this.documents = documents;
             this.directories = directories;
         }
 
-        static async fromImpl(impl: DirectoryImpl, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
+        public static async fromImpl(impl: DirectoryImpl, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
             return await Directory.fromJavaDirectory(impl.impl, baseDir, dbManager);
         }
 
-        static async fromJavaDirectory(directory: any, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
+        public static async fromJavaDirectory(directory: any, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
             const jDocs: any = directory.documents;
             const jDirs: any = directory.directories;
 
@@ -374,19 +421,19 @@ export namespace database {
 
     export namespace filters {
         export class DocumentFilterBase {
-            readonly impl: any;
+            public readonly impl: any;
 
-            constructor(impl: any) {
+            protected constructor(impl: any) {
                 this.impl = impl;
             }
         }
 
         export class FilenameFilter extends DocumentFilterBase {
-            constructor(impl: any) {
+            public constructor(impl: any) {
                 super(impl);
             }
 
-            static async create(filename: string, exactMatch: boolean) {
+            public static async create(filename: string, exactMatch: boolean) {
                 const impl = await java_newInstance(
                     "io.github.markusjx.database.filter.filters.FilenameFilter",
                     filename, exactMatch);
@@ -396,11 +443,11 @@ export namespace database {
         }
 
         export class TagFilter extends DocumentFilterBase {
-            constructor(impl: any) {
+            public constructor(impl: any) {
                 super(impl);
             }
 
-            static async create(...tags: string[]): Promise<TagFilter> {
+            public static async create(...tags: string[]): Promise<TagFilter> {
                 const impl = await java_newInstance(
                     "io.github.markusjx.database.filter.filters.TagFilter",
                     stringToJavaArray(tags));
@@ -410,11 +457,11 @@ export namespace database {
         }
 
         export class PropertyFilter extends DocumentFilterBase {
-            constructor(impl: any) {
+            public constructor(impl: any) {
                 super(impl);
             }
 
-            static async create(props: PropertyMap): Promise<PropertyFilter> {
+            public static async create(props: PropertyMap): Promise<PropertyFilter> {
                 const impl = await java_newInstance(
                     "io.github.markusjx.database.filter.filters.PropertyFilter",
                     (await props.toJavaChainedHashMap()).impl);
@@ -424,18 +471,18 @@ export namespace database {
         }
 
         export class DateFilter extends DocumentFilterBase {
-
+            // TODO
         }
     }
 
     export class DocumentFilter {
-        readonly impl: any;
+        public readonly impl: any;
 
-        constructor(impl: any) {
+        public constructor(impl: any) {
             this.impl = impl;
         }
 
-        static async create(...filters: filters.DocumentFilterBase[]): Promise<DocumentFilter> {
+        public static async create(...filters: filters.DocumentFilterBase[]): Promise<DocumentFilter> {
             const filterImpls = [];
             for (let i = 0; i < filters.length; i++) {
                 filterImpls.push(filters[i].impl);
@@ -450,9 +497,9 @@ export namespace database {
     }
 
     export class DatabaseInfo {
-        readonly sourcePath: string;
+        public readonly sourcePath: string;
 
-        constructor(impl: any) {
+        public constructor(impl: any) {
             this.sourcePath = impl.sourcePath;
         }
     }
@@ -477,7 +524,7 @@ export namespace database {
         }
 
         async setDatabaseInfo(): Promise<boolean> {
-            const info = await this.getDatabaseInfo();
+            const info: DatabaseInfo = await this.getDatabaseInfo();
             if (info != null) {
                 this.databaseInfo = info;
                 return true;
@@ -494,7 +541,7 @@ export namespace database {
         }
 
         async getDocumentsBy(filter: DocumentFilter): Promise<Document[]> {
-            const docList = await java_callMethod(this.#impl, "getDocumentsBy", filter.impl);
+            const docList: any = await java_callMethod(this.#impl, "getDocumentsBy", filter.impl);
 
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(docList); i++) {
@@ -511,10 +558,10 @@ export namespace database {
         }
 
         async getDirectory(path: string): Promise<Directory> {
-            const impl = await java_callMethod(this.#impl, "getDirectory", path);
+            const impl: any = await java_callMethod(this.#impl, "getDirectory", path);
 
             if (impl != null) {
-                return Directory.fromJavaDirectory(impl, this.databaseInfo.sourcePath, this);
+                return Directory.fromJavaDirectory(impl, (await this.getDatabaseInfo()).sourcePath, this);
             } else {
                 return null;
             }
@@ -535,11 +582,35 @@ export namespace database {
         }
 
         getTagsLike(name: string): Tag[] {
-            const tagList = this.#impl.getTagsLikeSync(name);
+            const tagList: any = this.#impl.getTagsLikeSync(name);
 
             const result: Tag[] = [];
-            for (let i = 0; i < tagList.sizeSync(); i++) {
+            for (let i: number = 0; i < tagList.sizeSync(); i++) {
                 result.push(new Tag(tagList.getSync(i).name));
+            }
+
+            return result;
+        }
+
+        public getPropertiesLike(name: string): Property[] {
+            const propertyList: any = this.#impl.getPropertiesLikeSync(name);
+
+            const result: Property[] = [];
+            for (let i: number = 0; i < propertyList.sizeSync(); i++) {
+                const impl: any = propertyList.getSync(i);
+                result.push(new Property(impl.name, impl));
+            }
+
+            return result;
+        }
+
+        public getPropertyValuesLike(value: string): PropertyValue[] {
+            const valueList: any = this.#impl.getPropertyValuesLikeSync(value);
+
+            const result: PropertyValue[] = [];
+            for (let i: number = 0; i < valueList.sizeSync(); i++) {
+                const impl: any = valueList.getSync(i);
+                result.push(new PropertyValue(impl.value, impl));
             }
 
             return result;

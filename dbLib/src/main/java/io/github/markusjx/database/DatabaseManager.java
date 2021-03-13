@@ -550,6 +550,20 @@ public class DatabaseManager {
         }
     }
 
+    @SuppressWarnings("unused")
+    public List<Property> getPropertiesLike(String name) {
+        return manager.createQuery("select p from Property as p where p.name like :name", Property.class)
+                .setParameter("name", name + '%')
+                .getResultList();
+    }
+
+    @SuppressWarnings("unused")
+    public List<PropertyValue> getPropertyValuesLike(String value) {
+        return manager.createQuery("select p from PropertyValue as p where p.value like :value", PropertyValue.class)
+                .setParameter("value", value + '%')
+                .getResultList();
+    }
+
     /**
      * Get all documents by a {@link DocumentFilter},
      * Returns a list of documents sorted by the
