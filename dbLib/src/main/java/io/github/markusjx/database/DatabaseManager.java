@@ -164,16 +164,12 @@ public class DatabaseManager {
         // Remove all already persisted properties
         final List<Property> ps = ListUtils.removeAll(properties, toRemove, true, true);
 
-        // Persist all properties manually
-        return DatabaseUtils.doSessionWork(manager, connection -> {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO Property(name) values (?)");
-            for (Property p : ps) {
-                statement.setString(1, p.name);
-                statement.addBatch();
-            }
+        // Persist all properties
+        manager.getTransaction().begin();
+        for (Property p : ps) manager.persist(p);
+        manager.getTransaction().commit();
 
-            statement.executeBatch();
-        });
+        return true;
     }
 
     /**
@@ -217,6 +213,34 @@ public class DatabaseManager {
 
             statement.executeBatch();
         });
+    }
+
+    /**
+     * Persist property value sets
+     *
+     * @param sets the property value sets to persist
+     * @return whether the operation was successful
+     */
+    @SuppressWarnings("unused")
+    public boolean persistPropertyValueSets(final List<PropertyValueSet> sets) {
+        ChainedHashMap<Property, PropertyValue> map = new ChainedHashMap<>();
+        List<PropertyValue> propertyValues = new ArrayList<>(sets.size());
+
+        for (PropertyValueSet set : sets) {
+            if (set.property != null && set.property.name != null && set.property.name.isEmpty() &&
+                    set.propertyValue != null && set.propertyValue.value != null &&
+                    !set.propertyValue.value.isEmpty()) {
+                map.putValue(set.property, set.propertyValue);
+                propertyValues.add(set.propertyValue);
+            }
+        }
+
+        List<Property> properties = new ArrayList<>();
+        for (Map.Entry<Property, List<PropertyValue>> e : map.entrySet()) {
+            properties.add(new Property(e.getKey(), e.getValue()));
+        }
+
+        return persistPropertyValues(propertyValues) && persistProperties(properties);
     }
 
     /**

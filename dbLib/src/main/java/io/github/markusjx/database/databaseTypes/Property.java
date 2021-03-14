@@ -26,8 +26,8 @@ public class Property implements Serializable, Comparable<Property> {
     /**
      * All possible values for this property
      */
-    @ManyToMany
     @JoinColumn
+    @ManyToMany(cascade = CascadeType.REFRESH)
     public final List<PropertyValue> values;
 
     /**
@@ -71,6 +71,11 @@ public class Property implements Serializable, Comparable<Property> {
     public Property(String name, PropertyValue... properties) {
         this.name = name;
         this.values = new ArrayList<>(Arrays.asList(properties));
+    }
+
+    public Property(Property property, List<PropertyValue> propertyValues) {
+        this.name = property.name;
+        this.values = propertyValues;
     }
 
     /**

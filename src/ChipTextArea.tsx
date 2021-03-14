@@ -335,7 +335,9 @@ class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> 
     }
 
     public componentWillUnmount() {
-        this.parent.textArea.inputListener = null;
+        if (this.parent.textArea) {
+            this.parent.textArea.inputListener = null;
+        }
     }
 
     /**
@@ -417,7 +419,8 @@ class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> 
  * Css properties for material.io components
  */
 export interface MDCCSSProperties extends React.CSSProperties {
-    "--mdc-theme-primary": string
+    // The mdc primary theme
+    "--mdc-theme-primary"?: string;
 }
 
 /**
@@ -426,6 +429,9 @@ export interface MDCCSSProperties extends React.CSSProperties {
 export interface TextAreaProps {
     // The text area title
     title: string
+
+    // The text field value to set when it is first created
+    value?: string;
 }
 
 /**
@@ -465,6 +471,12 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
     protected title: string;
 
     /**
+     * The text field value to set when it is first created
+     * @protected
+     */
+    protected readonly value: string;
+
+    /**
      * Create a text area
      *
      * @param props the properties
@@ -475,6 +487,7 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         this.textField = null;
         this.$this = null;
         this.title = props.title;
+        this.value = props.value;
 
         this.inputListener = null;
         this.onInput = this.onInput.bind(this);
@@ -484,7 +497,8 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         // The style for the main element
         const style: MDCCSSProperties = {
             marginTop: "20px",
-            "--mdc-theme-primary": "#4a6eff"
+            "--mdc-theme-primary": "#4a6eff",
+            width: "100%"
         };
 
         return (
@@ -507,6 +521,10 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
     public componentDidMount(): void {
         this.$this = ReactDOM.findDOMNode(this) as HTMLLabelElement;
         this.textField = new MDCTextField(this.$this);
+
+        if (this.value) {
+            this.textField.value = this.value;
+        }
     }
 
     /**
@@ -596,7 +614,8 @@ export class ChipTextArea extends TextArea<ChipTextAreaProps> {
         // The style for the main element
         const style: MDCCSSProperties = {
             marginTop: "20px",
-            "--mdc-theme-primary": "#4a6eff"
+            "--mdc-theme-primary": "#4a6eff",
+            width: "100%"
         };
 
         // The style for the chip container
@@ -627,6 +646,10 @@ export class ChipTextArea extends TextArea<ChipTextAreaProps> {
     public componentDidMount(): void {
         this.$this = ReactDOM.findDOMNode(this) as HTMLLabelElement;
         this.textField = new MDCTextField(this.$this);
+
+        if (this.value) {
+            this.textField.value = this.value;
+        }
 
         this.$this.addEventListener('focusout', () => {
             if (this.currentChipValues.length > 0 && this.textField.value.length === 0) {
@@ -691,10 +714,13 @@ export class ChipTextArea extends TextArea<ChipTextAreaProps> {
 
 export interface TextAreaWithAutoCompletePropsBase {
     // A function to get the auto complete options
-    getAutoCompleteOptions: getAutoCompleteOptions_t
+    getAutoCompleteOptions: getAutoCompleteOptions_t;
 
     // The title of the text area
-    title: string
+    title: string;
+
+    // The value of the text field to set when it is first created
+    value?: string;
 }
 
 abstract class TextAreaWithAutoCompleteBase<T extends TextArea, P extends TextAreaWithAutoCompletePropsBase> extends React.Component<P> {
@@ -726,6 +752,12 @@ abstract class TextAreaWithAutoCompleteBase<T extends TextArea, P extends TextAr
     protected readonly title: string;
 
     /**
+     * The value to set the text field to when it is first created
+     * @protected
+     */
+    protected readonly _value: string;
+
+    /**
      * Create a text area
      *
      * @param props the properties
@@ -739,6 +771,11 @@ abstract class TextAreaWithAutoCompleteBase<T extends TextArea, P extends TextAr
 
         this.getAutoCompleteOptions = props.getAutoCompleteOptions.bind(this);
         this.title = props.title;
+        this._value = props.value;
+    }
+
+    public get value(): string {
+        return this.textArea.textField.value;
     }
 
     abstract render(): React.ReactNode;
@@ -759,7 +796,7 @@ export class TextAreaWithAutoComplete extends TextAreaWithAutoCompleteBase<TextA
     public render(): React.ReactNode {
         return (
             <div className="mdc-menu-surface--anchor">
-                <TextArea ref={e => this.textArea = e} title={this.title}/>
+                <TextArea ref={e => super.textArea = e} title={this.title} value={this._value}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}
                                        ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}/>
             </div>
@@ -846,8 +883,8 @@ export class ChipTextAreaWithAutoComplete extends TextAreaWithAutoCompleteBase<C
     public render(): React.ReactNode {
         return (
             <div className="mdc-menu-surface--anchor">
-                <ChipTextArea ref={e => this.textArea = e} chipValueExists={this.chipValueExists}
-                              chipTooltipText={this.chipTooltipText} title={this.title}/>
+                <ChipTextArea ref={e => super.textArea = e} chipValueExists={this.chipValueExists}
+                              chipTooltipText={this.chipTooltipText} title={this.title} value={this._value}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}
                                        ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}/>
             </div>

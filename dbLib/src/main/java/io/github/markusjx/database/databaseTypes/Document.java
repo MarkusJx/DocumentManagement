@@ -38,8 +38,8 @@ public class Document implements Serializable, Comparable<Document> {
     /**
      * The tags of this documents
      */
-    @ManyToMany
     @JoinColumn
+    @ManyToMany(cascade = CascadeType.REFRESH)
     public final List<Tag> tags;
 
     /**

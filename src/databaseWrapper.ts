@@ -306,20 +306,20 @@ export namespace database {
             return this.tagArray;
         }
 
-        set tags(tags: Tag[]) {
+        async setTags(tags: Tag[]): Promise<void> {
             this.tagArray = tags;
-            this.dbManager.persistTags(this.tagArray).then(
-                this.persistArray.bind(this, this.tagArray, this.impl.tags));
+            await this.dbManager.persistTags(this.tagArray);
+            await this.persistArray(this.tagArray, this.impl.tags);
         }
 
         get properties(): PropertyValueSet[] {
             return this.propertyArray;
         }
 
-        set properties(properties: PropertyValueSet[]) {
+        async setProperties(properties: PropertyValueSet[]): Promise<void> {
             this.propertyArray = properties;
-            this.dbManager.persistPropertyValues(this.propertyArray).then(
-                this.persistArray.bind(this, this.propertyArray, this.impl.properties));
+            await this.dbManager.persistPropertyValueSets(this.propertyArray);
+            await this.persistArray(this.propertyArray, this.impl.properties);
         }
 
         static async fromJavaDocument(document: any, baseDir: string, dbManager: DatabaseManager): Promise<Document> {
@@ -623,11 +623,11 @@ export namespace database {
             await java_callMethod(this.#impl, "persistTags", tagList);
         }
 
-        public async persistPropertyValues(propertyValues: PropertyValueSet[]): Promise<void> {
+        public async persistPropertyValueSets(propertyValues: PropertyValueSet[]): Promise<void> {
             const javaValues: any[] = propertyValues.map(p => p.toJavaValue());
             const valueList = await promisify(Arrays.asList.bind(Arrays))(...javaValues);
 
-            await java_callMethod(this.#impl, "persistPropertyValues", valueList);
+            await java_callMethod(this.#impl, "persistPropertyValueSets", valueList);
         }
 
         public async persistDocument(document: Document): Promise<void> {

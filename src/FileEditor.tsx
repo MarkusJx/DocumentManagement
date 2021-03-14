@@ -4,7 +4,7 @@ import {MDCDialog} from '@material/dialog';
 
 import {database} from "./databaseWrapper";
 import {ChipTextAreaWithAutoComplete, MDCCSSProperties} from "./ChipTextArea";
-import {PropertyField} from "./PropertyField";
+import {PropertySetter} from "./PropertyField";
 
 export {MDCCSSProperties};
 
@@ -16,12 +16,14 @@ export class FileEditor extends React.Component<FileEditorProps> {
     private readonly databaseManager: database.DatabaseManager;
     private chipTextArea: ChipTextAreaWithAutoComplete;
     private currentDocument: database.Document;
+    private propertySetter: PropertySetter;
     private dialog: MDCDialog;
 
     public constructor(props: FileEditorProps) {
         super(props);
         this.dialog = null;
         this.currentDocument = null;
+        this.propertySetter = null;
         this.databaseManager = props.databaseManager;
         this.chipTextArea = null;
 
@@ -38,6 +40,8 @@ export class FileEditor extends React.Component<FileEditorProps> {
             overflow: 'visible'
         }
 
+        const propertyValues: database.PropertyValueSet[] = this.currentDocument ? this.currentDocument.properties : null;
+
         return (
             <div className="mdc-dialog" style={style}>
                 <div className="mdc-dialog__container">
@@ -51,7 +55,7 @@ export class FileEditor extends React.Component<FileEditorProps> {
                                                           chipTooltipText="This tag does not exist. It will be created on committing."
                                                           title={"Select tags"}/>
 
-                            <PropertyField databaseManager={this.databaseManager}/>
+                            <PropertySetter databaseManager={this.databaseManager} ref={e => this.propertySetter = e}/>
                         </div>
                         <div className="mdc-dialog__actions">
                             <button type="button" className="mdc-button mdc-dialog__button"
@@ -76,11 +80,14 @@ export class FileEditor extends React.Component<FileEditorProps> {
         const $this = ReactDOM.findDOMNode(this) as Element;
         this.dialog = new MDCDialog($this);
 
-        this.dialog.listen('MDCDialog:closing', (event: CustomEvent<{ action: string }>) => {
+        this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
             if (event.detail.action === "accept") {
-                this.currentDocument.tags = this.chipTextArea.chipValues.map(value => new database.Tag(value));
+                await this.currentDocument.setTags(this.chipTextArea.chipValues.map(value => new database.Tag(value)));
+                await this.currentDocument.setProperties(this.propertySetter.propertyValues);
             }
+
             this.chipTextArea.clear();
+            this.propertySetter.clear();
         });
     }
 
@@ -88,6 +95,7 @@ export class FileEditor extends React.Component<FileEditorProps> {
         this.currentDocument = document;
 
         this.chipTextArea.chipValues = this.currentDocument.tags.map(tag => tag.name);
+        this.propertySetter.propertyValues = this.currentDocument.properties;
 
         this.dialog.open();
     }
