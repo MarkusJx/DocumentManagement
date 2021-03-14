@@ -317,7 +317,9 @@ export namespace database {
         }
 
         async setProperties(properties: PropertyValueSet[]): Promise<void> {
-            this.propertyArray = properties;
+            this.propertyArray = properties.filter(v => v.propertyName != null && v.propertyName.length > 0 &&
+                v.propertyValue != null && v.propertyValue.length > 0);
+
             await this.dbManager.persistPropertyValueSets(this.propertyArray);
             await this.persistArray(this.propertyArray, this.impl.properties);
         }
@@ -633,6 +635,10 @@ export namespace database {
         public async persistDocument(document: Document): Promise<void> {
             const javaDocument = document.toJavaValue();
             await java_callMethod(this.#impl, "persistDocument", javaDocument);
+        }
+
+        public async close(): Promise<void> {
+            await java_callMethod(this.#impl, "close");
         }
     }
 

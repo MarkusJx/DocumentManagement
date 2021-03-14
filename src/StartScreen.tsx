@@ -1,10 +1,13 @@
 import React from "react";
-import * as ReactDOM from "react-dom";
+import ReactDOM from "react-dom";
 import {MDCRipple} from '@material/ripple';
 import {ipcRenderer} from "electron";
 import {Action, database, FileScanner} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
-import * as constants from "./constants";
+import constants from "./constants";
+import MDCCSSProperties from "./MDCCSSProperties";
+
+const SHOW_SQL: boolean = true;
 
 export class MainComponent extends React.Component {
     currentPage: React.CElement<any, any>;
@@ -27,7 +30,7 @@ export class MainComponent extends React.Component {
     async startScreenOnCreate(): Promise<void> {
         const file: string = await ipcRenderer.invoke('select-database', true, "Select or create a database file");
         if (file != null) {
-            this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.CREATE_DROP);
+            this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.CREATE_DROP, SHOW_SQL);
             constants.init(this.databaseManager);
 
             this.currentPage = React.createElement(StartScanScreen, {
@@ -44,18 +47,20 @@ export class MainComponent extends React.Component {
                 directory: null,
                 databaseManager: null,
                 showProgress: true,
-                key: 0
+                key: 0,
+                ref: e => constants.mainDataTable = e
             }, null);
 
             this.forceUpdate();
-            this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.UPDATE, true);
+            this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.UPDATE, SHOW_SQL);
             constants.init(this.databaseManager);
 
             this.currentPage = React.createElement(MainDataTable, {
                 directory: await this.databaseManager.getDirectory(""),
                 databaseManager: this.databaseManager,
                 showProgress: false,
-                key: 1
+                key: 1,
+                ref: e => constants.mainDataTable = e
             }, null);
             this.forceUpdate();
         }
@@ -123,9 +128,8 @@ class StartScanScreen extends React.Component {
 }
 
 class StartScreen extends React.Component {
-    static readonly mainStyle: React.CSSProperties = {
+    static readonly mainStyle: MDCCSSProperties = {
         display: "grid",
-        // @ts-ignore
         "--mdc-theme-primary": "blue"
     };
 

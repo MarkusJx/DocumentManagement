@@ -3,10 +3,10 @@ import * as ReactDOM from "react-dom";
 import {MDCDialog} from '@material/dialog';
 
 import {database} from "./databaseWrapper";
-import {ChipTextAreaWithAutoComplete, MDCCSSProperties} from "./ChipTextArea";
+import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
 import {PropertySetter} from "./PropertyField";
-
-export {MDCCSSProperties};
+import MDCCSSProperties from "./MDCCSSProperties";
+import constants from "./constants";
 
 export type FileEditorProps = {
     databaseManager: database.DatabaseManager
@@ -39,8 +39,6 @@ export class FileEditor extends React.Component<FileEditorProps> {
         const contentStyle: React.CSSProperties = {
             overflow: 'visible'
         }
-
-        const propertyValues: database.PropertyValueSet[] = this.currentDocument ? this.currentDocument.properties : null;
 
         return (
             <div className="mdc-dialog" style={style}>
@@ -82,8 +80,10 @@ export class FileEditor extends React.Component<FileEditorProps> {
 
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
             if (event.detail.action === "accept") {
+                constants.mainDataTable.setLoading(true);
                 await this.currentDocument.setTags(this.chipTextArea.chipValues.map(value => new database.Tag(value)));
                 await this.currentDocument.setProperties(this.propertySetter.propertyValues);
+                constants.mainDataTable.setLoading(false);
             }
 
             this.chipTextArea.clear();

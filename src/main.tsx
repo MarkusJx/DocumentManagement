@@ -1,10 +1,26 @@
 import React from "react";
-import * as ReactDOM from "react-dom";
+import ReactDOM from "react-dom";
 import {MainComponent} from "./StartScreen";
 
-export async function main() {
-    ReactDOM.render(
-        <MainComponent/>,
-        document.getElementById('content-root')
-    );
+class Main {
+    private static mainComponent: MainComponent = null;
+
+    public static main(): void {
+        ReactDOM.render(
+            <MainComponent ref={e => Main.mainComponent = e}/>,
+            document.getElementById('content-root')
+        );
+    }
+
+    public static onUnload(): void {
+        if (Main.mainComponent.databaseManager) {
+            Main.mainComponent.databaseManager.close().then();
+        }
+    }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+    Main.main();
+});
+
+window.onbeforeunload = Main.onUnload.bind(Main);

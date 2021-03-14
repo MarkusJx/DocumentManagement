@@ -49,7 +49,7 @@ function createWindow(): void {
         width: 1600,
         height: 1200,
         webPreferences: {
-            preload: path.join(__dirname, 'src', 'preload.js'),
+            preload: path.join(__dirname, 'src', 'main.js'),
             contextIsolation: true
         }
     });

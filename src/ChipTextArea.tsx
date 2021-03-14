@@ -6,6 +6,7 @@ import {MDCTextField} from "@material/textfield";
 import {MDCRipple} from "@material/ripple";
 import {MDCList} from '@material/list';
 import {Tooltip} from "./Tooltip";
+import MDCCSSProperties from "./MDCCSSProperties";
 
 /**
  * A function to check if a chip value exists
@@ -413,14 +414,6 @@ class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> 
         this.numChildren = 0;
         return null;
     }
-}
-
-/**
- * Css properties for material.io components
- */
-export interface MDCCSSProperties extends React.CSSProperties {
-    // The mdc primary theme
-    "--mdc-theme-primary"?: string;
 }
 
 /**

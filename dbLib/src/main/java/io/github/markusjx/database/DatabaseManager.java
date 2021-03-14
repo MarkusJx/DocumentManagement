@@ -17,13 +17,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * A class for managing the io.github.markusjx.database
+ * A class for managing the database
  */
 public class DatabaseManager {
     /**
      * The entity manager instance
      */
     private final EntityManager manager;
+
+    /**
+     * The maximum amount of search results for fuzzy searches
+     */
+    private final int FUZZY_SEARCH_MAX_RESULTS = 25;
 
     /**
      * Create a new DocumentManager instance
@@ -163,6 +168,7 @@ public class DatabaseManager {
 
         // Remove all already persisted properties
         final List<Property> ps = ListUtils.removeAll(properties, toRemove, true, true);
+        if (ps.isEmpty()) return true;
 
         // Persist all properties
         manager.getTransaction().begin();
@@ -202,6 +208,7 @@ public class DatabaseManager {
 
         // Remove all already existing property values
         final List<PropertyValue> ps = ListUtils.removeAll(propertyValues, toRemove, true, true);
+        if (ps.isEmpty()) return true;
 
         // Insert the values manually
         return DatabaseUtils.doSessionWork(manager, connection -> {
@@ -227,7 +234,7 @@ public class DatabaseManager {
         List<PropertyValue> propertyValues = new ArrayList<>(sets.size());
 
         for (PropertyValueSet set : sets) {
-            if (set.property != null && set.property.name != null && set.property.name.isEmpty() &&
+            if (set.property != null && set.property.name != null && !set.property.name.isEmpty() &&
                     set.propertyValue != null && set.propertyValue.value != null &&
                     !set.propertyValue.value.isEmpty()) {
                 map.putValue(set.property, set.propertyValue);
@@ -251,9 +258,16 @@ public class DatabaseManager {
      */
     public List<Document> getAllDocumentsIn(final List<Document> documents) {
         try {
-            return manager.createQuery("select d from Document as d where d in :docs", Document.class)
-                    .setParameter("docs", documents)
-                    .getResultList();
+            Collection<List<Document>> lists = ListUtils.partition(documents, 999);
+            List<Document> result = new ArrayList<>();
+
+            for (final List<Document> list : lists) {
+                result.addAll(manager.createQuery("select d from Document as d where d in :docs", Document.class)
+                        .setParameter("docs", list)
+                        .getResultList());
+            }
+
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -297,14 +311,13 @@ public class DatabaseManager {
 
         // Remove all documents already existing in the database
         documents = ListUtils.removeAll(documents, toRemove, true, true);
+        if (documents.isEmpty()) return true;
 
         // Start a transaction and persist all documents
         try {
             manager.setFlushMode(FlushModeType.COMMIT);
             manager.getTransaction().begin();
-            for (Document d : documents) {
-                manager.persist(d);
-            }
+            for (Document d : documents) manager.persist(d);
             manager.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -314,6 +327,11 @@ public class DatabaseManager {
         return true;
     }
 
+    /**
+     * Persist a document
+     *
+     * @param document the document to persist
+     */
     @SuppressWarnings("unused")
     public void persistDocument(Document document) {
         manager.getTransaction().begin();
@@ -466,46 +484,14 @@ public class DatabaseManager {
      * Create a new Property and persist it
      *
      * @param name the name of the property
-     * @return the just created property
      */
-    public Property createProperty(String name) {
+    public void createProperty(String name) {
         Property p = new Property(name);
 
         // Persist the property
         manager.getTransaction().begin();
         manager.persist(p);
         manager.getTransaction().commit();
-
-        return p;
-    }
-
-    /**
-     * Get a {@link PropertyValue} by its value string. Returns {@code null} if the value cannot be found
-     *
-     * @param value the value name to search for
-     * @return the property value in the io.github.markusjx.database
-     */
-    public PropertyValue getPropertyValue(String value) {
-        try {
-            // Create a query to get the value
-            return manager.find(PropertyValue.class, value);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    /**
-     * Check if a property value is in the list of values for a property
-     *
-     * @param propertyName  the name of the property to search for
-     * @param propertyValue the property value
-     * @return true, if the {@link Property} has a {@link PropertyValue} in its {@link Property#values} list
-     */
-    public boolean propertyValueIsInProperty(String propertyName, String propertyValue) {
-        Property p = getPropertyByName(propertyName);
-        if (p == null || p.values == null) return false;
-
-        return p.values.contains(new PropertyValue(propertyValue));
     }
 
     /**
@@ -538,6 +524,12 @@ public class DatabaseManager {
         return new PropertyValueSet(p, pv);
     }
 
+    /**
+     * Get a tag by its name
+     *
+     * @param name the name of the tag
+     * @return the found tag or null if not found
+     */
     public Tag getTagByName(String name) {
         try {
             return manager.find(Tag.class, name);
@@ -546,17 +538,30 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Check if a tag exists
+     *
+     * @param name the name of the tag
+     * @return whether the tag exists
+     */
     @SuppressWarnings("unused")
     public boolean tagExists(String name) {
-        return manager.createQuery("select distinct count(*) from Tag as t where t.name = :name", Long.class)
+        return manager.createQuery("select distinct count(t) from Tag as t where t.name = :name", Long.class)
                 .setParameter("name", name)
                 .getSingleResult() > 0;
     }
 
+    /**
+     * Get all tags like
+     *
+     * @param name the name of the tag
+     * @return the tags similar to the name
+     */
     @SuppressWarnings("unused")
     public List<Tag> getTagsLike(String name) {
         return manager.createQuery("select t from Tag as t where t.name like :name", Tag.class)
                 .setParameter("name", name + '%')
+                .setMaxResults(FUZZY_SEARCH_MAX_RESULTS)
                 .getResultList();
     }
 
@@ -574,17 +579,31 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Get all properties like a value
+     *
+     * @param name the name of the property to search for
+     * @return the properties similar to name
+     */
     @SuppressWarnings("unused")
     public List<Property> getPropertiesLike(String name) {
         return manager.createQuery("select p from Property as p where p.name like :name", Property.class)
                 .setParameter("name", name + '%')
+                .setMaxResults(FUZZY_SEARCH_MAX_RESULTS)
                 .getResultList();
     }
 
+    /**
+     * Gat all property values like a value
+     *
+     * @param value the value of the property value to search for
+     * @return the properties with a value similar to {@code value}
+     */
     @SuppressWarnings("unused")
     public List<PropertyValue> getPropertyValuesLike(String value) {
         return manager.createQuery("select p from PropertyValue as p where p.value like :value", PropertyValue.class)
                 .setParameter("value", value + '%')
+                .setMaxResults(FUZZY_SEARCH_MAX_RESULTS)
                 .getResultList();
     }
 
@@ -608,5 +627,15 @@ public class DatabaseManager {
                 .sorted(Comparator.reverseOrder())
                 .map(d -> d.document)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Close the database connection
+     */
+    @SuppressWarnings("unused")
+    public void close() {
+        this.manager.flush();
+        this.manager.clear();
+        this.manager.close();
     }
 }

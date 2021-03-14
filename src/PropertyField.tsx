@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {MDCRipple} from '@material/ripple';
-import {MDCCSSProperties, TextAreaWithAutoComplete} from "./ChipTextArea";
+import {TextAreaWithAutoComplete} from "./ChipTextArea";
 import {database} from "./databaseWrapper";
+import MDCCSSProperties from "./MDCCSSProperties";
 
 /**
  * The properties for the {@link PropertyField}

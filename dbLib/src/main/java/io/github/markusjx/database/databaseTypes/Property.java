@@ -73,6 +73,12 @@ public class Property implements Serializable, Comparable<Property> {
         this.values = new ArrayList<>(Arrays.asList(properties));
     }
 
+    /**
+     * Create a property from a property and a list of property values
+     *
+     * @param property       the property to copy
+     * @param propertyValues the property values
+     */
     public Property(Property property, List<PropertyValue> propertyValues) {
         this.name = property.name;
         this.values = propertyValues;

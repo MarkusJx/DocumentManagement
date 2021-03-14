@@ -2,7 +2,7 @@ import React from "react";
 import * as ReactDOM from "react-dom";
 
 import * as util from "../util";
-import * as constants from "../constants";
+import constants from "../constants";
 import {database} from "../databaseWrapper";
 import {MainDataTable} from "./MainDataTable";
 import {MDCTooltip} from "@material/tooltip";

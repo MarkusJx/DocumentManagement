@@ -1,6 +1,8 @@
 package io.github.markusjx.util;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * A class for List operations
@@ -10,6 +12,22 @@ public final class ListUtils {
      * Don't.
      */
     private ListUtils() {
+    }
+
+    /**
+     * Partition a list based on a maximum size
+     * Source: https://stackoverflow.com/a/51837311
+     *
+     * @param inputList the input list
+     * @param size      the maximum size of the output list
+     * @param <T>       the type of the list
+     * @return the list of lists
+     */
+    public static <T> Collection<List<T>> partition(List<T> inputList, int size) {
+        final AtomicInteger counter = new AtomicInteger(0);
+        return inputList.stream()
+                .collect(Collectors.groupingBy(s -> counter.getAndIncrement() / size))
+                .values();
     }
 
     /**

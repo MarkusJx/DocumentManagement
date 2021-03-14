@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import {MDCDataTable} from "@material/data-table";
 import {database} from "../databaseWrapper";
 import {DataTableDirectoryElement, DataTableDocumentElement, DirectoryUpElement} from "./DataTableElement";
+import MDCCSSProperties from "../MDCCSSProperties";
 
 export class MainDataTable extends React.Component {
     public readonly databaseManager: database.DatabaseManager;
@@ -51,8 +52,13 @@ export class MainDataTable extends React.Component {
     }
 
     public render(): JSX.Element {
+        const style: MDCCSSProperties = {
+            "--mdc-theme-primary": "#0056ff",
+            width: "100%"
+        }
+
         return (
-            <div className="mdc-data-table">
+            <div className="mdc-data-table" style={style}>
                 <div className="mdc-data-table__table-container">
                     <table aria-label="Documents" className="mdc-data-table__table">
                         <thead>
@@ -101,7 +107,6 @@ export class MainDataTable extends React.Component {
     }
 
     private getTableBody(): JSX.Element {
-        console.log(this.directory);
         if (this.directory == null) {
             return (
                 <tbody className="mdc-data-table__content">
