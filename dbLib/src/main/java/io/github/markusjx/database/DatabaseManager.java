@@ -621,6 +621,7 @@ public class DatabaseManager {
 
         // Create the query and use streams to convert and sort the results
         return manager.createQuery(query)
+                .setMaxResults(100)
                 .getResultList()
                 .stream()
                 .map(d -> new DocumentSearchResult(d, filter.getFilters()))

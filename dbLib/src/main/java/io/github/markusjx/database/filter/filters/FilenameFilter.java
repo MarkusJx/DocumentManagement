@@ -49,9 +49,16 @@ public class FilenameFilter implements DocumentFilterBase {
                 if (exactMatch) {
                     return cb.equal(root.get("filename"), filename);
                 } else {
+                    String toSearch = filename;
+                    if (filename.contains("*")) {
+                        toSearch = toSearch.replaceAll("\\*", "%");
+                    } else {
+                        toSearch = '%' + toSearch + '%';
+                    }
+
                     // If the filename should be like this.filename,
                     // search the filename by %FILENAME%
-                    return cb.like(root.get("filename"), '%' + filename + '%');
+                    return cb.like(root.get("filename"), toSearch);
                 }
             }
         };

@@ -467,7 +467,7 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
      * The text field value to set when it is first created
      * @protected
      */
-    protected readonly value: string;
+    protected readonly _value: string;
 
     /**
      * Create a text area
@@ -480,7 +480,7 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         this.textField = null;
         this.$this = null;
         this.title = props.title;
-        this.value = props.value;
+        this._value = props.value;
 
         this.inputListener = null;
         this.onInput = this.onInput.bind(this);
@@ -511,13 +511,8 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         );
     }
 
-    public componentDidMount(): void {
-        this.$this = ReactDOM.findDOMNode(this) as HTMLLabelElement;
-        this.textField = new MDCTextField(this.$this);
-
-        if (this.value) {
-            this.textField.value = this.value;
-        }
+    public get value(): string {
+        return this.textField.value;
     }
 
     /**
@@ -525,6 +520,15 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
      */
     public getTextFieldValues(): string[] {
         return this.textField.value.trim().split(TextArea.textFieldValue_splitter).map(s => s.trim());
+    }
+
+    public componentDidMount(): void {
+        this.$this = ReactDOM.findDOMNode(this) as HTMLLabelElement;
+        this.textField = new MDCTextField(this.$this);
+
+        if (this._value) {
+            this.textField.value = this._value;
+        }
     }
 
     /**

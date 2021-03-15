@@ -4,9 +4,10 @@
   "description": "",
   "main": "out/main.js",
   "scripts": {
-    "prestart": "tsc",
+    "build": "node build.js",
+    "prestart": "npm run build",
     "start": "electron .",
-    "pretest": "tsc",
+    "pretest": "npm build",
     "test": "mocha",
     "rebuild": "electron-rebuild -p -f -w java && node -e \"require('java/postInstall')\"",
     "postinstall": "npm run-script rebuild"

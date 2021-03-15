@@ -237,6 +237,7 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
         return this._propertyFields
             .filter(unique)
             .filter(notNull)
+            .filter(v => v.propertyName.length > 0 && v.propertyValue.length > 0)
             .map(f => new database.PropertyValueSet(f.propertyName, f.propertyValue));
     }
 

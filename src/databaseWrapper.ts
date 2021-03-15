@@ -388,10 +388,16 @@ export namespace database {
     }
 
     export class Directory extends DirectoryImpl {
+        private static readonly Directory_impl = java.import("io.github.markusjx.database.databaseTypes.Directory");
+
         public readonly documents: Document[];
         public readonly directories: DirectoryImpl[];
 
         public constructor(documents: Document[], directories: DirectoryImpl[], impl: any, baseDir: string) {
+            if (impl == null) {
+                impl = new Directory.Directory_impl(baseDir + "/tmp", "tmp");
+            }
+
             super(impl, baseDir);
             this.documents = documents;
             this.directories = directories;
@@ -485,7 +491,7 @@ export namespace database {
         }
 
         public static async create(...filters: filters.DocumentFilterBase[]): Promise<DocumentFilter> {
-            const filterImpls = [];
+            const filterImpls: any[] = [];
             for (let i = 0; i < filters.length; i++) {
                 filterImpls.push(filters[i].impl);
             }

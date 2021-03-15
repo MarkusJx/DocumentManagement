@@ -6,19 +6,24 @@ import {Action, database, FileScanner} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
 import constants from "./constants";
 import MDCCSSProperties from "./MDCCSSProperties";
+import {SearchBox} from "./SearchBox";
 
 const SHOW_SQL: boolean = true;
 
 export class MainComponent extends React.Component {
     currentPage: React.CElement<any, any>;
     databaseManager: database.DatabaseManager;
+    private searchBox: SearchBox;
 
     constructor(props: any) {
         super(props);
 
+        this.searchBox = null;
+
         this.startScreenOnCreate = this.startScreenOnCreate.bind(this);
         this.startScreenOnLoad = this.startScreenOnLoad.bind(this);
         this.startScan = this.startScan.bind(this);
+        this.startSearch = this.startSearch.bind(this);
 
         this.currentPage = React.createElement(StartScreen, {
             onCreateClickImpl: this.startScreenOnCreate,
@@ -43,27 +48,34 @@ export class MainComponent extends React.Component {
     async startScreenOnLoad(): Promise<void> {
         const file: string = await ipcRenderer.invoke('select-database', false, "Select a database file");
         if (file != null) {
-            this.currentPage = React.createElement(MainDataTable, {
-                directory: null,
-                databaseManager: null,
-                showProgress: true,
-                key: 0,
-                ref: e => constants.mainDataTable = e
-            }, null);
+            this.currentPage = (
+                <MainDataTable databaseManager={null} directory={null} showProgress={true} key={0}
+                               ref={e => constants.mainDataTable = e}/>
+            );
 
             this.forceUpdate();
             this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.UPDATE, SHOW_SQL);
             constants.init(this.databaseManager);
 
-            this.currentPage = React.createElement(MainDataTable, {
-                directory: await this.databaseManager.getDirectory(""),
-                databaseManager: this.databaseManager,
-                showProgress: false,
-                key: 1,
-                ref: e => constants.mainDataTable = e
-            }, null);
+            this.currentPage = (
+                <div>
+                    <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
+                               ref={e => this.searchBox = e}/>
+                    <MainDataTable directory={await this.databaseManager.getDirectory("")}
+                                   databaseManager={this.databaseManager} showProgress={false} key={1}
+                                   ref={e => constants.mainDataTable = e}/>
+                </div>
+            );
             this.forceUpdate();
         }
+    }
+
+    public async startSearch(): Promise<void> {
+        constants.mainDataTable.setLoading(true);
+        const filter: database.DocumentFilter = await this.searchBox.getFilter();
+        const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter);
+        constants.mainDataTable.directory = new database.Directory(documents, [], null, "");
+        constants.mainDataTable.setLoading(false);
     }
 
     async startScan(): Promise<boolean> {
