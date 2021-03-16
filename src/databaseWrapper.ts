@@ -6,16 +6,35 @@ java.classpath.push('dbLib/build/libs/dbLib-1.0-SNAPSHOT.jar');
 
 const Arrays = java.import('java.util.Arrays');
 
+/**
+ * The hibernate creation action.
+ * The following information is from the
+ * org.hibernate.tool.schema.Action.java file.
+ */
 export enum Action {
+    // No action will be performed
     NONE,
+    // Database creation will be generated
     CREATE_ONLY,
+    // Database dropping will be generated
     DROP,
+    // Database dropping will be generated followed by database creation
     CREATE,
+    // Drop the schema and recreate it on SessionFactory startup.
+    // Additionally, drop the schema on SessionFactory shutdown.
     CREATE_DROP,
+    // Validate the database schema
     VALIDATE,
+    // Update (alter) the database schema
     UPDATE
 }
 
+/**
+ * Convert an {@link Action} to a org.hibernate.tool.schema.Action
+ *
+ * @param action the action to convert
+ * @return the converted action
+ */
 function actionToJavaAction(action: Action): any {
     const _action = java.import("org.hibernate.tool.schema.Action");
     switch (action) {
@@ -34,31 +53,52 @@ function actionToJavaAction(action: Action): any {
         case Action.UPDATE:
             return _action.UPDATE
         default:
-            throw new Error();
+            throw new Error("An invalid action was specified");
     }
 }
 
-type java_call_method_t = (instance: any, methodName: string, ...args: any[]) => any;
+type java_call_method_t = (instance: any, methodName: string, ...args: any[]) => Promise<any>;
+// Call a java member method
 const java_callMethod: java_call_method_t = promisify(java.callMethod.bind(java));
 
-type java_call_static_method_t = (className: string, methodName: string, ...args: any[]) => any;
+type java_call_static_method_t = (className: string, methodName: string, ...args: any[]) => Promise<any>;
+// Call a java static method
 const java_callStaticMethod: java_call_static_method_t = promisify(java.callStaticMethod.bind(java));
 
-type java_new_instance_t = (className: string, ...args: any[]) => any;
+type java_new_instance_t = (className: string, ...args: any[]) => Promise<any>;
+// Create a new java class instance
 const java_newInstance: java_new_instance_t = promisify(java.newInstance.bind(java));
 
+/**
+ * Convert a {@link Date} to a java.time.LocalDate
+ *
+ * @param date the date to convert
+ * @return the java.time.LocalDate
+ */
 async function dateToJavaLocalDate(date: Date): Promise<any> {
     return java_callStaticMethod("java.time.LocalDate", "parse",
         date.toISOString().split('T')[0]);
 }
 
+/**
+ * Convert a string array to a java string array
+ *
+ * @param arr the array to convert
+ * @return the converted java array
+ */
 function stringToJavaArray(arr: string[]): any {
     return java.newArray("java.lang.String", arr);
 }
 
-async function getListSize(list: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-        list.size((err: Error, result: any) => {
+/**
+ * Get the size of a java.util.List
+ *
+ * @param list the list to get the size of
+ * @return the list size
+ */
+async function getListSize(list: any): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+        list.size((err: Error, result: number) => {
             if (err) {
                 reject(err);
             } else {
@@ -68,6 +108,13 @@ async function getListSize(list: any): Promise<any> {
     });
 }
 
+/**
+ * Get a list element at an index
+ *
+ * @param list the list
+ * @param index the index of the element
+ * @return the element at index in list
+ */
 async function getListElementAt(list: any, index: number): Promise<any> {
     return new Promise((resolve, reject) => {
         list.get(index, (err: Error, result: any) => {
@@ -80,26 +127,59 @@ async function getListElementAt(list: any, index: number): Promise<any> {
     });
 }
 
+/**
+ * Convert a java.time.LocalDate to a {@link Date}
+ *
+ * @param date the date to convert
+ * @return the converted date
+ */
 async function javaDateToDate(date: any): Promise<Date> {
     type date_to_string_t = () => Promise<string>;
     const to_string: date_to_string_t = promisify(date.toString.bind(date));
     return new Date(await to_string());
 }
 
+/**
+ * A persistence provider
+ */
 export class PersistenceProvider {
-    readonly impl: any;
+    /**
+     * The java implementation
+     */
+    public readonly impl: any;
 
-    constructor(impl: any) {
+    /**
+     * Create a {@link PersistenceProvider}
+     *
+     * @param impl the java implementation
+     */
+    public constructor(impl: any) {
         this.impl = impl;
     }
 }
 
+/**
+ * A SQLite persistence provider
+ */
 export class SQLiteProvider extends PersistenceProvider {
-    constructor(impl: any) {
+    /**
+     * Create a SQLiteProvider instance
+     *
+     * @param impl the java implementation instance
+     * @private
+     */
+    private constructor(impl: any) {
         super(impl);
     }
 
-    static async create(databaseFile: string = "", action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<SQLiteProvider> {
+    /**
+     * Create a {@link SQLiteProvider}
+     *
+     * @param databaseFile the database file
+     * @param action the database creation action
+     * @param showSQL whether to show the generated sql commands
+     */
+    public static async create(databaseFile: string = "", action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<SQLiteProvider> {
         const _action = actionToJavaAction(action);
         const arr = java.newArray("java.lang.String", []);
         const impl = await java_newInstance("io.github.markusjx.database.persistence.SQLiteProvider",
@@ -109,16 +189,37 @@ export class SQLiteProvider extends PersistenceProvider {
     }
 }
 
+/**
+ * An entity manager
+ */
 export class EntityManager {
-    readonly impl: any;
+    /**
+     * The java implementation instance
+     */
+    public readonly impl: any;
 
-    constructor(impl: any) {
+    /**
+     * Create an {@link EntityManager} instance
+     *
+     * @param impl the java instance
+     */
+    public constructor(impl: any) {
         this.impl = impl;
     }
 }
 
+/**
+ * A custom hibernate persistence provider
+ */
 export class CustomPersistence {
-    static async createEntityManager(persistenceUnitName: string, provider: PersistenceProvider): Promise<EntityManager> {
+    /**
+     * Create an entity manager
+     *
+     * @param persistenceUnitName the persistence unit name
+     * @param provider the persistence provider
+     * @return the created entity manager
+     */
+    public static async createEntityManager(persistenceUnitName: string, provider: PersistenceProvider): Promise<EntityManager> {
         const impl = await java_callStaticMethod("io.github.markusjx.database.persistence.CustomPersistence",
             "createEntityManagerFactory", persistenceUnitName, provider.impl);
 
@@ -127,22 +228,51 @@ export class CustomPersistence {
     }
 }
 
+/**
+ * A wrapper around io.github.markusjx.datatypes.ChainedHashMap
+ */
 export class JavaChainedHashMap {
-    readonly impl: any;
+    /**
+     * The java instance
+     */
+    public readonly impl: any;
 
-    constructor(impl: any) {
+    /**
+     * Create a java chained hashMap
+     *
+     * @param impl the java instance
+     */
+    public constructor(impl: any) {
         this.impl = impl;
     }
 }
 
+/**
+ * A property map for storing {@link database.Property}s
+ */
 export class PropertyMap {
-    readonly values: Array<{ key: string, value: string }>;
+    /**
+     * The key value array
+     */
+    public readonly values: Array<{ key: string, value: string }>;
 
-    constructor() {
+    /**
+     * Create a property map
+     */
+    public constructor() {
         this.values = [];
     }
 
-    static of(...values: string[]): PropertyMap {
+    /**
+     * Create a PropertyMap of an array of strings.
+     * The number of elements must be an odd number,
+     * with even indexes being keys and uneven ones being values.
+     * So values[0] is a key and values[1] is a value.
+     *
+     * @param values the value array
+     * @return the generated property map
+     */
+    public static of(...values: string[]): PropertyMap {
         if (values.length % 2 !== 0) {
             throw new Error("values.length must be a multiple of two");
         }
@@ -158,7 +288,12 @@ export class PropertyMap {
         return res;
     }
 
-    async toJavaChainedHashMap(): Promise<JavaChainedHashMap> {
+    /**
+     * Convert this property map to a java {@link JavaChainedHashMap}
+     *
+     * @return the {@link JavaChainedHashMap}
+     */
+    public async toJavaChainedHashMap(): Promise<JavaChainedHashMap> {
         const arr: string[] = [];
         for (let i: number = 0; i < this.values.length; i++) {
             arr.push(this.values[i].key, this.values[i].value);
@@ -171,37 +306,100 @@ export class PropertyMap {
     }
 }
 
+/**
+ * A file scanner.
+ * Basically a wrapper around io.github.markusjx.scanning.FileScanner.java
+ */
 export class FileScanner {
-    readonly #impl: any;
-    readonly source: string;
+    /**
+     * The source directory
+     */
+    public readonly source: string;
+    /**
+     * The java instance
+     * @private
+     */
+    private readonly impl: any;
 
-    constructor(source: string) {
-        this.#impl = java.newInstanceSync("io.github.markusjx.scanning.FileScanner", source);
+    /**
+     * Create a new {@link FileScanner}
+     *
+     * @param source the source directory
+     */
+    public constructor(source: string) {
+        this.impl = java.newInstanceSync("io.github.markusjx.scanning.FileScanner", source);
         this.source = source;
     }
 
-    async scan(): Promise<database.DirectoryImpl> {
-        const dir: any = await java_callMethod(this.#impl, "scan");
-        return new database.DirectoryImpl(dir, this.source);
+    /**
+     * Scan through all directories to find all documents
+     *
+     * @return the scanned directory
+     */
+    public async scan(): Promise<database.DirectoryProxy> {
+        const dir: any = await java_callMethod(this.impl, "scan");
+        return new database.DirectoryProxy(dir, this.source);
     }
 }
 
+/**
+ * The database namespace
+ */
 export namespace database {
+    /**
+     * An interface for database-persist-able entities
+     */
     export interface Persistable {
+        /**
+         * Persist this instance
+         */
         persist(): Promise<void>;
     }
 
+    /**
+     * An interface for classes that can be converted into java values
+     */
     export interface JavaConvertible {
+        /**
+         * Convert this instance to a java value
+         *
+         * @return the java class instance
+         */
         toJavaValue(): any;
     }
 
+    /**
+     * A property value set
+     */
     export class PropertyValueSet implements JavaConvertible {
+        /**
+         * The java equivalent class
+         * @private
+         */
         private static readonly PropertyValueSetImpl = java.import("io.github.markusjx.database.databaseTypes.PropertyValueSet");
 
+        /**
+         * The property name
+         */
         public readonly propertyName: string;
+
+        /**
+         * The property value
+         */
         public readonly propertyValue: string;
+
+        /**
+         * The java PropertyValueSet instance
+         */
         public readonly impl: any;
 
+        /**
+         * Create a {@link PropertyValueSet}
+         *
+         * @param name the property name
+         * @param value the property value
+         * @param impl the java instance. Will be created if unset.
+         */
         public constructor(name: string, value: string, impl?: any) {
             this.propertyName = name;
             this.propertyValue = value;
@@ -218,12 +416,33 @@ export namespace database {
         }
     }
 
+    /**
+     * A document property
+     */
     export class Property implements JavaConvertible {
+        /**
+         * The java class
+         * @private
+         */
         private static readonly PropertyImpl = java.import("io.github.markusjx.database.databaseTypes.Property");
 
+        /**
+         * The property name
+         */
         public readonly name: string;
+
+        /**
+         * The java instance
+         * @private
+         */
         private readonly impl: any;
 
+        /**
+         * Create a {@link Property}
+         *
+         * @param name the property name
+         * @param impl the java instance. Will be created if unset.
+         */
         public constructor(name: string, impl?: any) {
             this.name = name;
 
@@ -239,12 +458,33 @@ export namespace database {
         }
     }
 
+    /**
+     * A property value for a {@link Property}
+     */
     export class PropertyValue implements JavaConvertible {
+        /**
+         * The java class
+         * @private
+         */
         private static readonly PropertyValueImpl = java.import("io.github.markusjx.database.databaseTypes.PropertyValue");
 
+        /**
+         * The property value
+         */
         public readonly value: string;
+
+        /**
+         * The java instance
+         * @private
+         */
         private readonly impl: any;
 
+        /**
+         * Create a {@link PropertyValue}
+         *
+         * @param value the property value
+         * @param impl the java instance. Will be created if unset.
+         */
         public constructor(value: string, impl?: any) {
             this.value = value;
 
@@ -255,16 +495,31 @@ export namespace database {
             }
         }
 
-        toJavaValue(): any {
+        public toJavaValue(): any {
             return this.impl;
         }
     }
 
+    /**
+     * A document tag
+     */
     export class Tag implements JavaConvertible {
+        /**
+         * The java class
+         * @private
+         */
         private static readonly Tag_impl: any = java.import("io.github.markusjx.database.databaseTypes.Tag");
 
+        /**
+         * The tag name
+         */
         public readonly name: string;
 
+        /**
+         * Create a {@link Tag}
+         *
+         * @param name the tag name
+         */
         public constructor(name: string) {
             this.name = name;
         }
@@ -274,17 +529,73 @@ export namespace database {
         }
     }
 
+    /**
+     * A document
+     */
     export class Document implements Persistable, JavaConvertible {
+        /**
+         * The absolute path to the document
+         */
         public readonly absolutePath: string;
+
+        /**
+         * The parent path of the document
+         */
         public readonly parentPath: string;
+
+        /**
+         * The file name
+         */
         public readonly filename: string;
+
+        /**
+         * Whether the document exists on this system
+         */
         public readonly exists: boolean;
+
+        /**
+         * The database manager this is associated with
+         * @private
+         */
         private readonly dbManager: DatabaseManager;
+
+        /**
+         * The java instance
+         * @private
+         */
         private readonly impl: any;
+
+        /**
+         * The properties of the document
+         * @private
+         */
         private propertyArray: PropertyValueSet[];
+
+        /**
+         * The document creation date
+         * @private
+         */
         private creationDate: Date;
+
+        /**
+         * The document tags
+         * @private
+         */
         private tagArray: Tag[];
 
+        /**
+         * Create a document
+         *
+         * @param filename the file name
+         * @param absolutePath the absolute path to the document
+         * @param tags the document tags
+         * @param properties the document properties
+         * @param creationDate the document creation date
+         * @param baseDir the base directory
+         * @param impl the java instance
+         * @param dbManager the database manager this is associated with
+         * @param parentPath the parent path. Will be created if unset.
+         */
         public constructor(filename: string, absolutePath: string, tags: Tag[], properties: PropertyValueSet[],
                            creationDate: Date, baseDir: string, impl: any, dbManager: DatabaseManager, parentPath: string = null) {
             this.filename = filename;
@@ -302,39 +613,45 @@ export namespace database {
             }
         }
 
-        get tags(): Tag[] {
+        /**
+         * Get the document tags
+         *
+         * @return the tags
+         */
+        public get tags(): Tag[] {
             return this.tagArray;
         }
 
-        async setTags(tags: Tag[]): Promise<void> {
-            this.tagArray = tags;
-            await this.dbManager.persistTags(this.tagArray);
-            await this.persistArray(this.tagArray, this.impl.tags);
-        }
-
-        get properties(): PropertyValueSet[] {
+        /**
+         * Get the document properties
+         *
+         * @return the properties
+         */
+        public get properties(): PropertyValueSet[] {
             return this.propertyArray;
         }
 
-        async setProperties(properties: PropertyValueSet[]): Promise<void> {
-            this.propertyArray = properties.filter(v => v.propertyName != null && v.propertyName.length > 0 &&
-                v.propertyValue != null && v.propertyValue.length > 0);
-
-            await this.dbManager.persistPropertyValueSets(this.propertyArray);
-            await this.persistArray(this.propertyArray, this.impl.properties);
-        }
-
-        static async fromJavaDocument(document: any, baseDir: string, dbManager: DatabaseManager): Promise<Document> {
+        /**
+         * Create a document from a java document
+         *
+         * @param document the java document
+         * @param baseDir the base directory
+         * @param dbManager the database manager the document is associated with
+         * @return the created document
+         */
+        public static async fromJavaDocument(document: any, baseDir: string, dbManager: DatabaseManager): Promise<Document> {
             const filename: string = document.filename;
             const absolutePath: string = document.absolutePath;
             const parentPath: string = document.parentPath;
 
+            // Convert the tags
             const jTags: any = document.tags;
             const tags: Tag[] = [];
             for (let i: number = 0; i < await getListSize(jTags); i++) {
                 tags.push(new Tag((await getListElementAt(jTags, i)).name));
             }
 
+            // Convert the properties
             const jProperties: any = document.properties;
             const properties: PropertyValueSet[] = [];
             for (let i: number = 0; i < await getListSize(jProperties); i++) {
@@ -342,8 +659,33 @@ export namespace database {
                 properties.push(new PropertyValueSet(set.property.name, set.propertyValue.value, set));
             }
 
+            // Get the date
             const date: Date = await javaDateToDate(document.creationDate);
             return new Document(filename, absolutePath, tags, properties, date, baseDir, document, dbManager, parentPath);
+        }
+
+        /**
+         * Set the tags
+         *
+         * @param tags the new tags
+         */
+        public async setTags(tags: Tag[]): Promise<void> {
+            this.tagArray = tags;
+            await this.dbManager.persistTags(this.tagArray);
+            await this.persistArray(this.tagArray, this.impl.tags);
+        }
+
+        /**
+         * Set the properties
+         *
+         * @param properties the new properties
+         */
+        public async setProperties(properties: PropertyValueSet[]): Promise<void> {
+            this.propertyArray = properties.filter(v => v.propertyName != null && v.propertyName.length > 0 &&
+                v.propertyValue != null && v.propertyValue.length > 0);
+
+            await this.dbManager.persistPropertyValueSets(this.propertyArray);
+            await this.persistArray(this.propertyArray, this.impl.properties);
         }
 
         public toJavaValue(): any {
@@ -354,6 +696,13 @@ export namespace database {
             return this.dbManager.persistDocument(this);
         }
 
+        /**
+         * Persist an array
+         *
+         * @param toPersist the array to persist
+         * @param nativeArray the java list
+         * @private
+         */
         private async persistArray<T extends JavaConvertible>(toPersist: T[], nativeArray: any): Promise<void> {
             await promisify(nativeArray.clear.bind(nativeArray))();
 
@@ -364,6 +713,12 @@ export namespace database {
             await this.persist();
         }
 
+        /**
+         * Get the parent path
+         *
+         * @return the calculated parent path
+         * @private
+         */
         private getParentPath(): string {
             try {
                 return this.absolutePath.substring(0, this.absolutePath.length - (this.filename.length + 1));
@@ -373,12 +728,40 @@ export namespace database {
         }
     }
 
-    export class DirectoryImpl {
+    /**
+     * A directory proxy class.
+     * Basically a proxy class to prevent hibernate from fetching
+     * all documents and directories from the database.
+     * May be converted to a {@link Directory} using
+     * {@link Directory#fromImpl}
+     */
+    export class DirectoryProxy {
+        /**
+         * The java instance
+         */
         public readonly impl: any;
+
+        /**
+         * The path to the directory
+         */
         public readonly path: string;
+
+        /**
+         * The directory name
+         */
         public readonly name: string;
+
+        /**
+         * Whether the directory exists
+         */
         public readonly exists: boolean;
 
+        /**
+         * Create a {@link DirectoryProxy}
+         *
+         * @param impl the java instance
+         * @param baseDir the base directory
+         */
         public constructor(impl: any, baseDir: string) {
             this.impl = impl;
             this.path = impl.path;
@@ -387,13 +770,35 @@ export namespace database {
         }
     }
 
-    export class Directory extends DirectoryImpl {
+    /**
+     * A directory
+     */
+    export class Directory extends DirectoryProxy {
+        /**
+         * The java class
+         * @private
+         */
         private static readonly Directory_impl = java.import("io.github.markusjx.database.databaseTypes.Directory");
 
+        /**
+         * The documents in this directory
+         */
         public readonly documents: Document[];
-        public readonly directories: DirectoryImpl[];
 
-        public constructor(documents: Document[], directories: DirectoryImpl[], impl: any, baseDir: string) {
+        /**
+         * The directories in this directory
+         */
+        public readonly directories: DirectoryProxy[];
+
+        /**
+         * Create a {@link Directory}
+         *
+         * @param documents the documents in this directory
+         * @param directories the directories in this directory
+         * @param impl the java instance. Will be created if null
+         * @param baseDir the base directory
+         */
+        public constructor(documents: Document[], directories: DirectoryProxy[], impl: any, baseDir: string) {
             if (impl == null) {
                 impl = new Directory.Directory_impl(baseDir + "/tmp", "tmp");
             }
@@ -403,45 +808,94 @@ export namespace database {
             this.directories = directories;
         }
 
-        public static async fromImpl(impl: DirectoryImpl, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
+        /**
+         * Create a {@link Directory} from a {@link DirectoryProxy}
+         *
+         * @param impl the proxy to create this from
+         * @param baseDir the base directory
+         * @param dbManager the database manager this is associated with
+         * @return the directory
+         */
+        public static async fromImpl(impl: DirectoryProxy, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
             return await Directory.fromJavaDirectory(impl.impl, baseDir, dbManager);
         }
 
+        /**
+         * Create a {@link Directory} from the java instance
+         *
+         * @param directory the directory to create the {@link Directory} from
+         * @param baseDir the base directory
+         * @param dbManager the database manager this is associated with
+         * @return the directory
+         */
         public static async fromJavaDirectory(directory: any, baseDir: string, dbManager: DatabaseManager): Promise<Directory> {
             const jDocs: any = directory.documents;
             const jDirs: any = directory.directories;
 
+            // The documents
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(jDocs); i++) {
                 let el: any = await getListElementAt(jDocs, i);
                 documents.push(await Document.fromJavaDocument(el, baseDir, dbManager));
             }
 
-            const directories: DirectoryImpl[] = [];
+            // The directories
+            const directories: DirectoryProxy[] = [];
             for (let i: number = 0; i < await getListSize(jDirs); i++) {
                 let el: any = await getListElementAt(jDirs, i);
-                directories.push(new DirectoryImpl(el, baseDir));
+                directories.push(new DirectoryProxy(el, baseDir));
             }
 
             return new Directory(documents, directories, directory, baseDir);
         }
     }
 
+    /**
+     * A namespace for database filters
+     */
     export namespace filters {
+        /**
+         * The document filter base
+         */
         export class DocumentFilterBase {
+            /**
+             * The java instance
+             */
             public readonly impl: any;
 
+            /**
+             * Create a {@link DocumentFilterBase}
+             *
+             * @param impl the java instance
+             * @protected
+             */
             protected constructor(impl: any) {
                 this.impl = impl;
             }
         }
 
+        /**
+         * A filename filter
+         */
         export class FilenameFilter extends DocumentFilterBase {
-            public constructor(impl: any) {
+            /**
+             * Create a filename filter
+             *
+             * @param impl the java instance
+             * @private
+             */
+            private constructor(impl: any) {
                 super(impl);
             }
 
-            public static async create(filename: string, exactMatch: boolean) {
+            /**
+             * Create a filename filter
+             *
+             * @param filename the file name
+             * @param exactMatch whether this should be an exact match
+             * @return the filename filter
+             */
+            public static async create(filename: string, exactMatch: boolean): Promise<FilenameFilter> {
                 const impl = await java_newInstance(
                     "io.github.markusjx.database.filter.filters.FilenameFilter",
                     filename, exactMatch);
@@ -450,11 +904,26 @@ export namespace database {
             }
         }
 
+        /**
+         * A tag filter
+         */
         export class TagFilter extends DocumentFilterBase {
-            public constructor(impl: any) {
+            /**
+             * Create a tag filter
+             *
+             * @param impl the java instance
+             * @private
+             */
+            private constructor(impl: any) {
                 super(impl);
             }
 
+            /**
+             * Create a tag filter
+             *
+             * @param tags the tags to filter by
+             * @return the created tag filter
+             */
             public static async create(...tags: string[]): Promise<TagFilter> {
                 const impl = await java_newInstance(
                     "io.github.markusjx.database.filter.filters.TagFilter",
@@ -464,11 +933,26 @@ export namespace database {
             }
         }
 
+        /**
+         * A property filter
+         */
         export class PropertyFilter extends DocumentFilterBase {
-            public constructor(impl: any) {
+            /**
+             * Create a property filter
+             *
+             * @param impl the java instance
+             * @private
+             */
+            private constructor(impl: any) {
                 super(impl);
             }
 
+            /**
+             * Create a property filter
+             *
+             * @param props the properties
+             * @return the property filter
+             */
             public static async create(props: PropertyMap): Promise<PropertyFilter> {
                 const impl = await java_newInstance(
                     "io.github.markusjx.database.filter.filters.PropertyFilter",
@@ -478,18 +962,70 @@ export namespace database {
             }
         }
 
+        /**
+         * A date filter
+         */
         export class DateFilter extends DocumentFilterBase {
-            // TODO
+            /**
+             * The java DateFilter class
+             * @private
+             */
+            private static readonly DateFilter_impl = java.import("io.github.markusjx.database.filter.filters.dates.DateFilter");
+
+            /**
+             * Create a date filter
+             *
+             * @param impl the java instance
+             * @private
+             */
+            private constructor(impl: any) {
+                super(impl);
+            }
+
+            /**
+             * Get a date filter by a begin and end date
+             *
+             * @param begin the begin date
+             * @param end the end date
+             * @return the date filter
+             */
+            public static async getByDates(begin: Date, end: Date): Promise<DateFilter> {
+                const d1: any = await dateToJavaLocalDate(begin);
+                const d2: any = await dateToJavaLocalDate(end);
+
+                const getByDate = promisify(DateFilter.DateFilter_impl.getByDate.bind(DateFilter.DateFilter_impl));
+                const impl = await getByDate(d1, d2);
+
+                return new DateFilter(impl);
+            }
         }
     }
 
+    /**
+     * A document filter
+     */
     export class DocumentFilter {
+        /**
+         * The java instance
+         */
         public readonly impl: any;
 
-        public constructor(impl: any) {
+        /**
+         * Create a document filter
+         *
+         * @param impl the java instance
+         * @private
+         */
+        private constructor(impl: any) {
             this.impl = impl;
         }
 
+        /**
+         * Create a document filter from filters
+         *
+         * @param filters the filters to create the {@link DocumentFilter} from
+         * @return the created DocumentFilter
+         */
         public static async create(...filters: filters.DocumentFilterBase[]): Promise<DocumentFilter> {
             const filterImpls: any[] = [];
             for (let i = 0; i < filters.length; i++) {
@@ -504,26 +1040,59 @@ export namespace database {
         }
     }
 
+    /**
+     * The database information
+     */
     export class DatabaseInfo {
+        /**
+         * The source path
+         */
         public readonly sourcePath: string;
 
+        /**
+         * Create the database info
+         *
+         * @param impl the java instance
+         */
         public constructor(impl: any) {
             this.sourcePath = impl.sourcePath;
         }
     }
 
+    /**
+     * The database manager
+     */
     export class DatabaseManager {
-        readonly #impl: any;
-        databaseInfo: DatabaseInfo;
+        /**
+         * The database info
+         */
+        public databaseInfo: DatabaseInfo;
+        /**
+         * The java instance
+         * @private
+         */
+        private readonly impl: any;
 
-        constructor(impl: any) {
-            this.#impl = impl;
+        /**
+         * Create the database manager
+         *
+         * @param impl the java instance
+         * @private
+         */
+        private constructor(impl: any) {
+            this.impl = impl;
             this.databaseInfo = null;
 
             this.setDatabaseInfo().then();
         }
 
-        static async create(entityManager: EntityManager): Promise<DatabaseManager> {
+        /**
+         * Create the database manager from an {@link EntityManager}
+         *
+         * @param entityManager the entity manager
+         * @return the database manager
+         */
+        public static async create(entityManager: EntityManager): Promise<DatabaseManager> {
             const impl = await java_newInstance(
                 "io.github.markusjx.database.DatabaseManager",
                 entityManager.impl);
@@ -531,25 +1100,30 @@ export namespace database {
             return new DatabaseManager(impl);
         }
 
-        async setDatabaseInfo(): Promise<boolean> {
-            const info: DatabaseInfo = await this.getDatabaseInfo();
-            if (info != null) {
-                this.databaseInfo = info;
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        async createDocument(filename: string, path: string, properties: PropertyMap, creationDate: Date, ...tagNames: string[]): Promise<void> {
-            await java_callMethod(this.#impl, "createDocument", filename, path,
+        /**
+         * Create a document
+         *
+         * @param filename the file name
+         * @param path the document path
+         * @param properties the document properties
+         * @param creationDate the document creation date
+         * @param tagNames the tag names
+         */
+        public async createDocument(filename: string, path: string, properties: PropertyMap, creationDate: Date, ...tagNames: string[]): Promise<void> {
+            await java_callMethod(this.impl, "createDocument", filename, path,
                 (await properties.toJavaChainedHashMap()).impl,
                 await dateToJavaLocalDate(creationDate),
                 stringToJavaArray(tagNames));
         }
 
-        async getDocumentsBy(filter: DocumentFilter): Promise<Document[]> {
-            const docList: any = await java_callMethod(this.#impl, "getDocumentsBy", filter.impl);
+        /**
+         * Get documents by a filter
+         *
+         * @param filter the document filter
+         * @return the documents filtered by the filter
+         */
+        public async getDocumentsBy(filter: DocumentFilter): Promise<Document[]> {
+            const docList: any = await java_callMethod(this.impl, "getDocumentsBy", filter.impl);
 
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(docList); i++) {
@@ -560,13 +1134,26 @@ export namespace database {
             return documents;
         }
 
-        async persistDirectory(directory: DirectoryImpl, sourcePath: string): Promise<boolean> {
-            return await java_callMethod(this.#impl, "persistDirectory", directory.impl, sourcePath) &&
+        /**
+         * Persist a directory
+         *
+         * @param directory the directory to persist
+         * @param sourcePath the source path
+         * @return whether the operation was successful
+         */
+        public async persistDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean> {
+            return await java_callMethod(this.impl, "persistDirectory", directory.impl, sourcePath) &&
                 await this.setDatabaseInfo();
         }
 
-        async getDirectory(path: string): Promise<Directory> {
-            const impl: any = await java_callMethod(this.#impl, "getDirectory", path);
+        /**
+         * Get a directory by its path
+         *
+         * @param path the path to the directory
+         * @return the directory or null if not found
+         */
+        public async getDirectory(path: string): Promise<Directory> {
+            const impl: any = await java_callMethod(this.impl, "getDirectory", path);
 
             if (impl != null) {
                 return Directory.fromJavaDirectory(impl, (await this.getDatabaseInfo()).sourcePath, this);
@@ -575,22 +1162,24 @@ export namespace database {
             }
         }
 
-        async getDatabaseInfo(): Promise<DatabaseInfo> {
-            const impl: any = await java_callMethod(this.#impl, "getDatabaseInfo");
-
-            if (impl != null) {
-                return new DatabaseInfo(impl);
-            } else {
-                return null;
-            }
+        /**
+         * Check if a tag exists
+         *
+         * @param name the tag name
+         * @return true if the tag exists
+         */
+        public tagExists(name: string): boolean {
+            return this.impl.tagExistsSync(name);
         }
 
-        tagExists(name: string): boolean {
-            return this.#impl.tagExistsSync(name);
-        }
-
-        getTagsLike(name: string): Tag[] {
-            const tagList: any = this.#impl.getTagsLikeSync(name);
+        /**
+         * Get all tags with a name like name
+         *
+         * @param name the name to search for
+         * @return the list of tags
+         */
+        public getTagsLike(name: string): Tag[] {
+            const tagList: any = this.impl.getTagsLikeSync(name);
 
             const result: Tag[] = [];
             for (let i: number = 0; i < tagList.sizeSync(); i++) {
@@ -600,8 +1189,14 @@ export namespace database {
             return result;
         }
 
+        /**
+         * Get all properties with a name like name
+         *
+         * @param name the name to search for
+         * @return the properties with a name like name
+         */
         public getPropertiesLike(name: string): Property[] {
-            const propertyList: any = this.#impl.getPropertiesLikeSync(name);
+            const propertyList: any = this.impl.getPropertiesLikeSync(name);
 
             const result: Property[] = [];
             for (let i: number = 0; i < propertyList.sizeSync(); i++) {
@@ -612,8 +1207,14 @@ export namespace database {
             return result;
         }
 
+        /**
+         * Get all property values with a value like value
+         *
+         * @param value the value to search for
+         * @return the property values
+         */
         public getPropertyValuesLike(value: string): PropertyValue[] {
-            const valueList: any = this.#impl.getPropertyValuesLikeSync(value);
+            const valueList: any = this.impl.getPropertyValuesLikeSync(value);
 
             const result: PropertyValue[] = [];
             for (let i: number = 0; i < valueList.sizeSync(); i++) {
@@ -624,30 +1225,88 @@ export namespace database {
             return result;
         }
 
+        /**
+         * Persist a list of {@link Tag}s
+         *
+         * @param tags the tags to persist
+         */
         public async persistTags(tags: Tag[]): Promise<void> {
             const javaTags: any[] = tags.map(t => t.toJavaValue());
             const tagList = await promisify(Arrays.asList.bind(Arrays))(...javaTags);
 
-            await java_callMethod(this.#impl, "persistTags", tagList);
+            await java_callMethod(this.impl, "persistTags", tagList);
         }
 
+        /**
+         * Persist a list of {@link PropertyValueSet}s
+         *
+         * @param propertyValues the sets to persist
+         */
         public async persistPropertyValueSets(propertyValues: PropertyValueSet[]): Promise<void> {
             const javaValues: any[] = propertyValues.map(p => p.toJavaValue());
             const valueList = await promisify(Arrays.asList.bind(Arrays))(...javaValues);
 
-            await java_callMethod(this.#impl, "persistPropertyValueSets", valueList);
+            await java_callMethod(this.impl, "persistPropertyValueSets", valueList);
         }
 
+        /**
+         * Persist a document
+         *
+         * @param document the document to persist
+         */
         public async persistDocument(document: Document): Promise<void> {
             const javaDocument = document.toJavaValue();
-            await java_callMethod(this.#impl, "persistDocument", javaDocument);
+            await java_callMethod(this.impl, "persistDocument", javaDocument);
         }
 
+        /**
+         * Close the database connection
+         */
         public async close(): Promise<void> {
-            await java_callMethod(this.#impl, "close");
+            await java_callMethod(this.impl, "close");
+        }
+
+        /**
+         * Set the database info
+         *
+         * @return whether the operation was successful
+         * @private
+         */
+        private async setDatabaseInfo(): Promise<boolean> {
+            const info: DatabaseInfo = await this.getDatabaseInfo();
+            if (info != null) {
+                this.databaseInfo = info;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Get the database info
+         *
+         * @return the retrieved database info
+         * @private
+         */
+        private async getDatabaseInfo(): Promise<DatabaseInfo> {
+            const impl: any = await java_callMethod(this.impl, "getDatabaseInfo");
+
+            if (impl != null) {
+                return new DatabaseInfo(impl);
+            } else {
+                return null;
+            }
         }
     }
 
+    /**
+     * Create a database manager from a SQLite database
+     *
+     * @param databaseFile the database file
+     * @param action the database action
+     * @param showSQL whether to show the generated sql commands
+     * @return the created database manager
+     */
     export async function createSQLiteDatabaseManager(databaseFile: string, action: Action, showSQL: boolean = false): Promise<DatabaseManager> {
         const provider = await SQLiteProvider.create(databaseFile, action, showSQL);
         const em = await CustomPersistence.createEntityManager("documents", provider);

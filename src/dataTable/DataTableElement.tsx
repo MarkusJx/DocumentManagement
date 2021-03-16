@@ -209,12 +209,12 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
 }
 
 export type DataTableDirectoryElementProps = {
-    directory: database.DirectoryImpl,
+    directory: database.DirectoryProxy,
     parent: MainDataTable
 };
 
 export class DataTableDirectoryElement extends DataTableElement<DataTableDirectoryElementProps> {
-    private readonly directory: database.DirectoryImpl;
+    private readonly directory: database.DirectoryProxy;
     private readonly parent: MainDataTable;
 
     public constructor(props: DataTableDirectoryElementProps) {

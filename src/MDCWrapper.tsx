@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {MDCCheckbox} from '@material/checkbox';
 import {MDCRipple} from "@material/ripple";
+import MDCCSSProperties from "./MDCCSSProperties";
 
 let checkbox_id: number = 0;
 
@@ -40,16 +41,17 @@ export class Checkbox extends React.Component<{}> {
     }
 }
 
-export interface OutlinedButtonProps {
+export interface ButtonProps {
     text: string;
     onClick: () => void;
+    style?: MDCCSSProperties;
 }
 
-export class OutlinedButton extends React.Component<OutlinedButtonProps> {
-    private readonly text: string;
-    private readonly onClick: () => void;
+export class Button<P extends ButtonProps = ButtonProps> extends React.Component<P> {
+    protected readonly text: string;
+    protected readonly onClick: () => void;
 
-    public constructor(props: OutlinedButtonProps) {
+    public constructor(props: P) {
         super(props);
 
         this.text = props.text;
@@ -58,7 +60,7 @@ export class OutlinedButton extends React.Component<OutlinedButtonProps> {
 
     public render(): React.ReactNode {
         return (
-            <button className="mdc-button mdc-button--outlined" onClick={this.onClick}>
+            <button className="mdc-button" onClick={this.onClick} style={this.props.style}>
                 <span className="mdc-button__ripple"/>
                 <span className="mdc-button__label">
                     {this.text}
@@ -70,5 +72,22 @@ export class OutlinedButton extends React.Component<OutlinedButtonProps> {
     public componentDidMount(): void {
         const $this = ReactDOM.findDOMNode(this) as Element;
         MDCRipple.attachTo($this);
+    }
+}
+
+export class OutlinedButton extends Button {
+    public constructor(props: ButtonProps) {
+        super(props);
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <button className="mdc-button mdc-button--outlined" onClick={this.onClick} style={this.props.style}>
+                <span className="mdc-button__ripple"/>
+                <span className="mdc-button__label">
+                    {this.text}
+                </span>
+            </button>
+        );
     }
 }

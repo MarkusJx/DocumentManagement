@@ -4,7 +4,7 @@
   "description": "",
   "main": "out/main.js",
   "scripts": {
-    "build": "node build.js",
+    "build": "node --unhandled-rejections=strict build.js",
     "prestart": "npm run build",
     "start": "electron .",
     "pretest": "npm build",
@@ -15,6 +15,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@wojtekmaj/react-daterange-picker": "^3.1.0",
     "find-java-home": "^1.1.0",
     "java": "^0.12.1",
     "material-components-web": "^10.0.0",
