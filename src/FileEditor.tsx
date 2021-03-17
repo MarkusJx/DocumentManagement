@@ -9,18 +9,56 @@ import MDCCSSProperties from "./MDCCSSProperties";
 import constants from "./constants";
 import {DateTextField} from "./DateTextField";
 
+/**
+ * Properties for the file editor
+ */
 export type FileEditorProps = {
+    // The database manager
     databaseManager: database.DatabaseManager
 }
 
 export class FileEditor extends React.Component<FileEditorProps> {
+    /**
+     * The database manager
+     * @private
+     */
     private readonly databaseManager: database.DatabaseManager;
+
+    /**
+     * The chip text area for entering the tags
+     * @private
+     */
     private chipTextArea: ChipTextAreaWithAutoComplete;
+
+    /**
+     * The currently edited document
+     * @private
+     */
     private currentDocument: database.Document;
+
+    /**
+     * The element for setting the properties
+     * @private
+     */
     private propertySetter: PropertySetter;
+
+    /**
+     * The date text field for setting the creation date
+     * @private
+     */
     private dateTextField: DateTextField;
+
+    /**
+     * The dialog everything is displayed in
+     * @private
+     */
     private dialog: MDCDialog;
 
+    /**
+     * Create a file editor instance
+     *
+     * @param props the props
+     */
     public constructor(props: FileEditorProps) {
         super(props);
         this.dialog = null;
@@ -111,6 +149,11 @@ export class FileEditor extends React.Component<FileEditorProps> {
         });
     }
 
+    /**
+     * Open the file editor
+     *
+     * @param document the document to edit
+     */
     public open(document: database.Document): void {
         this.currentDocument = document;
 
@@ -121,11 +164,25 @@ export class FileEditor extends React.Component<FileEditorProps> {
         this.dialog.open();
     }
 
+    /**
+     * Get the auto complete options for the tag text field
+     *
+     * @param val the value of the text field
+     * @return the auto complete options
+     * @private
+     */
     private getAutoCompleteOptions(val: string): string[] {
         const tags: database.Tag[] = this.databaseManager.getTagsLike(val);
         return tags.map(t => t.name);
     }
 
+    /**
+     * Check if a tag chip value exists
+     *
+     * @param value the value to search for
+     * @return true if the tag exists
+     * @private
+     */
     private chipValueExists(value: string): boolean {
         return this.databaseManager.tagExists(value);
     }

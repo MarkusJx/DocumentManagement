@@ -49,6 +49,11 @@ export class DateTextField extends React.Component<DateTextFieldProps, DateTextF
         return this.state.value;
     }
 
+    /**
+     * Set the value
+     *
+     * @param value the new date
+     */
     public set value(value: Date) {
         this.setState({
             value: value

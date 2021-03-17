@@ -6,3 +6,4 @@
 /dbLib/.gradle/
 /.idea/
 .gradle
+build.cache.json
