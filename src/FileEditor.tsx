@@ -7,6 +7,7 @@ import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
 import {PropertySetter} from "./PropertyField";
 import MDCCSSProperties from "./MDCCSSProperties";
 import constants from "./constants";
+import {DateTextField} from "./DateTextField";
 
 export type FileEditorProps = {
     databaseManager: database.DatabaseManager
@@ -17,6 +18,7 @@ export class FileEditor extends React.Component<FileEditorProps> {
     private chipTextArea: ChipTextAreaWithAutoComplete;
     private currentDocument: database.Document;
     private propertySetter: PropertySetter;
+    private dateTextField: DateTextField;
     private dialog: MDCDialog;
 
     public constructor(props: FileEditorProps) {
@@ -40,6 +42,15 @@ export class FileEditor extends React.Component<FileEditorProps> {
             overflow: 'visible'
         }
 
+        const creation_date_container_style: React.CSSProperties = {
+            display: "grid",
+            gridTemplateColumns: "max-content auto",
+            columnGap: "10px",
+            margin: "20px auto",
+            width: "fit-content",
+            fontFamily: "sans-serif"
+        }
+
         return (
             <div className="mdc-dialog" style={style}>
                 <div className="mdc-dialog__container">
@@ -54,6 +65,12 @@ export class FileEditor extends React.Component<FileEditorProps> {
                                                           title={"Select tags"}/>
 
                             <PropertySetter databaseManager={this.databaseManager} ref={e => this.propertySetter = e}/>
+                            <div style={creation_date_container_style}>
+                                <div>
+                                    Creation date:
+                                </div>
+                                <DateTextField ref={e => this.dateTextField = e}/>
+                            </div>
                         </div>
                         <div className="mdc-dialog__actions">
                             <button type="button" className="mdc-button mdc-dialog__button"
@@ -83,6 +100,9 @@ export class FileEditor extends React.Component<FileEditorProps> {
                 constants.mainDataTable.setLoading(true);
                 await this.currentDocument.setTags(this.chipTextArea.chipValues.map(value => new database.Tag(value)));
                 await this.currentDocument.setProperties(this.propertySetter.propertyValues);
+                if (this.dateTextField.value != null) {
+                    await this.currentDocument.setDate(this.dateTextField.value);
+                }
                 constants.mainDataTable.setLoading(false);
             }
 
@@ -96,6 +116,7 @@ export class FileEditor extends React.Component<FileEditorProps> {
 
         this.chipTextArea.chipValues = this.currentDocument.tags.map(tag => tag.name);
         this.propertySetter.propertyValues = this.currentDocument.properties;
+        this.dateTextField.value = this.currentDocument.date;
 
         this.dialog.open();
     }

@@ -101,7 +101,8 @@ export class SearchBox extends React.Component<SearchBoxProps> {
             display: "grid",
             gridTemplateColumns: "max-content auto",
             columnGap: "10px",
-            marginTop: "20px"
+            width: "fit-content",
+            margin: "20px auto 0 auto"
         };
 
         const date_range_text_style: React.CSSProperties = {
@@ -146,7 +147,6 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         if (this.mainContentShown) {
             this.mainContentElement.style.height = "unset";
             this.mainContentElement.style.marginTop = "20px";
-
         } else {
             this.mainContentElement.style.height = "0";
             this.mainContentElement.style.marginTop = "0";

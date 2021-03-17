@@ -632,6 +632,15 @@ export namespace database {
         }
 
         /**
+         * Get the creation date
+         *
+         * @return the creation date
+         */
+        public get date(): Date {
+            return this.creationDate;
+        }
+
+        /**
          * Create a document from a java document
          *
          * @param document the java document
@@ -686,6 +695,12 @@ export namespace database {
 
             await this.dbManager.persistPropertyValueSets(this.propertyArray);
             await this.persistArray(this.propertyArray, this.impl.properties);
+        }
+
+        public async setDate(date: Date): Promise<void> {
+            this.creationDate = date;
+            this.impl.creationDate = await dateToJavaLocalDate(date);
+            await this.persist();
         }
 
         public toJavaValue(): any {

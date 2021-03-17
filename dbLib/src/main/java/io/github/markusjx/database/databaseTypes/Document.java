@@ -53,7 +53,7 @@ public class Document implements Serializable, Comparable<Document> {
      * The creation date
      */
     @Column(columnDefinition = "DATE")
-    public final LocalDate creationDate;
+    public LocalDate creationDate;
 
     /**
      * Create a null documents
