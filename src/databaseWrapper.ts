@@ -677,30 +677,41 @@ export namespace database {
          * Set the tags
          *
          * @param tags the new tags
+         * @param persistThis whether to persist this document
          */
-        public async setTags(tags: Tag[]): Promise<void> {
+        public async setTags(tags: Tag[], persistThis: boolean = true): Promise<void> {
             this.tagArray = tags;
             await this.dbManager.persistTags(this.tagArray);
-            await this.persistArray(this.tagArray, this.impl.tags);
+            await this.persistArray(this.tagArray, this.impl.tags, persistThis);
         }
 
         /**
          * Set the properties
          *
          * @param properties the new properties
+         * @param persistThis whether to persist this document
          */
-        public async setProperties(properties: PropertyValueSet[]): Promise<void> {
+        public async setProperties(properties: PropertyValueSet[], persistThis: boolean = true): Promise<void> {
             this.propertyArray = properties.filter(v => v.propertyName != null && v.propertyName.length > 0 &&
                 v.propertyValue != null && v.propertyValue.length > 0);
 
             await this.dbManager.persistPropertyValueSets(this.propertyArray);
-            await this.persistArray(this.propertyArray, this.impl.properties);
+            await this.persistArray(this.propertyArray, this.impl.properties, persistThis);
         }
 
-        public async setDate(date: Date): Promise<void> {
+        /**
+         * Set the creation date
+         *
+         * @param date the new creation date
+         * @param persistThis whether to persist this document
+         */
+        public async setDate(date: Date, persistThis: boolean = true): Promise<void> {
             this.creationDate = date;
             this.impl.creationDate = await dateToJavaLocalDate(date);
-            await this.persist();
+
+            if (persistThis) {
+                await this.persist();
+            }
         }
 
         public toJavaValue(): any {
@@ -716,16 +727,19 @@ export namespace database {
          *
          * @param toPersist the array to persist
          * @param nativeArray the java list
+         * @param persistThis whether to persist this document
          * @private
          */
-        private async persistArray<T extends JavaConvertible>(toPersist: T[], nativeArray: any): Promise<void> {
+        private async persistArray<T extends JavaConvertible>(toPersist: T[], nativeArray: any, persistThis: boolean): Promise<void> {
             await promisify(nativeArray.clear.bind(nativeArray))();
 
             const javaValues: any[] = toPersist.map(v => v.toJavaValue());
             const valueList: any = await promisify(Arrays.asList.bind(Arrays))(...javaValues);
             await promisify(nativeArray.addAll.bind(nativeArray))(valueList);
 
-            await this.persist();
+            if (persistThis) {
+                await this.persist();
+            }
         }
 
         /**

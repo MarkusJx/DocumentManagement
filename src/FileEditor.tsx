@@ -133,17 +133,29 @@ export class FileEditor extends React.Component<FileEditorProps> {
         const $this = ReactDOM.findDOMNode(this) as Element;
         this.dialog = new MDCDialog($this);
 
+        // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
             if (event.detail.action === "accept") {
+                // Set the main data table to loading
                 constants.mainDataTable.setLoading(true);
-                await this.currentDocument.setTags(this.chipTextArea.chipValues.map(value => new database.Tag(value)));
-                await this.currentDocument.setProperties(this.propertySetter.propertyValues);
-                if (this.dateTextField.value != null) {
-                    await this.currentDocument.setDate(this.dateTextField.value);
+
+                // Get the values
+                const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
+                const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues;
+                const date: Date = this.dateTextField.value;
+
+                // Persist the values
+                await this.currentDocument.setTags(tags, false);
+                await this.currentDocument.setProperties(properties, date == null);
+                if (date != null) {
+                    await this.currentDocument.setDate(date, true);
                 }
+
+                // Set the main table to not loading anymore
                 constants.mainDataTable.setLoading(false);
             }
 
+            // Clear all text areas
             this.chipTextArea.clear();
             this.propertySetter.clear();
         });

@@ -18,9 +18,11 @@ class BuildCache {
      * Create a BuildCache instance
      *
      * @param files {string[]} the directories to check
+     * @param key {string} the key of this cache
      */
-    constructor(files) {
+    constructor(files, key) {
         this.files = files;
+        this.key = key;
     }
 
     /**
@@ -30,7 +32,7 @@ class BuildCache {
      * @private
      */
     static writeCache(data) {
-        fs.writeFileSync(BuildCache.cacheFile, JSON.stringify(data));
+        fs.writeFileSync(BuildCache.cacheFile, JSON.stringify(data, null, 4));
     }
 
     /**
@@ -61,12 +63,12 @@ class BuildCache {
      */
     async shouldRebuild() {
         const cache = BuildCache.readCache();
-        if (cache != null && cache.hasOwnProperty("hashes")) {
+        if (cache != null && cache.hasOwnProperty(this.key) && cache[this.key].hasOwnProperty("hashes")) {
             for (let i = 0; i < this.files.length; i++) {
                 const cur = this.files[i];
-                if (cache.hashes.hasOwnProperty(cur)) {
+                if (cache[this.key].hashes.hasOwnProperty(cur)) {
                     const hash = await hashFiles({files: [cur], algorithm: 'sha512'});
-                    if (hash !== cache.hashes[cur]) {
+                    if (hash !== cache[this.key].hashes[cur]) {
                         await this.generateCache();
                         return true;
                     }
@@ -90,13 +92,13 @@ class BuildCache {
      * @private
      */
     async generateCache() {
-        const cache = {
-            hashes: {}
-        };
+        const retrieved = await BuildCache.readCache();
+        const cache = retrieved != null ? retrieved : {};
+        cache[this.key] = {hashes: {}};
 
         for (let i = 0; i < this.files.length; i++) {
             const cur = this.files[i];
-            cache.hashes[cur] = await hashFiles({files: [cur], algorithm: 'sha512'});
+            cache[this.key].hashes[cur] = await hashFiles({files: [cur], algorithm: 'sha512'});
         }
 
         BuildCache.writeCache(cache);
@@ -128,17 +130,32 @@ function spawnAsync(command, args = [], options = {}) {
 }
 
 async function run() {
-    const buildCache = new BuildCache(["src/**", "dbLib/src/**", "main.ts", "package.json", "package-lock.json", "build.js"]);
-    if (await buildCache.shouldRebuild()) {
-        console.log("The cache is out of date, building...");
-        console.log("Running gradlew...");
-        await spawnAsync(gradle_command, ["jar"], {cwd: path.join(__dirname, "dbLib")});
+    const buildCache = new BuildCache(["package.json", "package-lock.json", "build.js"], "general");
+    const gradleCache = new BuildCache(["dbLib/src/**"], "gradle");
+    const tscCache = new BuildCache(["src/**", "main.ts"], "tsc")
 
-        console.log();
-        console.log("Running tsc...");
+    const buildCache_build = await buildCache.shouldRebuild();
+    const gradleCache_build = await gradleCache.shouldRebuild();
+    const tscCache_build = await tscCache.shouldRebuild();
+
+    if (buildCache_build) {
+        console.log("The build cache is out of date, building everything");
+    } else {
+        console.log("The build cache is up-to-date");
+    }
+
+    if (buildCache_build || gradleCache_build) {
+        console.log("The gradle cache is out of date, running gradlew...");
+        await spawnAsync(gradle_command, ["jar"], {cwd: path.join(__dirname, "dbLib")});
+    } else {
+        console.log("The gradle cache is up-to-date, not building");
+    }
+
+    if (buildCache_build || tscCache_build) {
+        console.log("The typescript cache is out of date, running tsc...")
         await spawnAsync("tsc");
     } else {
-        console.log("Files are up-to-date, not building anything");
+        console.log("The typescript cache is up-to-date, not building");
     }
 
     console.log("Done.");
