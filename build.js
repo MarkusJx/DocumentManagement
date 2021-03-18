@@ -63,7 +63,7 @@ class BuildCache {
      */
     async shouldRebuild() {
         const cache = BuildCache.readCache();
-        if (cache != null && cache.hasOwnProperty(this.key) && cache[this.key].hasOwnProperty("hashes")) {
+        if (cache != null && cache.hasOwnProperty(this.key) && cache[this.key] != null && cache[this.key].hasOwnProperty("hashes")) {
             for (let i = 0; i < this.files.length; i++) {
                 const cur = this.files[i];
                 if (cache[this.key].hashes.hasOwnProperty(cur)) {
@@ -83,6 +83,15 @@ class BuildCache {
             await this.generateCache();
             return true;
         }
+    }
+
+    buildFailed() {
+        const cache = BuildCache.readCache();
+        if (cache != null && cache.hasOwnProperty(this.key)) {
+            cache[this.key] = null;
+        }
+
+        BuildCache.writeCache(cache);
     }
 
     /**
@@ -146,14 +155,24 @@ async function run() {
 
     if (buildCache_build || gradleCache_build) {
         console.log("The gradle cache is out of date, running gradlew...");
-        await spawnAsync(gradle_command, ["jar"], {cwd: path.join(__dirname, "dbLib")});
+        try {
+            await spawnAsync(gradle_command, ["jar"], {cwd: path.join(__dirname, "dbLib")});
+        } catch (e) {
+            gradleCache.buildFailed();
+            throw e;
+        }
     } else {
         console.log("The gradle cache is up-to-date, not building");
     }
 
     if (buildCache_build || tscCache_build) {
         console.log("The typescript cache is out of date, running tsc...")
-        await spawnAsync("tsc");
+        try {
+            await spawnAsync("tsc");
+        } catch (e) {
+            tscCache.buildFailed();
+            throw e;
+        }
     } else {
         console.log("The typescript cache is up-to-date, not building");
     }

@@ -1,34 +1,55 @@
 import React from "react";
 import * as ReactDOM from "react-dom";
 
-import * as util from "../util";
+import util from "../util";
 import constants from "../constants";
 import {database} from "../databaseWrapper";
-import {MainDataTable} from "./MainDataTable";
 import {MDCTooltip} from "@material/tooltip";
 
+/**
+ * The last or next id. dunno.
+ */
 let lastId = 0;
 
+/**
+ * Get an id
+ *
+ * @return the id
+ */
 function getId(): string {
     return 'tooltip-' + lastId++;
 }
 
+/**
+ * A data table element
+ */
 abstract class DataTableElement<T> extends React.Component<T> {
+    abstract render(): React.ReactNode;
 }
 
+/**
+ * Te document edit button properties
+ */
 type EditDocumentButtonProps = {
-    document: database.Document,
-    dataTable: MainDataTable
+    // The document to edit
+    document: database.Document
 }
 
 class EditDocumentButton extends React.Component<EditDocumentButtonProps> {
+    /**
+     * The document to edit on click
+     * @private
+     */
     private readonly document: database.Document;
-    private readonly dataTable: MainDataTable;
 
+    /**
+     * Create an document edit button
+     *
+     * @param props the properties
+     */
     public constructor(props: EditDocumentButtonProps) {
         super(props);
         this.document = props.document;
-        this.dataTable = props.dataTable;
 
         this.onEditButtonClick = this.onEditButtonClick.bind(this);
     }
@@ -41,24 +62,41 @@ class EditDocumentButton extends React.Component<EditDocumentButtonProps> {
         );
     }
 
+    /**
+     * The function to be called on edit button click
+     * @private
+     */
     private onEditButtonClick(): void {
         constants.fileEditor.open(this.document);
     }
 }
 
+/**
+ * The open document button properties
+ */
 type OpenDocumentButtonProps = {
-    documentPath: string,
-    dataTable: MainDataTable
+    // The path to the document to open on click
+    documentPath: string
 };
 
+/**
+ * A button for opening a document
+ */
 class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
+    /**
+     * The path of the document to open on click
+     * @private
+     */
     private readonly documentPath: string;
-    private readonly dataTable: MainDataTable;
 
+    /**
+     * Create a open document button
+     *
+     * @param props the properties
+     */
     public constructor(props: OpenDocumentButtonProps) {
         super(props);
         this.documentPath = props.documentPath;
-        this.dataTable = props.dataTable;
 
         this.openDocument = this.openDocument.bind(this);
     }
@@ -71,20 +109,43 @@ class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
         );
     }
 
+    /**
+     * Open the document
+     * @private
+     */
     private async openDocument(): Promise<void> {
-        util.openFileUsingDefaultProgram(this.dataTable.databaseManager.databaseInfo.sourcePath + '/' + this.documentPath);
+        util.openFileUsingDefaultProgram(constants.mainDataTable.databaseManager.databaseInfo.sourcePath + '/' + this.documentPath);
     }
 }
 
+/**
+ * The tooltip properties
+ */
 type TooltipProps = {
+    // The tooltip id
     id: string,
+    // The tooltip title
     title: string
 };
 
 class Tooltip extends React.Component<TooltipProps> {
+    /**
+     * The tooltip id
+     * @private
+     */
     private readonly id: string;
+
+    /**
+     * The tooltip title
+     * @private
+     */
     private readonly title: string;
 
+    /**
+     * Create a tooltip
+     *
+     * @param props the properties
+     */
     public constructor(props: TooltipProps) {
         super(props);
         this.id = props.id;
@@ -107,13 +168,29 @@ class Tooltip extends React.Component<TooltipProps> {
     }
 }
 
+/**
+ * The table cell ok error icon properties
+ */
 type TableCellOkErrorIconProps = {
-    ok: boolean;
+    // Whether to display the error or ok icon
+    ok: boolean
 }
 
+/**
+ * An icon displaying an error or ok icon
+ */
 class TableCellOkErrorIcon extends React.Component<TableCellOkErrorIconProps> {
+    /**
+     * Whether to display the error or ok icon
+     * @private
+     */
     private readonly ok: boolean;
 
+    /**
+     * Create a TableCellOkErrorIcon
+     *
+     * @param props the properties
+     */
     public constructor(props: TableCellOkErrorIconProps) {
         super(props);
         this.ok = props.ok;
@@ -137,19 +214,32 @@ class TableCellOkErrorIcon extends React.Component<TableCellOkErrorIconProps> {
     }
 }
 
+/**
+ * The data table document element properties
+ */
 export type DataTableDocumentElementProps = {
-    document: database.Document,
-    parent: MainDataTable
+    // The document to show
+    document: database.Document
 }
 
+/**
+ * A data table document element
+ */
 export class DataTableDocumentElement extends DataTableElement<DataTableDocumentElementProps> {
+    /**
+     * The document to show
+     * @private
+     */
     private readonly document: database.Document;
-    private readonly parent: MainDataTable;
 
+    /**
+     * Create a data table document element
+     *
+     * @param props the properties
+     */
     public constructor(props: DataTableDocumentElementProps) {
         super(props);
         this.document = props.document;
-        this.parent = props.parent;
     }
 
     public render(): JSX.Element {
@@ -166,35 +256,44 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
                     <Tooltip id={tooltipId} title={"File"}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    <EditDocumentButton document={this.document} dataTable={this.parent}/>
+                    <EditDocumentButton document={this.document}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    <OpenDocumentButton documentPath={this.document.absolutePath} dataTable={this.parent}/>
+                    <OpenDocumentButton documentPath={this.document.absolutePath}/>
                 </td>
             </tr>
         );
     }
 }
 
+/**
+ * The open directory button properties
+ */
 type OpenDirectoryButtonProps = {
-    dirPath: string,
-    dataTable: MainDataTable
+    // The directory path
+    dirPath: string
 };
 
+/**
+ * An open directory button
+ */
 class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
+    /**
+     * The directory path
+     * @private
+     */
     private readonly dirPath: string;
-    private readonly dataTable: MainDataTable;
 
+    /**
+     * Create an open directory button
+     *
+     * @param props the properties
+     */
     public constructor(props: OpenDirectoryButtonProps) {
         super(props);
         this.dirPath = props.dirPath
-        this.dataTable = props.dataTable;
 
         this.onDirectoryOpen = this.onDirectoryOpen.bind(this);
-    }
-
-    public async onDirectoryOpen(): Promise<void> {
-        await this.dataTable.setDirectory(this.dirPath);
     }
 
     public render(): JSX.Element {
@@ -206,21 +305,42 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
             </button>
         );
     }
+
+    /**
+     * The function to be called to open the directory
+     * @private
+     */
+    private async onDirectoryOpen(): Promise<void> {
+        await constants.mainDataTable.setDirectory(this.dirPath);
+    }
 }
 
+/**
+ * The data table directory element properties
+ */
 export type DataTableDirectoryElementProps = {
-    directory: database.DirectoryProxy,
-    parent: MainDataTable
+    // The directory to display
+    directory: database.DirectoryProxy
 };
 
+/**
+ * A data table directory element
+ */
 export class DataTableDirectoryElement extends DataTableElement<DataTableDirectoryElementProps> {
+    /**
+     * The directory to display
+     * @private
+     */
     private readonly directory: database.DirectoryProxy;
-    private readonly parent: MainDataTable;
 
+    /**
+     * Create a data table directory element
+     *
+     * @param props the properties
+     */
     public constructor(props: DataTableDirectoryElementProps) {
         super(props);
         this.directory = props.directory;
-        this.parent = props.parent;
     }
 
     public render(): JSX.Element {
@@ -238,26 +358,39 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
                 </td>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell">
-                    <OpenDirectoryButton dirPath={this.directory.path} dataTable={this.parent}/>
+                    <OpenDirectoryButton dirPath={this.directory.path}/>
                 </td>
             </tr>
         );
     }
 }
 
+/**
+ * The directory up element properties
+ */
 export type DirectoryUpElementProps = {
-    parent: MainDataTable,
+    // The current directory
     currentDirectory: database.Directory
 };
 
+/**
+ * An element to move one directory level up
+ */
 export class DirectoryUpElement extends React.Component<DirectoryUpElementProps> {
-    private readonly parent: MainDataTable;
+    /**
+     * The path to the directory one level above the current one
+     * @private
+     */
     private readonly upPath: string;
 
+    /**
+     * Create a directory up element
+     *
+     * @param props the properties
+     */
     public constructor(props: DirectoryUpElementProps) {
         super(props);
 
-        this.parent = props.parent;
         const path = props.currentDirectory.path;
         this.upPath = path.substring(0, path.lastIndexOf('/'));
     }
@@ -270,7 +403,7 @@ export class DirectoryUpElement extends React.Component<DirectoryUpElementProps>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell">
-                    <OpenDirectoryButton dirPath={this.upPath} dataTable={this.parent}/>
+                    <OpenDirectoryButton dirPath={this.upPath}/>
                 </td>
             </tr>
         );

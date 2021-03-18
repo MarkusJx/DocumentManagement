@@ -486,6 +486,15 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         this.onInput = this.onInput.bind(this);
     }
 
+    /**
+     * Get the text field value
+     *
+     * @return the value
+     */
+    public get value(): string {
+        return this.textField.value;
+    }
+
     public render(): React.ReactNode {
         // The style for the main element
         const style: MDCCSSProperties = {
@@ -511,8 +520,11 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         );
     }
 
-    public get value(): string {
-        return this.textField.value;
+    /**
+     * Clear the text field
+     */
+    public clear(): void {
+        this.textField.value = "";
     }
 
     /**

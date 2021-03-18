@@ -14,12 +14,14 @@ function getCommandLine(): string {
     }
 }
 
-export function openFileUsingDefaultProgram(filePath: string): void {
-    if (process.platform === 'win32') {
-        exec(`${getCommandLine()} "${filePath}"`, {
-            shell: 'powershell.exe'
-        });
-    } else {
-        exec(`${getCommandLine()} "${filePath}"`);
+export default class util {
+    public static openFileUsingDefaultProgram(filePath: string): void {
+        if (process.platform === 'win32') {
+            exec(`${getCommandLine()} "${filePath}"`, {
+                shell: 'powershell.exe'
+            });
+        } else {
+            exec(`${getCommandLine()} "${filePath}"`);
+        }
     }
 }

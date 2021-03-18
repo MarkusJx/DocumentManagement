@@ -1,36 +1,96 @@
 import React from "react";
-import * as ReactDOM from "react-dom";
+import ReactDOM from "react-dom";
 import {MDCDataTable} from "@material/data-table";
 import {database} from "../databaseWrapper";
 import {DataTableDirectoryElement, DataTableDocumentElement, DirectoryUpElement} from "./DataTableElement";
 import MDCCSSProperties from "../MDCCSSProperties";
 
+/**
+ * The main data table properties
+ */
 export interface MainDataTableProps {
+    // The directory to display
     directory: database.Directory;
+    // The database manager to use
     databaseManager: database.DatabaseManager;
+    // Whether to show a progress bar
     showProgress?: boolean;
 }
 
-export class MainDataTable extends React.Component<MainDataTableProps> {
+/**
+ * The main data table state
+ */
+interface MainDataTableState {
+    // The currently displayed directory
+    directory: database.Directory;
+}
+
+/**
+ * The main data table
+ */
+export class MainDataTable extends React.Component<MainDataTableProps, MainDataTableState> {
+    /**
+     * The database manager
+     */
     public readonly databaseManager: database.DatabaseManager;
+
+    /**
+     * The actual mdc data table
+     * @private
+     */
     private dataTable: MDCDataTable;
 
+    /**
+     * Whether to show a progress bar on load
+     * @private
+     */
+    private readonly showProgress: boolean;
+
+    /**
+     * Create the main data table
+     *
+     * @param props the properties
+     */
     public constructor(props: MainDataTableProps) {
         super(props);
         this.dataTable = null;
-        this._directory = props.directory;
         this.databaseManager = props.databaseManager;
         if (props.showProgress == undefined || typeof props.showProgress !== "boolean") {
             this.showProgress = false;
         } else {
             this.showProgress = props.showProgress;
         }
+
+        this.state = {
+            directory: props.directory
+        };
     }
 
-    private showProgress: boolean;
+    /**
+     * Get the current displayed directory
+     *
+     * @return the current directory
+     */
+    public get directory(): database.Directory {
+        return this.state.directory;
+    }
 
-    private _directory: database.Directory;
+    /**
+     * Set the current directory
+     *
+     * @param directory the current directory
+     */
+    public set directory(directory: database.Directory) {
+        this.setState({
+            directory: directory
+        });
+    }
 
+    /**
+     * Show the progress bar on the data table
+     *
+     * @param loading whether to show it
+     */
     public setLoading(loading: boolean): void {
         const $this: Element = ReactDOM.findDOMNode(this) as Element;
         const buttons = $this.getElementsByTagName('button');
@@ -49,22 +109,18 @@ export class MainDataTable extends React.Component<MainDataTableProps> {
         }
     }
 
-    public set directory(directory: database.Directory) {
-        this._directory = directory;
-        this.forceUpdate();
-    }
-
+    /**
+     * Set the directory with a directory path
+     *
+     * @param directoryPath the directory path to display
+     */
     public async setDirectory(directoryPath: string): Promise<void> {
         this.setLoading(true);
-
-        this._directory = await this.databaseManager.getDirectory(directoryPath);
-        this.showProgress = false;
-        this.forceUpdate();
-
+        this.directory = await this.databaseManager.getDirectory(directoryPath);
         this.setLoading(false);
     }
 
-    public render(): JSX.Element {
+    public render(): React.ReactNode {
         const style: MDCCSSProperties = {
             "--mdc-theme-primary": "#0056ff",
             width: "100%"
@@ -119,8 +175,14 @@ export class MainDataTable extends React.Component<MainDataTableProps> {
         }
     }
 
-    private getTableBody(): JSX.Element {
-        if (this._directory == null) {
+    /**
+     * Generate the table body
+     *
+     * @return the table HTML node
+     * @private
+     */
+    private getTableBody(): React.ReactNode {
+        if (this.directory == null) {
             return (
                 <tbody className="mdc-data-table__content">
                 <tr className="mdc-data-table__row">
@@ -136,18 +198,17 @@ export class MainDataTable extends React.Component<MainDataTableProps> {
             return (
                 <tbody className="mdc-data-table__content">
                 {
-                    (this._directory.path != null && this._directory.path.length > 0) ?
-                        <DirectoryUpElement parent={this} currentDirectory={this._directory}
-                                            key={this._directory.path}/> : null
+                    (this.directory.path != null && this.directory.path.length > 0) ?
+                        <DirectoryUpElement currentDirectory={this.directory} key={this.directory.path}/> : null
                 }
                 {
-                    this._directory.documents.map(doc => (
-                        <DataTableDocumentElement document={doc} parent={this} key={doc.absolutePath}/>
+                    this.directory.documents.map(doc => (
+                        <DataTableDocumentElement document={doc} key={doc.absolutePath}/>
                     ))
                 }
                 {
-                    this._directory.directories.map(dir => (
-                        <DataTableDirectoryElement directory={dir} parent={this} key={dir.name}/>
+                    this.directory.directories.map(dir => (
+                        <DataTableDirectoryElement directory={dir} key={dir.name}/>
                     ))
                 }
                 </tbody>
