@@ -615,19 +615,33 @@ public class DatabaseManager {
      * @param filter the filters
      * @return the retrieved documents
      */
-    public List<Document> getDocumentsBy(DocumentFilter filter) {
+    public List<Document> getDocumentsBy(DocumentFilter filter, int offset) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Document> query = filter.getFilterRequest(cb);
 
         // Create the query and use streams to convert and sort the results
         return manager.createQuery(query)
+                .setFirstResult(offset)
                 .setMaxResults(100)
                 .getResultList()
                 .stream()
                 .map(d -> new DocumentSearchResult(d, filter.getFilters()))
-                .sorted(Comparator.reverseOrder())
                 .map(d -> d.document)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the number of rows in a filter query
+     *
+     * @param filter the filter
+     * @return the number of rows
+     */
+    @SuppressWarnings("unused")
+    public long getNumDocumentsBy(DocumentFilter filter) {
+        CriteriaBuilder cb = manager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = filter.getFilterRequestCount(cb);
+
+        return manager.createQuery(query).getSingleResult();
     }
 
     /**

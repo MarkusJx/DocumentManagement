@@ -40,7 +40,7 @@ public class Main {
                 //new SingleDateFilter(LocalDate.of(2000, 10, 10))
                 //DateFilter.today()
                 DateFilter.getByDate(2021, 2)
-        ));
+        ), 0);
         System.out.println(docs);
         System.out.println(docs.size());
 

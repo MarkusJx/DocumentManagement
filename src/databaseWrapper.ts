@@ -1149,10 +1149,11 @@ export namespace database {
          * Get documents by a filter
          *
          * @param filter the document filter
+         * @param offset the offset in the search
          * @return the documents filtered by the filter
          */
-        public async getDocumentsBy(filter: DocumentFilter): Promise<Document[]> {
-            const docList: any = await java_callMethod(this.impl, "getDocumentsBy", filter.impl);
+        public async getDocumentsBy(filter: DocumentFilter, offset: number): Promise<Document[]> {
+            const docList: any = await java_callMethod(this.impl, "getDocumentsBy", filter.impl, offset);
 
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(docList); i++) {
@@ -1161,6 +1162,16 @@ export namespace database {
             }
 
             return documents;
+        }
+
+        /**
+         * Get the number of rows in a filter query
+         *
+         * @param filter the filter to use
+         * @return the number of rows
+         */
+        public async getNumDocumentsBy(filter: DocumentFilter): Promise<number> {
+            return await java_callMethod(this.impl, "getNumDocumentsBy", filter.impl);
         }
 
         /**

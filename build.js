@@ -85,6 +85,9 @@ class BuildCache {
         }
     }
 
+    /**
+     * Call this when the build failed
+     */
     buildFailed() {
         const cache = BuildCache.readCache();
         if (cache != null && cache.hasOwnProperty(this.key)) {

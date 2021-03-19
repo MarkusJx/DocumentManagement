@@ -58,19 +58,7 @@ public class DocumentFilter {
         return new ArrayList<>(filters);
     }
 
-    /**
-     * Get the query with this filter's filters
-     *
-     * @param cb the criteria builder instance
-     * @return the CriteriaQuery
-     */
-    public CriteriaQuery<Document> getFilterRequest(CriteriaBuilder cb) {
-        // Create a new query and get the root
-        CriteriaQuery<Document> query = cb.createQuery(Document.class);
-        Root<Document> root = query.from(Document.class);
-
-        // Select root and make the query distinct
-        query.select(root);
+    private void addFilters(CriteriaBuilder cb, CriteriaQuery<?> query, Root<Document> root) {
         query.distinct(true);
 
         // Create new lists with all predicates
@@ -100,6 +88,33 @@ public class DocumentFilter {
             query.groupBy(groupBy);
         if (havingCountGe > 0)
             query.having(cb.ge(cb.count(root), havingCountGe));
+    }
+
+    /**
+     * Get the query with this filter's filters
+     *
+     * @param cb the criteria builder instance
+     * @return the CriteriaQuery
+     */
+    public CriteriaQuery<Document> getFilterRequest(CriteriaBuilder cb) {
+        // Create a new query and get the root
+        CriteriaQuery<Document> query = cb.createQuery(Document.class);
+        Root<Document> root = query.from(Document.class);
+
+        // Select root and make the query distinct
+        query.select(root);
+        addFilters(cb, query, root);
+
+        // Return the query
+        return query;
+    }
+
+    public CriteriaQuery<Long> getFilterRequestCount(CriteriaBuilder cb) {
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<Document> root = query.from(Document.class);
+
+        query.select(cb.count(root));
+        addFilters(cb, query, root);
 
         // Return the query
         return query;

@@ -34,8 +34,8 @@ export class MainComponent extends React.Component<{}> {
     public async startSearch(): Promise<void> {
         constants.mainDataTable.setLoading(true);
         const filter: database.DocumentFilter = await this.searchBox.getFilter();
-        const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter);
-        constants.mainDataTable.directory = new database.Directory(documents, [], null, "");
+        const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter, 0);
+        await constants.mainDataTable.setSearchResults(documents, filter);
         constants.mainDataTable.setLoading(false);
     }
 

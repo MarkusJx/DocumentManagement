@@ -91,23 +91,23 @@ public class TestDBManager {
 
     @Test
     void testTagSearch() {
-        List<Document> documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1")));
+        List<Document> documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1")), 0);
         System.out.println(documents);
         Assertions.assertEquals(3, documents.size());
 
-        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1", "tag2")));
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1", "tag2")), 0);
         System.out.println(documents);
         Assertions.assertEquals(2, documents.size());
 
-        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1", "tag2", "tag3")));
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag1", "tag2", "tag3")), 0);
         System.out.println(documents);
         Assertions.assertEquals(1, documents.size());
 
-        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3")));
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3")), 0);
         System.out.println(documents);
         Assertions.assertEquals(3, documents.size());
 
-        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3", "tag4")));
+        documents = manager.getDocumentsBy(DocumentFilter.createFilter(new TagFilter("tag3", "tag4")), 0);
         System.out.println(documents);
         Assertions.assertEquals(1, documents.size());
     }
@@ -149,7 +149,7 @@ public class TestDBManager {
                 new FilenameFilter("n", false),
                 //new PropertyFilter("prop1", "val1", "prop2", "val1"),
                 DateFilter.today()
-        ));
+        ), 0);
 
         for (Document d : docs) {
             System.out.println(d);

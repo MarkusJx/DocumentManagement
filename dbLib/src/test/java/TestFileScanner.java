@@ -29,13 +29,13 @@ public class TestFileScanner {
         System.out.println(allDocuments.size());
 
         Assertions.assertTrue(manager.persistDirectory(source, "C:\\Users\\marku\\CloudStation"));
-        System.out.println(manager.getDocumentsBy(DocumentFilter.createFilter(new DirectoryFilter("Code"))));
+        System.out.println(manager.getDocumentsBy(DocumentFilter.createFilter(new DirectoryFilter("Code")), 0));
 
         System.out.println(manager.getDirectory("Bank"));
     }
 
     @Test
     void testSearch() {
-        System.out.println(manager.getDocumentsBy(DocumentFilter.createFilter(new FilenameFilter("a", false))).size());
+        System.out.println(manager.getDocumentsBy(DocumentFilter.createFilter(new FilenameFilter("a", false)), 0).size());
     }
 }

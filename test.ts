@@ -63,7 +63,7 @@ describe('Database test', function () {
     });
 
     it('should return one Document', async function () {
-        let documents = await manager.getDocumentsBy(filter);
+        let documents = await manager.getDocumentsBy(filter, 0);
         //assert.strictEqual(documents.length, 1);
 
         console.log(documents.length);
