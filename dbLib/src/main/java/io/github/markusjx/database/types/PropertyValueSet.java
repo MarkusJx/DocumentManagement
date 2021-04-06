@@ -1,4 +1,4 @@
-package io.github.markusjx.database.databaseTypes;
+package io.github.markusjx.database.types;
 
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;

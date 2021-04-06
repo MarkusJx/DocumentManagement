@@ -41,6 +41,10 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      */
     private dataTable: MDCDataTable;
 
+    /**
+     * The data table pagination bar
+     * @private
+     */
     private dataTablePagination: MDCDataTablePagination;
 
     /**
@@ -126,6 +130,8 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     public setLoading(loading: boolean): void {
         const $this: Element = ReactDOM.findDOMNode(this) as Element;
         const buttons = $this.getElementsByTagName('button');
+        constants.searchBox.startButtonEnabled = !loading;
+
         if (loading) {
             this.dataTable.showProgress();
 
@@ -480,10 +486,12 @@ class MDCDataTablePagination extends React.Component<MDCDataTablePaginationProps
      * @private
      */
     private async updateSearchResults(offset: number): Promise<void> {
+        constants.mainDataTable.setLoading(true);
         // Get the documents
         const documents: database.Document[] = await this.databaseManager.getDocumentsBy(this.filter, offset);
         // No need to set the offset and limit, MainDataTable#setSearchResults will handle this
         await constants.mainDataTable.setSearchResults(documents, this.filter, offset, this.state.total);
+        constants.mainDataTable.setLoading(false);
     }
 
     /**

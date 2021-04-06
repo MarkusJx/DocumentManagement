@@ -76,13 +76,13 @@ public final class ListUtils {
      * Won't alter any of the input lists.
      * <br><br>
      * Requires {@code O(3n)} additional memory.<br>
-     * Complexity: {@code O(4n + 2n*log(n) + n^2) = O(n*log(n))}
+     * Complexity: {@code O(4n + 2n*log(n)) = O(n*log(n))}
      *
-     * @param in       the {@link List<T>} to remove the objects from
-     * @param toRemove the {@link List<T>} of objects to remove
-     * @param distinct whether to only return distinct values
+     * @param in         the {@link List<T>} to remove the objects from
+     * @param toRemove   the {@link List<T>} of objects to remove
+     * @param distinct   whether to only return distinct values
      * @param alterLists whether to alter the input lists (only sorts them, doesn't remove anything)
-     * @param <T>      the type of the arrays
+     * @param <T>        the type of the arrays
      * @return a new {@link java.util.ArrayList<T>} wil all objects except those from toRemove
      */
     public static <T extends Comparable<? super T>> List<T> removeAll(List<T> in, List<T> toRemove, boolean distinct, boolean alterLists) {

@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import {FileEditor} from "./FileEditor";
 import {database} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
+import {SearchBox} from "./SearchBox";
 import DatabaseManager = database.DatabaseManager;
 
 /**
@@ -19,6 +20,11 @@ export default class constants {
      * The current main data table element
      */
     public static mainDataTable: MainDataTable = null;
+
+    /**
+     * The search box
+     */
+    public static searchBox: SearchBox = null;
 
     /**
      * Initialize the file editor

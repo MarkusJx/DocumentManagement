@@ -1,6 +1,6 @@
 package io.github.markusjx.database.filter;
 
-import io.github.markusjx.database.databaseTypes.Document;
+import io.github.markusjx.database.types.Document;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package io.github.markusjx.database.filter.filters.dates;
 
-import io.github.markusjx.database.databaseTypes.Document;
 import io.github.markusjx.database.filter.DocumentFilterOperations;
+import io.github.markusjx.database.types.Document;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -13,7 +13,7 @@ import java.util.Objects;
  * A filter to get all documents that were
  * created between two dates
  */
-public class DateRangeFilter extends DateFilterBase {
+public class DateRangeFilter implements DateFilterBase {
     /**
      * The start date
      */

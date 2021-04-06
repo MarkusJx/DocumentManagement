@@ -1,9 +1,10 @@
 package io.github.markusjx.datatypes;
 
-import io.github.markusjx.database.databaseTypes.Document;
 import io.github.markusjx.database.filter.DocumentFilterBase;
+import io.github.markusjx.database.types.Document;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A document search result
@@ -40,5 +41,18 @@ public final class DocumentSearchResult implements Comparable<DocumentSearchResu
     @Override
     public int compareTo(DocumentSearchResult o) {
         return accuracy - o.accuracy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DocumentSearchResult that = (DocumentSearchResult) o;
+        return accuracy == that.accuracy && Objects.equals(document, that.document);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accuracy, document);
     }
 }

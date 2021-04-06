@@ -170,7 +170,7 @@ public final class SQLiteProvider extends PersistenceProvider {
 
             @Override
             public void addTransformer(ClassTransformer transformer) {
-
+                // We don't need this
             }
 
             @Override

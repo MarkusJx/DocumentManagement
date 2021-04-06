@@ -5,6 +5,7 @@ import {database, PropertyMap} from "./databaseWrapper";
 import {PropertySetter} from "./PropertyField";
 import {DateRangeTextField} from "./DateTextField";
 import MDCCSSProperties from "./MDCCSSProperties";
+import constants from "./constants";
 
 /**
  * The search box properties
@@ -69,6 +70,12 @@ export class SearchBox extends React.Component<SearchBoxProps> {
     private readonly databaseManager: database.DatabaseManager;
 
     /**
+     * The search start button
+     * @private
+     */
+    private startButton: Button;
+
+    /**
      * The search start callback function
      * @private
      */
@@ -92,10 +99,20 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         this.mainContentElement = null;
         this.mainContentShown = false;
         this.dateRangeTextField = null;
+        this.startButton = null;
 
         this.tagExists = this.tagExists.bind(this);
         this.getTagOptions = this.getTagOptions.bind(this);
         this.showHideMainContent = this.showHideMainContent.bind(this);
+    }
+
+    /**
+     * Set whether the start search button should be enabled
+     *
+     * @param enabled whether the button should be enabled
+     */
+    public set startButtonEnabled(enabled: boolean) {
+        this.startButton.enabled = enabled;
     }
 
     /**
@@ -197,10 +214,19 @@ export class SearchBox extends React.Component<SearchBoxProps> {
                         </div>
                         <DateRangeTextField style={date_range_style} ref={e => this.dateRangeTextField = e}/>
                     </div>
-                    <OutlinedButton text={"Search"} onClick={this.searchStart} style={search_button_style}/>
+                    <OutlinedButton text={"Search"} onClick={this.searchStart} style={search_button_style}
+                                    ref={e => this.startButton = e}/>
                 </div>
             </div>
         );
+    }
+
+    public componentDidMount(): void {
+        constants.searchBox = this;
+    }
+
+    public componentWillUnmount(): void {
+        constants.searchBox = null;
     }
 
     /**

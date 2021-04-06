@@ -1,7 +1,7 @@
 package io.github.markusjx.scanning;
 
-import io.github.markusjx.database.databaseTypes.Directory;
-import io.github.markusjx.database.databaseTypes.Document;
+import io.github.markusjx.database.types.Directory;
+import io.github.markusjx.database.types.Document;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Stack;
+import java.util.Deque;
+import java.util.LinkedList;
 
 /**
  * A class for scanning through file trees and discovering all files
@@ -24,14 +25,14 @@ public class FileScanner {
     /**
      * Whether the host os is windows
      */
-    public static final boolean isWindows;
+    public static final boolean IS_WINDOWS;
 
     static {
         String os = System.getProperty("os.name");
         if (os == null) {
-            isWindows = false;
+            IS_WINDOWS = false;
         } else {
-            isWindows = os.startsWith("Windows");
+            IS_WINDOWS = os.startsWith("Windows");
         }
     }
 
@@ -82,12 +83,12 @@ public class FileScanner {
         Directory src = new Directory("", source.getName());
 
         // Create a stack of files to scan
-        Stack<File_Directory> toScan = new Stack<>();
-        toScan.push(new File_Directory(source, src));
+        Deque<FileDirectory> toScan = new LinkedList<>();
+        toScan.push(new FileDirectory(source, src));
 
         while (!toScan.isEmpty()) {
             // Get the current directory to work on
-            File_Directory cur = toScan.pop();
+            FileDirectory cur = toScan.pop();
 
             // Get all files in this directory, if there are none, continue
             File[] files = cur.file.listFiles();
@@ -100,13 +101,14 @@ public class FileScanner {
                 if (f.isDirectory()) {
                     Directory dir = new Directory(getRelativePath(f), f.getName());
                     cur.directory.directories.add(dir);
-                    toScan.push(new File_Directory(f, dir));
+                    toScan.push(new FileDirectory(f, dir));
                 } else {
                     // Try creating a new document
                     try {
                         cur.directory.documents.add(new Document(f.getName(), getRelativePath(f), new ArrayList<>(0),
                                 getCreateTime(f)));
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -123,7 +125,7 @@ public class FileScanner {
      */
     private String getRelativePath(File src) {
         String path = src.getAbsolutePath().substring(sourcePathLength + 1);
-        if (isWindows) {
+        if (IS_WINDOWS) {
             return path.replace('\\', '/');
         } else {
             return path;
@@ -133,7 +135,7 @@ public class FileScanner {
     /**
      * A class for storing a {@link File} and {@link Directory}
      */
-    private static final class File_Directory {
+    private static final class FileDirectory {
         /**
          * The actual directory in the file system
          */
@@ -150,7 +152,7 @@ public class FileScanner {
          * @param file      the directory in the file system
          * @param directory the directory information object
          */
-        private File_Directory(File file, Directory directory) {
+        private FileDirectory(File file, Directory directory) {
             this.file = file;
             this.directory = directory;
         }

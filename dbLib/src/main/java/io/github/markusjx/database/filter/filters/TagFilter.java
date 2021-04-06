@@ -1,9 +1,9 @@
 package io.github.markusjx.database.filter.filters;
 
-import io.github.markusjx.database.databaseTypes.Document;
-import io.github.markusjx.database.databaseTypes.Tag;
 import io.github.markusjx.database.filter.DocumentFilterBase;
 import io.github.markusjx.database.filter.DocumentFilterOperations;
+import io.github.markusjx.database.types.Document;
+import io.github.markusjx.database.types.Tag;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class TagFilter implements DocumentFilterBase {
             }
 
             @Override
-            public Expression<?> groupBy() {
+            public Expression<Document> groupBy() {
                 // Group by the root
                 return root;
             }

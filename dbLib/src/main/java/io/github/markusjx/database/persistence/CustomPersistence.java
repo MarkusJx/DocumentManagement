@@ -12,6 +12,9 @@ import java.util.Objects;
  * Source: https://stackoverflow.com/a/42372648
  */
 public final class CustomPersistence {
+    private CustomPersistence() {
+    }
+
     /**
      * Create a custom entity manager factory
      *

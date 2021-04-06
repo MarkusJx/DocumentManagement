@@ -1,8 +1,8 @@
 package io.github.markusjx.database.filter.filters;
 
-import io.github.markusjx.database.databaseTypes.Document;
 import io.github.markusjx.database.filter.DocumentFilterBase;
 import io.github.markusjx.database.filter.DocumentFilterOperations;
+import io.github.markusjx.database.types.Document;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -51,7 +51,7 @@ public class FilenameFilter implements DocumentFilterBase {
                 } else {
                     String toSearch = filename;
                     if (filename.contains("*")) {
-                        toSearch = toSearch.replaceAll("\\*", "%");
+                        toSearch = toSearch.replaceAll("\\*+", "%");
                     } else {
                         toSearch = '%' + toSearch + '%';
                     }

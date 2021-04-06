@@ -5,5 +5,5 @@ import io.github.markusjx.database.filter.DocumentFilterBase;
 /**
  * A dummy class for date filters to extend
  */
-public abstract class DateFilterBase implements DocumentFilterBase {
+public interface DateFilterBase extends DocumentFilterBase {
 }

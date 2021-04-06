@@ -1,12 +1,12 @@
 import io.github.markusjx.database.DatabaseManager;
-import io.github.markusjx.database.databaseTypes.Document;
-import io.github.markusjx.database.databaseTypes.Tag;
 import io.github.markusjx.database.filter.DocumentFilter;
 import io.github.markusjx.database.filter.filters.FilenameFilter;
 import io.github.markusjx.database.filter.filters.TagFilter;
 import io.github.markusjx.database.filter.filters.dates.DateFilter;
 import io.github.markusjx.database.persistence.CustomPersistence;
 import io.github.markusjx.database.persistence.SQLiteProvider;
+import io.github.markusjx.database.types.Document;
+import io.github.markusjx.database.types.Tag;
 import io.github.markusjx.datatypes.ChainedHashMap;
 import org.hibernate.tool.schema.Action;
 import org.junit.jupiter.api.AfterAll;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TestDBManager {
+class TestDBManager {
     private static final Random r = new Random();
     private static DatabaseManager manager;
     private static EntityManager entityManager;
@@ -79,13 +79,13 @@ public class TestDBManager {
 
     @Test
     void testTagExists() {
-        Assertions.assertNotEquals(manager.getTagByName("tag1"), null);
+        Assertions.assertNotNull(manager.getTagByName("tag1"));
         //Assertions.assertFalse(manager.tagExists("tag5"));
     }
 
     @Test
     void testServiceProviderExists() {
-        Assertions.assertNotEquals(manager.getPropertyByName("prop1"), null);
+        Assertions.assertNotNull(manager.getPropertyByName("prop1"));
         //Assertions.assertFalse(manager.propertyExists("prop5"));
     }
 
@@ -122,7 +122,7 @@ public class TestDBManager {
         }
         //entityManager.getTransaction().commit();
 
-        System.out.println(manager.persistTags(tags));
+        Assertions.assertTrue(manager.persistTags(tags));
 
         tags = new ArrayList<>(100000);
         for (int i = 50000; i < 150000; i++) {
@@ -130,16 +130,19 @@ public class TestDBManager {
             tags.add(new Tag("t" + i));
         }
 
-        System.out.println(manager.persistTags(tags));
+        Assertions.assertTrue(manager.persistTags(tags));
     }
 
     @Test
     void generateDocuments() {
-        for (int i = 0; i < 1000; i++) {
+        final int NUM_DOCS = 250;
+        for (int i = 0; i < NUM_DOCS; i++) {
             manager.createDocument("n" + i, "p/n" + i,
                     generateRandomProperties(),
                     LocalDate.now(), generateRandomTags());
         }
+
+        Assertions.assertEquals(NUM_DOCS + 6, manager.getNumDocumentsBy(DocumentFilter.createFilter()));
     }
 
     @Test
@@ -151,8 +154,6 @@ public class TestDBManager {
                 DateFilter.today()
         ), 0);
 
-        for (Document d : docs) {
-            System.out.println(d);
-        }
+        Assertions.assertTrue(docs.size() >= 6);
     }
 }

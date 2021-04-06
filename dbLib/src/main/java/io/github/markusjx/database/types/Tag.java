@@ -1,4 +1,4 @@
-package io.github.markusjx.database.databaseTypes;
+package io.github.markusjx.database.types;
 
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
 import io.github.markusjx.util.CompareHelper;

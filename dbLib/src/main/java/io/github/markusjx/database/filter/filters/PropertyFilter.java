@@ -1,9 +1,9 @@
 package io.github.markusjx.database.filter.filters;
 
-import io.github.markusjx.database.databaseTypes.Document;
-import io.github.markusjx.database.databaseTypes.PropertyValueSet;
 import io.github.markusjx.database.filter.DocumentFilterBase;
 import io.github.markusjx.database.filter.DocumentFilterOperations;
+import io.github.markusjx.database.types.Document;
+import io.github.markusjx.database.types.PropertyValueSet;
 import io.github.markusjx.datatypes.ChainedHashMap;
 
 import javax.persistence.criteria.*;
@@ -90,7 +90,7 @@ public class PropertyFilter implements DocumentFilterBase {
             }
 
             @Override
-            public Expression<?> groupBy() {
+            public Expression<Document> groupBy() {
                 // Group by root. Required for having count(root.path).
                 return root;
             }

@@ -1,7 +1,7 @@
 package io.github.markusjx.database;
 
-import io.github.markusjx.database.databaseTypes.*;
 import io.github.markusjx.database.filter.DocumentFilter;
+import io.github.markusjx.database.types.*;
 import io.github.markusjx.datatypes.ChainedHashMap;
 import io.github.markusjx.datatypes.DocumentSearchResult;
 import io.github.markusjx.util.DatabaseUtils;
@@ -28,7 +28,7 @@ public class DatabaseManager {
     /**
      * The maximum amount of search results for fuzzy searches
      */
-    private final int FUZZY_SEARCH_MAX_RESULTS = 25;
+    private static final int FUZZY_SEARCH_MAX_RESULTS = 25;
 
     /**
      * Create a new DocumentManager instance

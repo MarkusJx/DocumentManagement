@@ -84,9 +84,16 @@ export interface ButtonProps {
 }
 
 /**
+ * A state for a button
+ */
+export interface ButtonState {
+    enabled: boolean;
+}
+
+/**
  * A material button
  */
-export class Button<P extends ButtonProps = ButtonProps> extends React.Component<P> {
+export class Button<P extends ButtonProps = ButtonProps> extends React.Component<P, ButtonState> {
     /**
      * The button text
      * @protected
@@ -107,13 +114,29 @@ export class Button<P extends ButtonProps = ButtonProps> extends React.Component
     public constructor(props: P) {
         super(props);
 
+        this.state = {
+            enabled: true
+        };
+
         this.text = props.text;
         this.onClick = props.onClick.bind(this);
     }
 
+    /**
+     * Set whether the button should be enabled
+     *
+     * @param val whether the button should be enabled
+     */
+    public set enabled(val: boolean) {
+        this.setState({
+            enabled: val
+        });
+    }
+
     public render(): React.ReactNode {
         return (
-            <button className="mdc-button" onClick={this.onClick} style={this.props.style}>
+            <button className="mdc-button" onClick={this.onClick} style={this.props.style}
+                    disabled={!this.state.enabled}>
                 <span className="mdc-button__ripple"/>
                 <span className="mdc-button__label">
                     {this.text}
@@ -143,7 +166,8 @@ export class OutlinedButton extends Button {
 
     public render(): React.ReactNode {
         return (
-            <button className="mdc-button mdc-button--outlined" onClick={this.onClick} style={this.props.style}>
+            <button className="mdc-button mdc-button--outlined" onClick={this.onClick} style={this.props.style}
+                    disabled={!this.state.enabled}>
                 <span className="mdc-button__ripple"/>
                 <span className="mdc-button__label">
                     {this.text}

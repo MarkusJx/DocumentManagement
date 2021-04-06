@@ -1,7 +1,6 @@
 package io.github.markusjx;
 
 import io.github.markusjx.database.DatabaseManager;
-import io.github.markusjx.database.databaseTypes.Document;
 import io.github.markusjx.database.filter.DocumentFilter;
 import io.github.markusjx.database.filter.filters.FilenameFilter;
 import io.github.markusjx.database.filter.filters.PropertyFilter;
@@ -9,6 +8,7 @@ import io.github.markusjx.database.filter.filters.TagFilter;
 import io.github.markusjx.database.filter.filters.dates.DateFilter;
 import io.github.markusjx.database.persistence.CustomPersistence;
 import io.github.markusjx.database.persistence.SQLiteProvider;
+import io.github.markusjx.database.types.Document;
 import io.github.markusjx.datatypes.ChainedHashMap;
 import org.hibernate.tool.schema.Action;
 

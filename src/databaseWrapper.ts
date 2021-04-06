@@ -376,7 +376,7 @@ export namespace database {
          * The java equivalent class
          * @private
          */
-        private static readonly PropertyValueSetImpl = java.import("io.github.markusjx.database.databaseTypes.PropertyValueSet");
+        private static readonly PropertyValueSetImpl = java.import("io.github.markusjx.database.types.PropertyValueSet");
 
         /**
          * The property name
@@ -424,7 +424,7 @@ export namespace database {
          * The java class
          * @private
          */
-        private static readonly PropertyImpl = java.import("io.github.markusjx.database.databaseTypes.Property");
+        private static readonly PropertyImpl = java.import("io.github.markusjx.database.types.Property");
 
         /**
          * The property name
@@ -466,7 +466,7 @@ export namespace database {
          * The java class
          * @private
          */
-        private static readonly PropertyValueImpl = java.import("io.github.markusjx.database.databaseTypes.PropertyValue");
+        private static readonly PropertyValueImpl = java.import("io.github.markusjx.database.types.PropertyValue");
 
         /**
          * The property value
@@ -508,7 +508,7 @@ export namespace database {
          * The java class
          * @private
          */
-        private static readonly Tag_impl: any = java.import("io.github.markusjx.database.databaseTypes.Tag");
+        private static readonly Tag_impl: any = java.import("io.github.markusjx.database.types.Tag");
 
         /**
          * The tag name
@@ -807,7 +807,7 @@ export namespace database {
          * The java class
          * @private
          */
-        private static readonly Directory_impl = java.import("io.github.markusjx.database.databaseTypes.Directory");
+        private static readonly Directory_impl = java.import("io.github.markusjx.database.types.Directory");
 
         /**
          * The documents in this directory
@@ -1052,13 +1052,13 @@ export namespace database {
         /**
          * Create a document filter from filters
          *
-         * @param filters the filters to create the {@link DocumentFilter} from
+         * @param filterList the filters to create the {@link DocumentFilter} from
          * @return the created DocumentFilter
          */
-        public static async create(...filters: filters.DocumentFilterBase[]): Promise<DocumentFilter> {
+        public static async create(...filterList: filters.DocumentFilterBase[]): Promise<DocumentFilter> {
             const filterImpls: any[] = [];
-            for (let i = 0; i < filters.length; i++) {
-                filterImpls.push(filters[i].impl);
+            for (let i = 0; i < filterList.length; i++) {
+                filterImpls.push(filterList[i].impl);
             }
 
             const impl = await java_callStaticMethod("io.github.markusjx.database.filter.DocumentFilter",

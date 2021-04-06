@@ -1,5 +1,7 @@
 package io.github.markusjx.database.filter;
 
+import io.github.markusjx.database.types.Document;
+
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 
@@ -22,7 +24,7 @@ public interface DocumentFilterOperations {
      *
      * @return the expression or null, if the results don't need to be grouped
      */
-    default Expression<?> groupBy() {
+    default Expression<Document> groupBy() {
         return null;
     }
 

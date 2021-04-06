@@ -1,4 +1,4 @@
-import io.github.markusjx.database.databaseTypes.Tag;
+import io.github.markusjx.database.types.Tag;
 import io.github.markusjx.util.ListUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class TestListUtils {
+class TestListUtils {
     private static final Random rand = new Random();
     private static final int MAX_ARR_LEN = 1000000;
 

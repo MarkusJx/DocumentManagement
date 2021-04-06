@@ -1,13 +1,11 @@
-package io.github.markusjx.database.databaseTypes;
+package io.github.markusjx.database.types;
 
 import io.github.markusjx.database.persistence.CustomPersistenceUnit;
 import io.github.markusjx.util.CompareHelper;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * A persisted directory
@@ -78,10 +76,9 @@ public class Directory implements Serializable, Comparable<Directory> {
 
         // Create a stack containing all directories to scan next.
         // Start from the subdirectories of this directory.
-        Stack<Directory> toScan = new Stack<>();
-        toScan.addAll(directories);
+        Deque<Directory> toScan = new LinkedList<>(directories);
 
-        while (!toScan.empty()) {
+        while (!toScan.isEmpty()) {
             // Add all documents and directories to the lists
             Directory current = toScan.pop();
             result.addAll(current.documents);
@@ -107,10 +104,9 @@ public class Directory implements Serializable, Comparable<Directory> {
 
         // Create a stack containing all directories to scan next.
         // Start from this directory.
-        Stack<Directory> toScan = new Stack<>();
-        toScan.addAll(directories);
+        Deque<Directory> toScan = new LinkedList<>(directories);
 
-        while (!toScan.empty()) {
+        while (!toScan.isEmpty()) {
             // At this point we must add all directories manually
             // instead of recursively calling getAllDirectories
             // to prevent StackOverflowErrors in large directory trees
@@ -135,5 +131,18 @@ public class Directory implements Serializable, Comparable<Directory> {
                 ", documents=" + documents +
                 ", directories=" + directories +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Directory directory = (Directory) o;
+        return Objects.equals(path, directory.path) && Objects.equals(name, directory.name) && Objects.equals(documents, directory.documents) && Objects.equals(directories, directory.directories);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, name, documents, directories);
     }
 }
