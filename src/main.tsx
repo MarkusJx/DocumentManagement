@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {MainComponent} from "./StartScreen";
+import {ScanLoadingScreen} from "./LoadingScreens";
+import constants from "./constants";
 
 /**
  * The main class
@@ -20,6 +22,11 @@ class Main {
             <MainComponent ref={e => Main.mainComponent = e}/>,
             document.getElementById('content-root')
         );
+
+        ReactDOM.render(
+            <ScanLoadingScreen ref={e => constants.scanLoadingScreen = e}/>,
+            document.getElementById('loading-screen-container')
+        )
     }
 
     /**

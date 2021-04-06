@@ -5,6 +5,7 @@ import {FileEditor} from "./FileEditor";
 import {database} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
 import {SearchBox} from "./SearchBox";
+import {ScanLoadingScreen} from "./LoadingScreens";
 import DatabaseManager = database.DatabaseManager;
 
 /**
@@ -25,6 +26,11 @@ export default class constants {
      * The search box
      */
     public static searchBox: SearchBox = null;
+
+    /**
+     * The loading screen for the file scan operation
+     */
+    public static scanLoadingScreen: ScanLoadingScreen = null;
 
     /**
      * Initialize the file editor
