@@ -51,6 +51,13 @@
     "extraResources": [
       "dbLib/build/libs/*.jar"
     ],
+    "nsis": {
+      "oneClick": false,
+      "artifactName": "${productName}-v${version}.${ext}",
+      "installerLanguages": [
+        "en_US"
+      ]
+    },
     "asar": false
   }
 }
