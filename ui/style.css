@@ -13,3 +13,8 @@ body {
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label.text-area-label {
     color: #4a6eff
 }
+
+.titlebar {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+}

@@ -9,14 +9,55 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup Java JDK
-      uses: actions/setup-java@v1.4.3
-      with:
-        java-version: 11
-        java-package: 'jdk'
-        architecture: 'x64'
-    - name: npm install
-      run: npm ci
-    - name: build
-      run: npm run build
+      - uses: actions/checkout@v2
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 11
+          java-package: 'jdk'
+          architecture: 'x64'
+      #- name: Initialize CodeQL
+      #  uses: github/codeql-action/init@v1
+      #  with:
+      #    languages: 'java', 'typescript'
+
+      # Steps for getting the name for this artifact
+      # The artifact name has the following format:
+      # docman-${LATEST_RELEASE_TAG}-beta.YYYYmmdd-1HHMMSS
+      - name: Get latest release tag
+        id: latest_release
+        run: echo "::set-output name=release::$(node -p 'require(`./package.json`).version')"
+        shell: bash
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d.1%H%M%S')"
+        shell: bash
+      - name: Set version name
+        id: version_name
+        run: echo "::set-output name=version::docman-${{steps.latest_release.outputs.release}}-beta.${{steps.date.outputs.date}}"
+        shell: bash
+      - name: Print version name
+        run: echo ${{steps.version_name.outputs.version}}
+        shell: bash
+
+      # Set the docman package version using npm
+      - name: Set docman version
+        run: npm version --no-git-tag-version ${{steps.latest_release.outputs.release}}-beta.${{steps.date.outputs.date}} -f
+
+      # npm install
+      - name: npm install
+        run: npm ci
+      - name: Package
+        run: npm run pack
+        env:
+          GH_TOKEN: ${{secrets.github_token}}
+
+      # Upload the artifact
+      - name: Upload beta build
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{steps.version_name.outputs.version}}
+          path: dist/docman-v${{steps.latest_release.outputs.release}}-beta.${{steps.date.outputs.date}}.exe
+
+    #- name: Perform CodeQL Analysis
+    #  uses: github/codeql-action/analyze@v1

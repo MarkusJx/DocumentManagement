@@ -1,8 +1,13 @@
 import java from "java";
 import {promisify} from "util";
 import * as fs from "fs";
+import path from "path";
 
-java.classpath.push('dbLib/build/libs/dbLib-1.0-SNAPSHOT.jar');
+if (fs.existsSync(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', 'dbLib-1.0-SNAPSHOT.jar'))) {
+    java.classpath.push(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', 'dbLib-1.0-SNAPSHOT.jar'));
+} else {
+    java.classpath.push(path.join(__dirname, '..', '..', '..', 'dbLib', 'build', 'libs', 'dbLib-1.0-SNAPSHOT.jar'));
+}
 
 const Arrays = java.import('java.util.Arrays');
 
@@ -1133,13 +1138,13 @@ export namespace database {
          * Create a document
          *
          * @param filename the file name
-         * @param path the document path
+         * @param _path the document path
          * @param properties the document properties
          * @param creationDate the document creation date
          * @param tagNames the tag names
          */
-        public async createDocument(filename: string, path: string, properties: PropertyMap, creationDate: Date, ...tagNames: string[]): Promise<void> {
-            await java_callMethod(this.impl, "createDocument", filename, path,
+        public async createDocument(filename: string, _path: string, properties: PropertyMap, creationDate: Date, ...tagNames: string[]): Promise<void> {
+            await java_callMethod(this.impl, "createDocument", filename, _path,
                 (await properties.toJavaChainedHashMap()).impl,
                 await dateToJavaLocalDate(creationDate),
                 stringToJavaArray(tagNames));
@@ -1189,11 +1194,11 @@ export namespace database {
         /**
          * Get a directory by its path
          *
-         * @param path the path to the directory
+         * @param _path the path to the directory
          * @return the directory or null if not found
          */
-        public async getDirectory(path: string): Promise<Directory> {
-            const impl: any = await java_callMethod(this.impl, "getDirectory", path);
+        public async getDirectory(_path: string): Promise<Directory> {
+            const impl: any = await java_callMethod(this.impl, "getDirectory", _path);
 
             if (impl != null) {
                 return Directory.fromJavaDirectory(impl, (await this.getDatabaseInfo()).sourcePath, this);

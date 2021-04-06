@@ -32,8 +32,9 @@ class Main {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     Main.main();
+    import("./Titlebar").then(i => i.create());
 });
 
 window.onbeforeunload = Main.onUnload.bind(Main);

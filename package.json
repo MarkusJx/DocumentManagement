@@ -10,12 +10,18 @@
     "pretest": "npm build",
     "test": "mocha",
     "rebuild": "electron-rebuild -p -f -w java && node -e \"require('java/postInstall')\"",
-    "postinstall": "npm run-script rebuild"
+    "postinstall": "npm run-script rebuild",
+    "prepack": "npm run build",
+    "pack": "electron-builder"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
+    "custom-electron-titlebar": "^3.2.6",
+    "electron-store": "^7.0.2",
+    "electron-updater": "^4.3.8",
+    "electron-window-state": "^5.0.3",
     "find-java-home": "^1.1.0",
     "java": "^0.12.1",
     "material-components-web": "^10.0.0",
@@ -29,9 +35,22 @@
     "@types/node": "^14.14.30",
     "@types/react-dom": "^17.0.1",
     "electron": "^11.1.1",
+    "electron-builder": "^22.10.5",
     "electron-rebuild": "^2.3.5",
     "hash-files": "^1.1.1",
     "mocha": "^8.3.0",
     "typescript": "^4.2.2"
+  },
+  "build": {
+    "appId": "io.github.markusjx",
+    "files": [
+      "ui/index.html",
+      "ui/style.css",
+      "out/**"
+    ],
+    "extraResources": [
+      "dbLib/build/libs/*.jar"
+    ],
+    "asar": false
   }
 }

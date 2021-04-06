@@ -1,5 +1,6 @@
-import {app, BrowserWindow, dialog, ipcMain} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItem} from 'electron';
 import path from 'path';
+import windowStateKeeper from "electron-window-state";
 
 app.allowRendererProcessReuse = false;
 
@@ -44,18 +45,64 @@ ipcMain.handle('select-database', async (event, ...args) => {
 });
 
 function createWindow(): void {
+    const menu = new Menu();
+    menu.append(new MenuItem({
+        label: 'File',
+        submenu: [
+            {
+                label: 'Load database',
+                // TODO
+                click: () => {
+                }
+            },
+            {
+                label: 'Settings',
+                // TODO
+                click: () => {
+                }
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Exit',
+                // TODO
+                click: () => {
+                }
+            }
+        ]
+    }));
+
+    Menu.setApplicationMenu(menu);
+
+    const mainWindowState = windowStateKeeper({
+        defaultWidth: 705,
+        defaultHeight: 830
+    });
+
     // Create the browser window.
     const mainWindow: BrowserWindow = new BrowserWindow({
-        width: 1600,
-        height: 1200,
+        x: mainWindowState.x,
+        y: mainWindowState.y,
+        width: mainWindowState.width,
+        height: mainWindowState.height,
+        minHeight: 500,
+        minWidth: 530,
+        titleBarStyle: "hidden",
+        frame: false,
+        resizable: true,
         webPreferences: {
             preload: path.join(__dirname, 'src', 'main.js'),
-            contextIsolation: true
+            contextIsolation: true,
+            worldSafeExecuteJavaScript: true,
+            nodeIntegration: false,
+            webSecurity: true,
+            enableRemoteModule: true
         }
     });
 
     // and load the index.html of the app.
-    mainWindow.loadFile('ui/index.html');
+    mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html'));
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools()
