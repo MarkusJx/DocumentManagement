@@ -68,15 +68,16 @@ const functions = {
         console.log("Creating tmp dir...");
         fs.mkdirSync(TMP_DIR);
 
-        console.log("Downloading jdk...");
-        await download("https://download.java.net/openjdk/jdk15/ri/openjdk-15+36_windows-x64_bin.zip",
+        console.log("Downloading jre...");
+        await download("https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jre_x64_windows_hotspot_11.0.10_9.zip",
             path.join(TMP_DIR, 'openjdk.zip'));
 
         console.log("Unpacking openjdk.zip...");
         await unzip("openjdk.zip", "openjdk", TMP_DIR);
 
-        console.log("Running jlink...");
-        await runJLink("jlink.exe");
+        //console.log("Running jlink...");
+        //await runJLink("jlink.exe");
+        fs.renameSync(path.join(TMP_DIR, 'openjdk', 'jdk-11.0.10+9-jre'), path.join(TMP_DIR, 'jre-11'));
     },
     "linux": async function () {
 
@@ -91,12 +92,6 @@ async function run() {
     } else {
         throw new Error("Unsupported platform: " + process.platform);
     }
-
-    console.log("Replacing jvm_dll_path.json...");
-    const JVM_DLL_PATH_JSON = path.join(__dirname, '..', 'node_modules', 'java', 'build', 'jvm_dll_path.json');
-    //deleteIfExists(JVM_DLL_PATH_JSON);
-    fs.writeFileSync(JVM_DLL_PATH_JSON, JSON.stringify(";resources\\jre-15\\bin\\server"));
-    console.log("Done");
 }
 
 run().then();
