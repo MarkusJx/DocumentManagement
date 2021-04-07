@@ -8,3 +8,4 @@
 .gradle
 build.cache.json
 dist/
+buildscripts/tmp

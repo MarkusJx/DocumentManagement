@@ -142,9 +142,9 @@ function spawnAsync(command, args = [], options = {}) {
 }
 
 async function run() {
-    const buildCache = new BuildCache(["package.json", "package-lock.json", "build.js"], "general");
-    const gradleCache = new BuildCache(["dbLib/src/**"], "gradle");
-    const tscCache = new BuildCache(["src/**", "main.ts"], "tsc")
+    const buildCache = new BuildCache(["../package.json", "../package-lock.json", "../build.js"], "general");
+    const gradleCache = new BuildCache(["../dbLib/src/**"], "gradle");
+    const tscCache = new BuildCache(["../src/**", "../main.ts"], "tsc")
 
     const buildCache_build = await buildCache.shouldRebuild();
     const gradleCache_build = await gradleCache.shouldRebuild();
@@ -159,7 +159,9 @@ async function run() {
     if (buildCache_build || gradleCache_build) {
         console.log("The gradle cache is out of date, running gradlew...");
         try {
-            await spawnAsync(gradle_command, ["jar"], {cwd: path.join(__dirname, "dbLib")});
+            await spawnAsync(gradle_command, ["jar"], {
+                cwd: path.join(__dirname, '..', "dbLib")
+            });
         } catch (e) {
             gradleCache.buildFailed();
             throw e;
