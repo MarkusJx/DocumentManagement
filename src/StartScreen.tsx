@@ -1,10 +1,19 @@
 import React from "react";
 import {ipcRenderer} from "electron";
-import {Action, database, FileScanner} from "./databaseWrapper";
+import {
+    Action,
+    CustomPersistence,
+    database,
+    FileScanner,
+    MariaDBProvider,
+    MySQLProvider,
+    PersistenceProvider
+} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
 import constants from "./constants";
 import {SearchBox} from "./SearchBox";
 import {Button, OutlinedButton} from "./MDCWrapper";
+import {AnySettings, DatabaseConfigurator, DatabaseProvider, SQLiteSettings} from "./DatabaseConfigurator";
 
 /**
  * Whether to show the generated sql commands
@@ -45,6 +54,7 @@ export class MainComponent extends React.Component<{}> {
         this.startScreenOnLoad = this.startScreenOnLoad.bind(this);
         this.startScan = this.startScan.bind(this);
         this.startSearch = this.startSearch.bind(this);
+        this.onLoad = this.onLoad.bind(this);
 
         this.currentPage = (
             <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
@@ -83,28 +93,32 @@ export class MainComponent extends React.Component<{}> {
      * @private
      */
     private async startScreenOnLoad(): Promise<void> {
-        const file: string = await ipcRenderer.invoke('select-database', false, "Select a database file");
-        if (file != null) {
-            this.currentPage = (
-                <MainDataTable databaseManager={null} directory={null} showProgress={true} key={0}
+        this.currentPage = (
+            <LoadScreen onLoad={this.onLoad} key={0}/>
+        );
+        this.forceUpdate();
+    }
+
+    private async onLoad(loadScreen: LoadScreen): Promise<void> {
+        this.currentPage = (
+            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={2}
+                           ref={e => constants.mainDataTable = e}/>
+        );
+
+        this.forceUpdate();
+        this.databaseManager = await loadScreen.getDatabaseManager(Action.UPDATE, SHOW_SQL);
+        constants.init(this.databaseManager);
+
+        this.currentPage = (
+            <div>
+                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
+                           ref={e => this.searchBox = e}/>
+                <MainDataTable directory={await this.databaseManager.getDirectory("")}
+                               databaseManager={this.databaseManager} showProgress={false} key={3}
                                ref={e => constants.mainDataTable = e}/>
-            );
-
-            this.forceUpdate();
-            this.databaseManager = await database.createSQLiteDatabaseManager(file, Action.UPDATE, SHOW_SQL);
-            constants.init(this.databaseManager);
-
-            this.currentPage = (
-                <div>
-                    <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
-                               ref={e => this.searchBox = e}/>
-                    <MainDataTable directory={await this.databaseManager.getDirectory("")}
-                                   databaseManager={this.databaseManager} showProgress={false} key={1}
-                                   ref={e => constants.mainDataTable = e}/>
-                </div>
-            );
-            this.forceUpdate();
-        }
+            </div>
+        );
+        this.forceUpdate();
     }
 
     /**
@@ -129,6 +143,99 @@ export class MainComponent extends React.Component<{}> {
         );
         this.forceUpdate();
         constants.scanLoadingScreen.visible = false;
+    }
+}
+
+type onLoad_t = (loadScreen: LoadScreen) => Promise<void>;
+
+interface LoadScreenProps {
+    onLoad: onLoad_t;
+}
+
+class LoadScreen extends React.Component<LoadScreenProps> {
+    private configurator: DatabaseConfigurator;
+    private loadButton: Button;
+    private readonly onLoad: onLoad_t;
+
+    public constructor(props: LoadScreenProps) {
+        super(props);
+
+        this.configurator = null;
+        this.loadButton = null;
+
+        this.onLoad = props.onLoad.bind(this);
+        this.onConfigChange = this.onConfigChange.bind(this);
+        this.onLoadImpl = this.onLoadImpl.bind(this);
+    }
+
+    public async getDatabaseManager(action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
+        const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
+            const em = await CustomPersistence.createEntityManager("documents", provider);
+            return await database.DatabaseManager.create(em);
+        };
+
+        switch (this.configurator.settings.provider) {
+            case DatabaseProvider.SQLite: {
+                const settings = this.configurator.settings as SQLiteSettings;
+                return await database.createSQLiteDatabaseManager(settings.file, action, showSQL);
+            }
+            case DatabaseProvider.MariaDB: {
+                const settings = this.configurator.settings as AnySettings;
+                const provider = await MariaDBProvider.create(settings.url, settings.user, settings.password, action, showSQL);
+                return await fromProvider(provider);
+            }
+            case DatabaseProvider.MySQL: {
+                const settings = this.configurator.settings as AnySettings;
+                const provider = await MySQLProvider.create(settings.url, settings.user, settings.password, action, showSQL);
+                return await fromProvider(provider);
+            }
+            default:
+                return null;
+        }
+    }
+
+    public render(): React.ReactNode {
+        const headingStyle: React.CSSProperties = {
+            fontFamily: '"Open Sans", sans-serif',
+            fontWeight: 400,
+            margin: '0px auto',
+            width: 'max-content',
+            color: '#464646'
+        };
+
+        const loadButtonStyle: React.CSSProperties = {
+            marginTop: '15px',
+            marginBottom: '15px'
+        };
+
+        return (
+            <div className="start-scan-screen">
+                <div className="start-scan-screen-grid-element">
+                    <h1 style={headingStyle}>Load an existing Database</h1>
+                </div>
+
+                <div className="start-scan-screen-grid-element">
+                    <DatabaseConfigurator ref={e => this.configurator = e} onChange={this.onConfigChange}/>
+                </div>
+
+                <div className="centered" style={loadButtonStyle}>
+                    <OutlinedButton text={"Load"} onClick={this.onLoadImpl}
+                                    ref={e => this.loadButton = e}/>
+                </div>
+            </div>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.onConfigChange();
+    }
+
+    private onConfigChange(): void {
+        this.loadButton.enabled = this.configurator.settings != null;
+    }
+
+    private async onLoadImpl(): Promise<void> {
+        await this.onLoad(this);
     }
 }
 
@@ -539,7 +646,7 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
     private async onCreateClick(): Promise<void> {
         this.setButtonsEnabled(false);
         await this.onCreateClickImpl();
-        this.setButtonsEnabled(true);
+        //this.setButtonsEnabled(true);
     }
 
     /**
@@ -549,6 +656,6 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
     private async onLoadClick(): Promise<void> {
         this.setButtonsEnabled(false);
         await this.onLoadClickImpl();
-        this.setButtonsEnabled(true);
+        //this.setButtonsEnabled(true);
     }
 }

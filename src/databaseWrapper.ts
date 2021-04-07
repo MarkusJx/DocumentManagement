@@ -194,6 +194,48 @@ export class SQLiteProvider extends PersistenceProvider {
     }
 }
 
+export class MySQLProvider extends PersistenceProvider {
+    /**
+     * Create a MySQLProvider instance
+     *
+     * @param impl the java implementation instance
+     * @private
+     */
+    private constructor(impl: any) {
+        super(impl);
+    }
+
+    public static async create(url: string, user: string, password: string, action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<MySQLProvider> {
+        const _action = actionToJavaAction(action);
+        const arr = java.newArray("java.lang.String", []);
+        const impl = await java_newInstance("io.github.markusjx.database.persistence.MySQLProvider",
+            url, user, password, _action, showSQL, arr);
+
+        return new MySQLProvider(impl);
+    }
+}
+
+export class MariaDBProvider extends PersistenceProvider {
+    /**
+     * Create a MySQLProvider instance
+     *
+     * @param impl the java implementation instance
+     * @private
+     */
+    private constructor(impl: any) {
+        super(impl);
+    }
+
+    public static async create(url: string, user: string, password: string, action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<MySQLProvider> {
+        const _action = actionToJavaAction(action);
+        const arr = java.newArray("java.lang.String", []);
+        const impl = await java_newInstance("io.github.markusjx.database.persistence.MariaDBProvider",
+            url, user, password, _action, showSQL, arr);
+
+        return new MariaDBProvider(impl);
+    }
+}
+
 /**
  * An entity manager
  */

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import {MDCCheckbox} from '@material/checkbox';
 import {MDCRipple} from "@material/ripple";
 import {MDCLinearProgress} from "@material/linear-progress"
+import {MDCMenu} from "@material/menu";
 import MDCCSSProperties from "./MDCCSSProperties";
 
 /**
@@ -230,5 +231,111 @@ export class ProgressBar extends React.Component {
     public componentDidMount() {
         const $this = ReactDOM.findDOMNode(this) as Element;
         this.element = new MDCLinearProgress($this);
+    }
+}
+
+interface DropdownMenuProps {
+    initialLabel: string;
+    options: string[];
+    onChange?: () => void;
+}
+
+interface DropdownMenuState {
+    buttonLabel: string;
+}
+
+export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMenuState> {
+    private openButton: HTMLButtonElement;
+    private menuItem: HTMLDivElement;
+    private menu: MDCMenu;
+    private cur: string;
+    private onChange: () => void;
+    private readonly options: string[];
+
+    public constructor(props: DropdownMenuProps) {
+        super(props);
+
+        this.openButton = null;
+        this.menuItem = null;
+        this.menu = null;
+        this.options = this.props.options;
+        this.cur = this.props.initialLabel;
+        this.onChange = this.props.onChange;
+
+        this.state = {
+            buttonLabel: props.initialLabel
+        };
+
+        this.openButtonClick = this.openButtonClick.bind(this);
+        this.optionClick = this.optionClick.bind(this);
+    }
+
+    public get selectedOption(): string {
+        return this.cur;
+    }
+
+    public set selectedOption(option: string) {
+        this.buttonLabel = option;
+        this.cur = option;
+    }
+
+    private get buttonLabel(): string {
+        return this.state.buttonLabel;
+    }
+
+    private set buttonLabel(label: string) {
+        this.setState({
+            buttonLabel: label
+        });
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-menu-surface--anchor">
+                <button className="mdc-button mdc-button--outlined" ref={e => this.openButton = e}
+                        onClick={this.openButtonClick}>
+                    <span className="mdc-button__ripple"/>
+                    <span className="mdc-button__label">
+                        {this.buttonLabel}
+                    </span>
+                    <i className="material-icons mdc-button__icon" aria-hidden="true"
+                       style={{marginLeft: 'auto'}}>arrow_drop_down</i>
+                </button>
+
+                <div className="mdc-menu mdc-menu-surface" ref={e => this.menuItem = e}>
+                    <ul className="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabIndex={-1}>
+                        {this.generateMenuItems()}
+                    </ul>
+                </div>
+            </div>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.menu = new MDCMenu(this.menuItem);
+        MDCRipple.attachTo(this.openButton);
+    }
+
+    private optionClick(option: string): void {
+        this.selectedOption = option;
+        if (this.onChange) {
+            this.onChange();
+        }
+    }
+
+    private openButtonClick(): void {
+        this.menu.open = !this.menu.open;
+    }
+
+    private generateMenuItems(): React.ReactNode {
+        return (
+            this.options.map(option => (
+                <li className="mdc-list-item" role="menuitem" onClick={this.optionClick.bind(this, option)}
+                    key={`list-item-${option}`}>
+                    <span className="mdc-list-item__ripple"/>
+                    <span className="mdc-list-item__text">{option}</span>
+                </li>
+            ))
+        );
     }
 }
