@@ -1,19 +1,12 @@
 import React from "react";
 import {ipcRenderer} from "electron";
-import {
-    Action,
-    CustomPersistence,
-    database,
-    FileScanner,
-    MariaDBProvider,
-    MySQLProvider,
-    PersistenceProvider
-} from "./databaseWrapper";
+import {Action, database, FileScanner} from "./databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
 import constants from "./constants";
 import {SearchBox} from "./SearchBox";
 import {Button, OutlinedButton} from "./MDCWrapper";
-import {AnySettings, DatabaseConfigurator, DatabaseProvider, SQLiteSettings} from "./DatabaseConfigurator";
+import {DatabaseConfigurator} from "./DatabaseConfigurator";
+import {showErrorDialog} from "./ErrorDialog";
 
 /**
  * Whether to show the generated sql commands
@@ -60,6 +53,36 @@ export class MainComponent extends React.Component<{}> {
             <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
         );
         this.databaseManager = null;
+
+        ipcRenderer.on('load-database', () => {
+            if (this.databaseManager) {
+                this.databaseManager.close().then();
+                this.databaseManager = null;
+            }
+
+            this.startScreenOnLoad();
+        });
+
+        ipcRenderer.on('create-database', () => {
+            if (this.databaseManager) {
+                this.databaseManager.close().then();
+                this.databaseManager = null;
+            }
+
+            this.startScreenOnCreate();
+        });
+
+        ipcRenderer.on('goto-start-screen', () => {
+            if (this.databaseManager) {
+                this.databaseManager.close().then();
+                this.databaseManager = null;
+            }
+
+            this.currentPage = (
+                <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
+            );
+            this.forceUpdate();
+        });
     }
 
     /**
@@ -77,11 +100,18 @@ export class MainComponent extends React.Component<{}> {
         return this.currentPage;
     }
 
+    private gotoStartPage(): void {
+        this.currentPage = (
+            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
+        );
+        this.forceUpdate();
+    }
+
     /**
      * Called when the start screen create button was pressed
      * @private
      */
-    private async startScreenOnCreate(): Promise<void> {
+    private startScreenOnCreate(): void {
         this.currentPage = (
             <StartScanScreen onStartClickImpl={this.startScan}/>
         );
@@ -92,7 +122,7 @@ export class MainComponent extends React.Component<{}> {
      * Called when the start screen load button was pressed
      * @private
      */
-    private async startScreenOnLoad(): Promise<void> {
+    private startScreenOnLoad(): void {
         this.currentPage = (
             <LoadScreen onLoad={this.onLoad} key={0}/>
         );
@@ -107,12 +137,22 @@ export class MainComponent extends React.Component<{}> {
      */
     private async onLoad(loadScreen: LoadScreen): Promise<void> {
         this.currentPage = (
-            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={2}
+            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
                            ref={e => constants.mainDataTable = e}/>
         );
 
         this.forceUpdate();
-        this.databaseManager = await loadScreen.getDatabaseManager(Action.UPDATE, SHOW_SQL);
+        try {
+            this.databaseManager = await loadScreen.getDatabaseManager(Action.UPDATE, SHOW_SQL);
+        } catch (e) {
+            showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
+                "this error may be caused by invalid login credentials. Please check if your connection details are " +
+                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
+
+            this.gotoStartPage();
+            return;
+        }
+
         constants.init(this.databaseManager);
 
         this.currentPage = (
@@ -120,7 +160,7 @@ export class MainComponent extends React.Component<{}> {
                 <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
                            ref={e => this.searchBox = e}/>
                 <MainDataTable directory={await this.databaseManager.getDirectory("")}
-                               databaseManager={this.databaseManager} showProgress={false} key={3}
+                               databaseManager={this.databaseManager} showProgress={false} key={2}
                                ref={e => constants.mainDataTable = e}/>
             </div>
         );
@@ -143,7 +183,7 @@ export class MainComponent extends React.Component<{}> {
                 <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
                            ref={e => this.searchBox = e}/>
                 <MainDataTable directory={await this.databaseManager.getDirectory("")}
-                               databaseManager={this.databaseManager} showProgress={false} key={1}
+                               databaseManager={this.databaseManager} showProgress={false} key={3}
                                ref={e => constants.mainDataTable = e}/>
             </div>
         );
@@ -203,29 +243,7 @@ class LoadScreen extends React.Component<LoadScreenProps> {
      * @param showSQL whether to show the sql commands
      */
     public async getDatabaseManager(action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
-        const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
-            const em = await CustomPersistence.createEntityManager("documents", provider);
-            return await database.DatabaseManager.create(em);
-        };
-
-        switch (this.configurator.settings.provider) {
-            case DatabaseProvider.SQLite: {
-                const settings = this.configurator.settings as SQLiteSettings;
-                return await database.createSQLiteDatabaseManager(settings.file, action, showSQL);
-            }
-            case DatabaseProvider.MariaDB: {
-                const settings = this.configurator.settings as AnySettings;
-                const provider = await MariaDBProvider.create(settings.url, settings.user, settings.password, action, showSQL);
-                return await fromProvider(provider);
-            }
-            case DatabaseProvider.MySQL: {
-                const settings = this.configurator.settings as AnySettings;
-                const provider = await MySQLProvider.create(settings.url, settings.user, settings.password, action, showSQL);
-                return await fromProvider(provider);
-            }
-            default:
-                return null;
-        }
+        return await this.configurator.getDatabaseManager(action, showSQL);
     }
 
     public render(): React.ReactNode {
@@ -300,8 +318,6 @@ interface StartScanScreenProps {
 interface StartScanScreenState {
     // The selected directory
     directory: string;
-    // The selected database file
-    databaseFile: string;
 }
 
 /**
@@ -313,12 +329,6 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
      * @private
      */
     private readonly onStartClickImpl: startScanClick_t;
-
-    /**
-     * The select database file button
-     * @private
-     */
-    private selectFileButton: Button;
 
     /**
      * The select directory to scan button
@@ -333,6 +343,12 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
     private startScanButton: Button;
 
     /**
+     * The database configurator
+     * @private
+     */
+    private configurator: DatabaseConfigurator;
+
+    /**
      * Create the start scan screen
      *
      * @param props the properties
@@ -341,19 +357,18 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
         super(props);
 
         this.state = {
-            directory: null,
-            databaseFile: null
+            directory: null
         };
 
-        this.selectFileButton = null;
         this.selectDirectoryButton = null;
         this.startScanButton = null;
+        this.configurator = null;
 
         this.onStartClickImpl = props.onStartClickImpl;
 
         this.onStartClick = this.onStartClick.bind(this);
         this.selectDirectory = this.selectDirectory.bind(this);
-        this.selectDatabaseFile = this.selectDatabaseFile.bind(this);
+        this.enableButtons = this.enableButtons.bind(this);
     }
 
     /**
@@ -365,19 +380,6 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
     private set directory(dir: string) {
         this.setState({
             directory: dir
-        });
-        this.enableButtons();
-    }
-
-    /**
-     * Set the database file to populate
-     *
-     * @param file the database file location
-     * @private
-     */
-    private set databaseFile(file: string) {
-        this.setState({
-            databaseFile: file
         });
         this.enableButtons();
     }
@@ -442,19 +444,7 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
                 </div>
 
                 <div className="start-scan-screen-grid-element">
-                    <h2 style={subHeadingStyle} className="centered">
-                        Select a database file
-                    </h2>
-                    <p style={textStyle} className="centered">
-                        {"Selected database file: "}
-                        <span className="start-scan-path">
-                            {this.state.databaseFile == null ? "none" : this.state.databaseFile}
-                        </span>
-                    </p>
-                    <div className="centered">
-                        <OutlinedButton text={"Select"} onClick={this.selectDatabaseFile}
-                                        ref={e => this.selectFileButton = e}/>
-                    </div>
+                    <DatabaseConfigurator onChange={this.enableButtons} ref={e => this.configurator = e}/>
                 </div>
 
                 <div className="start-scan-screen-grid-element">
@@ -492,7 +482,6 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
      */
     private disableAllButtons(): void {
         this.selectDirectoryButton.enabled = false;
-        this.selectFileButton.enabled = false;
         this.startScanButton.enabled = false;
     }
 
@@ -502,8 +491,7 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
      */
     private enableButtons(): void {
         this.selectDirectoryButton.enabled = true;
-        this.selectFileButton.enabled = true;
-        this.startScanButton.enabled = this.state.directory != null && this.state.databaseFile != null;
+        this.startScanButton.enabled = this.state.directory != null && this.configurator.settings != null;
     }
 
     /**
@@ -516,26 +504,23 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
     }
 
     /**
-     * Select a database file
-     * @private
-     */
-    private async selectDatabaseFile(): Promise<void> {
-        this.disableAllButtons();
-        this.databaseFile = await ipcRenderer.invoke('select-database', true, "Select or create a database file");
-    }
-
-    /**
      * Called when the start scan button was clicked
      * @private
      */
     private async onStartClick(): Promise<void> {
         this.disableAllButtons();
         constants.scanLoadingScreen.visible = true;
-        const databaseManager: database.DatabaseManager = await database.createSQLiteDatabaseManager(
-            this.state.databaseFile,
-            Action.CREATE_DROP,
-            SHOW_SQL
-        );
+        let databaseManager: database.DatabaseManager;
+        try {
+            databaseManager = await this.configurator.getDatabaseManager(Action.CREATE, SHOW_SQL);
+        } catch (e) {
+            showErrorDialog("The database could not be created. If you are trying to connect to a remote database, " +
+                "this error may be caused by invalid login credentials. Please check if your connection details are " +
+                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
+            constants.scanLoadingScreen.visible = false;
+            this.enableButtons();
+            return;
+        }
 
         constants.init(databaseManager);
         await this.onStartClickImpl(databaseManager, this.state.directory);
@@ -547,9 +532,9 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
  */
 interface StartScreenProps {
     // Called when the create button was clicked
-    onCreateClickImpl: () => Promise<void>;
+    onCreateClickImpl: () => void;
     // Called when the load button was clicked
-    onLoadClickImpl: () => Promise<void>;
+    onLoadClickImpl: () => void;
 }
 
 /**
@@ -572,13 +557,13 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
      * Called when the create button was clicked
      * @private
      */
-    private readonly onCreateClickImpl: () => Promise<void>;
+    private readonly onCreateClickImpl: () => void;
 
     /**
      * Called when the load button was clicked
      * @private
      */
-    private readonly onLoadClickImpl: () => Promise<void>;
+    private readonly onLoadClickImpl: () => void;
 
     /**
      * Create the start screen
@@ -687,8 +672,7 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
      */
     private async onCreateClick(): Promise<void> {
         this.setButtonsEnabled(false);
-        await this.onCreateClickImpl();
-        //this.setButtonsEnabled(true);
+        this.onCreateClickImpl();
     }
 
     /**
@@ -697,7 +681,6 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
      */
     private async onLoadClick(): Promise<void> {
         this.setButtonsEnabled(false);
-        await this.onLoadClickImpl();
-        //this.setButtonsEnabled(true);
+        this.onLoadClickImpl();
     }
 }

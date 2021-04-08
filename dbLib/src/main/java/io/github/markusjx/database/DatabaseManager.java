@@ -9,6 +9,7 @@ import io.github.markusjx.util.ListUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
+import javax.persistence.TransactionRequiredException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.sql.PreparedStatement;
@@ -21,14 +22,14 @@ import java.util.stream.Collectors;
  */
 public class DatabaseManager {
     /**
-     * The entity manager instance
-     */
-    private final EntityManager manager;
-
-    /**
      * The maximum amount of search results for fuzzy searches
      */
     private static final int FUZZY_SEARCH_MAX_RESULTS = 25;
+
+    /**
+     * The entity manager instance
+     */
+    private final EntityManager manager;
 
     /**
      * Create a new DocumentManager instance
@@ -649,7 +650,12 @@ public class DatabaseManager {
      */
     @SuppressWarnings("unused")
     public void close() {
-        this.manager.flush();
+        try {
+            this.manager.flush();
+        } catch (TransactionRequiredException ignored) {
+            // Ignore this exception
+        }
+
         this.manager.clear();
         this.manager.close();
     }

@@ -416,11 +416,15 @@ export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMen
  */
 interface DialogProps {
     // The children of the dialog content
-    children?: React.ReactNode[];
+    children?: React.ReactNode[] | React.ReactNode;
     // The style of the dialog
     style?: React.CSSProperties;
     // The style of the dialog content element
     contentStyle?: React.CSSProperties;
+    // The style of the dialog surface
+    surfaceStyle?: React.CSSProperties;
+    // Whether the dialog has a cancel button
+    hasCancelButton?: boolean;
     // The id of the title element
     titleId: string;
     // The id of the content element
@@ -479,7 +483,8 @@ export class Dialog extends React.Component<DialogProps> {
             <div className="mdc-dialog" style={this.props.style} ref={e => this.element = e}>
                 <div className="mdc-dialog__container">
                     <div className="mdc-dialog__surface" role="alertdialog" aria-modal="true"
-                         aria-labelledby={this.props.titleId} aria-describedby={this.props.contentId}>
+                         aria-labelledby={this.props.titleId} aria-describedby={this.props.contentId}
+                         style={this.props.surfaceStyle}>
                         <h2 className="mdc-dialog__title" id={this.props.titleId}>
                             {this.props.title}
                         </h2>
@@ -487,11 +492,15 @@ export class Dialog extends React.Component<DialogProps> {
                             {this.props.children}
                         </div>
                         <div className="mdc-dialog__actions">
-                            <button type="button" className="mdc-button mdc-dialog__button"
-                                    data-mdc-dialog-action="cancel">
-                                <div className="mdc-button__ripple"/>
-                                <span className="mdc-button__label">Cancel</span>
-                            </button>
+                            {
+                                this.props.hasCancelButton !== false ? (
+                                    <button type="button" className="mdc-button mdc-dialog__button"
+                                            data-mdc-dialog-action="cancel">
+                                        <div className="mdc-button__ripple"/>
+                                        <span className="mdc-button__label">Cancel</span>
+                                    </button>
+                                ) : null
+                            }
                             <button type="button" className="mdc-button mdc-dialog__button"
                                     data-mdc-dialog-action="accept">
                                 <div className="mdc-button__ripple"/>

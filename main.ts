@@ -4,7 +4,7 @@ import windowStateKeeper from "electron-window-state";
 
 app.allowRendererProcessReuse = false;
 
-ipcMain.handle('select-directory', async (event, ...args) => {
+ipcMain.handle('select-directory', async (_event, ...args) => {
     const result = await dialog.showOpenDialog({
         properties: ['openDirectory'],
         title: args[0]
@@ -16,8 +16,8 @@ ipcMain.handle('select-directory', async (event, ...args) => {
     }
 });
 
-ipcMain.handle('select-database', async (event, ...args) => {
-    let props;
+ipcMain.handle('select-database', async (_event, ...args) => {
+    let props: any;
     if (args[0]) {
         props = ['openFile', 'promptToCreate'];
     } else {
@@ -46,33 +46,6 @@ ipcMain.handle('select-database', async (event, ...args) => {
 
 function createWindow(): void {
     const menu = new Menu();
-    menu.append(new MenuItem({
-        label: 'File',
-        submenu: [
-            {
-                label: 'Load database',
-                // TODO
-                click: () => {
-                }
-            },
-            {
-                label: 'Settings',
-                // TODO
-                click: () => {
-                }
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Exit',
-                // TODO
-                click: () => {
-                }
-            }
-        ]
-    }));
-
     Menu.setApplicationMenu(menu);
 
     const mainWindowState = windowStateKeeper({
@@ -101,8 +74,47 @@ function createWindow(): void {
         }
     });
 
+    menu.append(new MenuItem({
+        label: 'File',
+        submenu: [
+            {
+                label: 'Load database',
+                click: () => {
+                    mainWindow.webContents.send('load-database');
+                }
+            },
+            {
+                label: 'Create database',
+                click: () => {
+                    mainWindow.webContents.send('create-database');
+                }
+            },
+            {
+                label: 'Go to start screen',
+                click: () => {
+                    mainWindow.webContents.send('goto-start-screen');
+                }
+            },
+            {
+                label: 'Settings',
+                click: () => {
+                    // TODO
+                }
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Exit',
+                click: () => {
+                    app.quit();
+                }
+            }
+        ]
+    }));
+
     // and load the index.html of the app.
-    mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html')).then();
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools()

@@ -3,6 +3,14 @@ import React from "react";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "./MDCCSSProperties";
 import * as ReactDOM from "react-dom";
+import {
+    Action,
+    CustomPersistence,
+    database,
+    MariaDBProvider,
+    MySQLProvider,
+    PersistenceProvider
+} from "./databaseWrapper";
 
 /**
  * A database provider
@@ -85,6 +93,8 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
 
         this.onChange = props.onChange.bind(this);
         this.setUpDatabaseManager = this.setUpDatabaseManager.bind(this);
+
+        this.clear();
     }
 
     /**
@@ -99,10 +109,61 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
      * @return the currently selected settings
      */
     public get settings(): SQLiteSettings | AnySettings | null {
-        if (this._settings != null && this._settings.provider === this.dropdownMenu.selectedOption) {
+        if (this.ok) {
             return this._settings;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Check whether the supplied data is enough to load the database
+     */
+    public get ok(): boolean {
+        return this._settings != null && this._settings.provider === this.dropdownMenu.selectedOption &&
+            (this._settings.provider === DatabaseProvider.SQLite || ((this._settings as AnySettings).url.length > 0 &&
+                (this._settings as AnySettings).user.length > 0));
+    }
+
+    /**
+     * Clear all settings
+     */
+    public clear(): void {
+        this._settings = null;
+        DatabaseConfigDialog.instance.clear();
+    }
+
+    /**
+     * Generate the database manager from the settings
+     *
+     * @param action the creation action
+     * @param showSQL whether to show the sql commands
+     */
+    public async getDatabaseManager(action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
+        const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
+            const em = await CustomPersistence.createEntityManager("documents", provider);
+            return await database.DatabaseManager.create(em);
+        };
+
+        switch (this.settings.provider) {
+            case DatabaseProvider.SQLite: {
+                const settings = this.settings as SQLiteSettings;
+                return await database.createSQLiteDatabaseManager(settings.file, action, showSQL);
+            }
+            case DatabaseProvider.MariaDB: {
+                const settings = this.settings as AnySettings;
+                const provider = await MariaDBProvider.create(settings.url, settings.user, settings.password,
+                    action, showSQL);
+                return await fromProvider(provider);
+            }
+            case DatabaseProvider.MySQL: {
+                const settings = this.settings as AnySettings;
+                const provider = await MySQLProvider.create(settings.url, settings.user, settings.password,
+                    action, showSQL);
+                return await fromProvider(provider);
+            }
+            default:
+                return null;
         }
     }
 
@@ -121,6 +182,12 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
             marginTop: '15px'
         };
 
+        const infoTextStyle: React.CSSProperties = {
+            fontFamily: '"Open Sans", sans-serif',
+            fontWeight: 300,
+            color: '#464646'
+        };
+
         return (
             <div>
                 <h2 style={subheadingStyle} className="centered">Select a database provider</h2>
@@ -128,6 +195,21 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
                     <DropdownMenu initialLabel={dbProviderOptions[0]} options={dbProviderOptions}
                                   ref={e => this.dropdownMenu = e} onChange={this.onChange}/>
                 </div>
+
+                <div className="centered" style={infoTextStyle}>
+                    <p style={{marginBottom: '5px'}}>
+                        Select a database provider. Once selected, you must set up the provider:
+                    </p>
+                    <ul style={{marginTop: 0}}>
+                        <li>When using SQLite, you must select a location to store the database file on your system</li>
+                        <li>
+                            When using any other provider, you'll need to enter the connection details such as the
+                            url to connect to, the user name and password to use. In order to continue, at least a
+                            connection url and a user name must be specified.
+                        </li>
+                    </ul>
+                </div>
+
                 <div className="centered" style={setupStyle}>
                     <OutlinedButton text={"Set up"} onClick={this.setUpDatabaseManager}
                                     ref={e => this.setUpDBButton = e}/>
@@ -161,8 +243,6 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
                 DatabaseConfigDialog.instance.open(DatabaseProvider[this.dropdownMenu.selectedOption], () => {
                     if (DatabaseConfigDialog.instance.lastData !== null) {
                         const settings = DatabaseConfigDialog.instance.lastData;
-                        DatabaseConfigDialog.instance.lastData = null;
-
                         resolve(settings);
                     } else {
                         resolve(null);
@@ -252,7 +332,20 @@ class DatabaseConfigDialog extends React.Component {
     public open(provider: DatabaseProvider, onclose: () => void): void {
         this.currentProvider = provider;
         this.onclose = onclose;
+        if (this.lastData != null && this.lastData.provider === provider) {
+            this.urlTextField.value = this.lastData.url;
+            this.usernameTextField.value = this.lastData.user;
+            this.passwordTextField.value = this.lastData.password;
+        }
+
         this.dialog.open();
+    }
+
+    public clear(): void {
+        this.urlTextField.clear();
+        this.usernameTextField.clear();
+        this.passwordTextField.clear();
+        this.lastData = null;
     }
 
     public render() {
@@ -284,15 +377,13 @@ class DatabaseConfigDialog extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
-            if (event.detail.action === "accept" && this.urlTextField.value.length > 0 && this.usernameTextField.value.length > 0) {
+            if (event.detail.action === "accept") {
                 this.lastData = {
                     provider: this.currentProvider,
                     url: this.urlTextField.value,
                     user: this.usernameTextField.value,
                     password: this.passwordTextField.value
                 };
-            } else {
-                this.lastData = null;
             }
 
             this.urlTextField.clear();

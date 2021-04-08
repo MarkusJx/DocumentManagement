@@ -495,6 +495,15 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         return this.textField.value;
     }
 
+    /**
+     * Set the text field value
+     *
+     * @param value the new value
+     */
+    public set value(value: string) {
+        this.textField.value = value;
+    }
+
     public render(): React.ReactNode {
         // The style for the main element
         const style: MDCCSSProperties = {
