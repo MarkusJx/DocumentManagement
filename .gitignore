@@ -9,3 +9,4 @@
 build.cache.json
 dist/
 buildscripts/tmp
+*.db

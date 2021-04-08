@@ -1,6 +1,8 @@
 import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItem} from 'electron';
-import path from 'path';
+import {autoUpdater} from "electron-updater";
 import windowStateKeeper from "electron-window-state";
+import Store from "electron-store";
+import path from 'path';
 
 app.allowRendererProcessReuse = false;
 
@@ -45,6 +47,12 @@ ipcMain.handle('select-database', async (_event, ...args) => {
 });
 
 function createWindow(): void {
+    Store.initRenderer();
+    autoUpdater.checkForUpdatesAndNotify().then(r => {
+        if (r != null)
+            console.log(r);
+    });
+
     const menu = new Menu();
     Menu.setApplicationMenu(menu);
 

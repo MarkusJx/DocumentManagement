@@ -40,11 +40,7 @@ class Main {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-    try {
-        Main.main();
-    } catch (e) {
-        console.warn(e);
-    }
+    Main.main();
     import("./Titlebar").then(i => i.create());
 });
 

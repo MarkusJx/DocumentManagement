@@ -3,9 +3,10 @@ const {spawn} = require("child_process");
 /**
  * Untar a zip file on linux/macOs
  *
- * @param filename the file to extract
- * @param out_dir the output directory
- * @param working_directory the working directory
+ * @param filename {string} the file to extract
+ * @param out_dir {string} the output directory
+ * @param working_directory {string} the working directory
+ * @return {Promise<void>}
  */
 function untar(filename, out_dir, working_directory) {
     return new Promise((resolve, reject) => {
@@ -35,8 +36,9 @@ function untar(filename, out_dir, working_directory) {
 /**
  * Unpack a zip file on windows using 7zip
  *
- * @param command the command array to run
- * @param working_directory the working directory to work in
+ * @param command {string[]} the command array to run
+ * @param working_directory {string} the working directory to work in
+ * @return {Promise<void>}
  */
 function unzip_7z(command, working_directory) {
     return new Promise((resolve, reject) => {
@@ -63,6 +65,14 @@ function unzip_7z(command, working_directory) {
     });
 }
 
+/**
+ * Unpack a zip file using 7zip
+ *
+ * @param src {string} the file to unpack
+ * @param dest {string} the path to unpack the zip file to
+ * @param working_directory {string} the working directory
+ * @return {Promise<void>}
+ */
 function unzip(src, dest, working_directory) {
     return unzip_7z(['x', src, '-aoa', `-o${dest}`], working_directory);
 }
