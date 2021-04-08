@@ -1,6 +1,6 @@
 import React from "react";
-import {ChipTextAreaWithAutoComplete, TextArea} from "./ChipTextArea";
-import {Button, Checkbox, OutlinedButton} from "./MDCWrapper";
+import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
+import {Button, Checkbox, OutlinedButton, OutlinedTextField} from "./MDCWrapper";
 import {database, PropertyMap} from "./databaseWrapper";
 import {PropertySetter} from "./PropertyField";
 import {DateRangeTextField} from "./DateTextField";
@@ -25,7 +25,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * The filename selector text area
      * @private
      */
-    private filenameTextArea: TextArea;
+    private filenameTextArea: OutlinedTextField;
 
     /**
      * The file name exact match checkbox
@@ -196,7 +196,8 @@ export class SearchBox extends React.Component<SearchBoxProps> {
             <div style={style}>
                 <Button text={"Show/Hide search"} onClick={this.showHideMainContent}/>
                 <div style={main_content_style} ref={e => this.mainContentElement = e}>
-                    <TextArea title={"File name"} ref={e => this.filenameTextArea = e}/>
+                    <OutlinedTextField title={"File name"} ref={e => this.filenameTextArea = e}
+                                       labelId={"search-file-name"}/>
                     <div style={exact_match_container_style}>
                         <div style={exact_match_text_style}>
                             Exact match

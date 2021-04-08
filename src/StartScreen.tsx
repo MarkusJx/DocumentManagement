@@ -99,6 +99,12 @@ export class MainComponent extends React.Component<{}> {
         this.forceUpdate();
     }
 
+    /**
+     * Called when the database should be loaded
+     *
+     * @param loadScreen the load screen instance
+     * @private
+     */
     private async onLoad(loadScreen: LoadScreen): Promise<void> {
         this.currentPage = (
             <MainDataTable databaseManager={null} directory={null} showProgress={true} key={2}
@@ -146,28 +152,56 @@ export class MainComponent extends React.Component<{}> {
     }
 }
 
+/**
+ * The on load listener function
+ */
 type onLoad_t = (loadScreen: LoadScreen) => Promise<void>;
 
+/**
+ * The load screen props
+ */
 interface LoadScreenProps {
+    // The on load listener function
     onLoad: onLoad_t;
 }
 
+/**
+ * The load database screen
+ */
 class LoadScreen extends React.Component<LoadScreenProps> {
+    /**
+     * The database configurator
+     * @private
+     */
     private configurator: DatabaseConfigurator;
-    private loadButton: Button;
-    private readonly onLoad: onLoad_t;
 
+    /**
+     * The load button
+     * @private
+     */
+    private loadButton: Button;
+
+    /**
+     * Create a load screen
+     *
+     * @param props the properties
+     */
     public constructor(props: LoadScreenProps) {
         super(props);
 
         this.configurator = null;
         this.loadButton = null;
 
-        this.onLoad = props.onLoad.bind(this);
         this.onConfigChange = this.onConfigChange.bind(this);
         this.onLoadImpl = this.onLoadImpl.bind(this);
     }
 
+    /**
+     * Generate the database manager from the settings
+     *
+     * @param action the creation action
+     * @param showSQL whether to show the sql commands
+     */
     public async getDatabaseManager(action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
         const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
             const em = await CustomPersistence.createEntityManager("documents", provider);
@@ -230,12 +264,20 @@ class LoadScreen extends React.Component<LoadScreenProps> {
         this.onConfigChange();
     }
 
+    /**
+     * The on config changed listener
+     * @private
+     */
     private onConfigChange(): void {
         this.loadButton.enabled = this.configurator.settings != null;
     }
 
+    /**
+     * The on load implementation
+     * @private
+     */
     private async onLoadImpl(): Promise<void> {
-        await this.onLoad(this);
+        await this.props.onLoad(this);
     }
 }
 

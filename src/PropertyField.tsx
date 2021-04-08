@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {MDCRipple} from '@material/ripple';
-import {TextAreaWithAutoComplete} from "./ChipTextArea";
 import {database} from "./databaseWrapper";
 import MDCCSSProperties from "./MDCCSSProperties";
+import {OutlinedTextFieldWithAutoComplete} from "./MDCWrapper";
 
 /**
  * The properties for the {@link PropertyField}
@@ -45,13 +45,13 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      * The property name text area
      * @private
      */
-    private _propertyNameTextArea: TextAreaWithAutoComplete;
+    private _propertyNameTextArea: OutlinedTextFieldWithAutoComplete;
 
     /**
      * The property value text area
      * @private
      */
-    private _propertyValueTextArea: TextAreaWithAutoComplete;
+    private _propertyValueTextArea: OutlinedTextFieldWithAutoComplete;
 
     /**
      * Create a property field
@@ -89,12 +89,13 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
     public render(): React.ReactNode {
         return (
             <div>
-                <TextAreaWithAutoComplete getAutoCompleteOptions={this.getPropertyAutoCompleteOptions}
-                                          title="Property name" value={this._propertyName}
-                                          ref={e => this._propertyNameTextArea = e}/>
-                <TextAreaWithAutoComplete getAutoCompleteOptions={this.getPropertyValueAutoCompleteOptions}
-                                          title="Property value" value={this._propertyValue}
-                                          ref={e => this._propertyValueTextArea = e}/>
+                <OutlinedTextFieldWithAutoComplete getAutoCompleteOptions={this.getPropertyAutoCompleteOptions}
+                                                   title="Property name" value={this._propertyName}
+                                                   ref={e => this._propertyNameTextArea = e} labelId={"property-name"}/>
+                <OutlinedTextFieldWithAutoComplete getAutoCompleteOptions={this.getPropertyValueAutoCompleteOptions}
+                                                   title="Property value" value={this._propertyValue}
+                                                   ref={e => this._propertyValueTextArea = e}
+                                                   labelId={"property-value"}/>
             </div>
         );
     }

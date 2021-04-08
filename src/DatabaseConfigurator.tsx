@@ -1,40 +1,81 @@
-import {Button, DropdownMenu, OutlinedButton} from "./MDCWrapper";
+import {Button, Dialog, DropdownMenu, OutlinedButton, OutlinedTextField} from "./MDCWrapper";
 import React from "react";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "./MDCCSSProperties";
 import * as ReactDOM from "react-dom";
-import {MDCDialog} from "@material/dialog";
-import {TextArea} from "./ChipTextArea";
 
+/**
+ * A database provider
+ */
 export enum DatabaseProvider {
     SQLite = "SQLite",
     MariaDB = "MariaDB",
     MySQL = "MySQL"
 }
 
+/**
+ * General database settings
+ */
 export interface DatabaseSettings {
+    // The selected provider
     provider: DatabaseProvider;
 }
 
+/**
+ * SQLite database settings
+ */
 export interface SQLiteSettings extends DatabaseSettings {
+    // The selected file
     file: string;
 }
 
+/**
+ * Settings for any database (not SQLite)
+ */
 export interface AnySettings extends DatabaseSettings {
+    // The connection url
     url: string;
+    // The username to use
     user: string;
+    // The password to use
     password: string;
 }
 
+/**
+ * The database configurator props
+ */
 interface DatabaseConfiguratorProps {
+    // A function to be called when a value is changed
     onChange: () => void;
 }
 
+/**
+ * A database configuration element
+ */
 export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorProps> {
+    /**
+     * A function to be called when a value is changed
+     * @private
+     */
     private readonly onChange: () => void;
+
+    /**
+     * The dropdown menu
+     * @private
+     */
     private dropdownMenu: DropdownMenu;
+
+    /**
+     * The set up database button
+     * @private
+     */
     private setUpDBButton: Button;
 
+    /**
+     * Create a configurator
+     *
+     * @param props the properties
+     */
     public constructor(props: DatabaseConfiguratorProps) {
         super(props);
 
@@ -46,9 +87,18 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
         this.setUpDatabaseManager = this.setUpDatabaseManager.bind(this);
     }
 
+    /**
+     * The currently selected settings
+     * @private
+     */
     private _settings: SQLiteSettings | AnySettings;
 
-    public get settings(): SQLiteSettings | AnySettings {
+    /**
+     * Get the currently selected settings
+     *
+     * @return the currently selected settings
+     */
+    public get settings(): SQLiteSettings | AnySettings | null {
         if (this._settings != null && this._settings.provider === this.dropdownMenu.selectedOption) {
             return this._settings;
         } else {
@@ -86,6 +136,10 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
         );
     }
 
+    /**
+     * Set up the database configuration
+     * @private
+     */
     private async setUpDatabaseManager(): Promise<void> {
         if (this.dropdownMenu.selectedOption === DatabaseProvider.SQLite) {
             this.setUpDBButton.enabled = false;
@@ -122,16 +176,61 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
     }
 }
 
+/**
+ * A database configuration dialog
+ */
 class DatabaseConfigDialog extends React.Component {
+    /**
+     * A static instance
+     */
     public static instance: DatabaseConfigDialog = null;
+
+    /**
+     * The last stored data
+     */
     public lastData: AnySettings;
-    private dialog: MDCDialog;
-    private urlTextField: TextArea;
-    private usernameTextField: TextArea;
-    private passwordTextField: TextArea;
+
+    /**
+     * The dialog
+     * @private
+     */
+    private dialog: Dialog;
+
+    /**
+     * The database url text field
+     * @private
+     */
+    private urlTextField: OutlinedTextField;
+
+    /**
+     * The user name text field
+     * @private
+     */
+    private usernameTextField: OutlinedTextField;
+
+    /**
+     * The password text field
+     * @private
+     */
+    private passwordTextField: OutlinedTextField;
+
+    /**
+     * The current database provider
+     * @private
+     */
     private currentProvider: DatabaseProvider;
+
+    /**
+     * The close listener
+     * @private
+     */
     private onclose: () => void;
 
+    /**
+     * Create a config dialog
+     *
+     * @param props the properties
+     */
     public constructor(props: {}) {
         super(props);
 
@@ -144,6 +243,12 @@ class DatabaseConfigDialog extends React.Component {
         this.onclose = null;
     }
 
+    /**
+     * Open the dialog
+     *
+     * @param provider the selected provider
+     * @param onclose the close listener
+     */
     public open(provider: DatabaseProvider, onclose: () => void): void {
         this.currentProvider = provider;
         this.onclose = onclose;
@@ -162,45 +267,21 @@ class DatabaseConfigDialog extends React.Component {
         }
 
         return (
-            <div className="mdc-dialog" style={style}>
-                <div className="mdc-dialog__container">
-                    <div className="mdc-dialog__surface" role="alertdialog" aria-modal="true"
-                         aria-labelledby="database-config-dialog-title"
-                         aria-describedby="database-config-dialog-content">
-                        <h2 className="mdc-dialog__title" id="database-config-dialog-title">
-                            Edit database configuration
-                        </h2>
-                        <div className="mdc-dialog__content" id="database-config-dialog-content">
-                            <p style={textStyle}>
-                                In order to connect to the database, you need to enter the following connection details:
-                            </p>
-                            <TextArea title={"URL"} ref={e => this.urlTextField = e}/>
-                            <TextArea title={"Username"} ref={e => this.usernameTextField = e}/>
-                            <TextArea title={"Password"} ref={e => this.passwordTextField = e}/>
-                        </div>
-                        <div className="mdc-dialog__actions">
-                            <button type="button" className="mdc-button mdc-dialog__button"
-                                    data-mdc-dialog-action="cancel">
-                                <div className="mdc-button__ripple"/>
-                                <span className="mdc-button__label">Cancel</span>
-                            </button>
-                            <button type="button" className="mdc-button mdc-dialog__button"
-                                    data-mdc-dialog-action="accept">
-                                <div className="mdc-button__ripple"/>
-                                <span className="mdc-button__label">Ok</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="mdc-dialog__scrim"/>
-            </div>
+            <Dialog titleId={"database-config-dialog-title"} contentId={"database-config-dialog-content"}
+                    title={"Edit database configuration"} style={style} ref={e => this.dialog = e}>
+                <p style={textStyle}>
+                    In order to connect to the database, you need to enter the following connection details:
+                </p>
+                <OutlinedTextField title={"URL"} ref={e => this.urlTextField = e} labelId={"database-config-url"}/>
+                <OutlinedTextField title={"Username"} ref={e => this.usernameTextField = e}
+                                   labelId={"database-config-user"}/>
+                <OutlinedTextField title={"Password"} ref={e => this.passwordTextField = e}
+                                   labelId={"database-config-pass"}/>
+            </Dialog>
         );
     }
 
     public componentDidMount(): void {
-        const $this = ReactDOM.findDOMNode(this) as Element;
-        this.dialog = new MDCDialog($this);
-
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
             if (event.detail.action === "accept" && this.urlTextField.value.length > 0 && this.usernameTextField.value.length > 0) {
@@ -222,6 +303,7 @@ class DatabaseConfigDialog extends React.Component {
     }
 }
 
+// Add a config dialog to the DOM
 window.addEventListener('DOMContentLoaded', () => {
     ReactDOM.render(
         <DatabaseConfigDialog ref={e => DatabaseConfigDialog.instance = e}/>,

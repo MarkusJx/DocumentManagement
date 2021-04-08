@@ -194,6 +194,9 @@ export class SQLiteProvider extends PersistenceProvider {
     }
 }
 
+/**
+ * A MySQL persistence provider
+ */
 export class MySQLProvider extends PersistenceProvider {
     /**
      * Create a MySQLProvider instance
@@ -205,6 +208,16 @@ export class MySQLProvider extends PersistenceProvider {
         super(impl);
     }
 
+    /**
+     * Create a new persistence provider instance
+     *
+     * @param url the url of the database
+     * @param user the username to use
+     * @param password the password to use
+     * @param action the sql action
+     * @param showSQL whether to show the generated sql commands
+     * @return the created persistence provider
+     */
     public static async create(url: string, user: string, password: string, action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<MySQLProvider> {
         const _action = actionToJavaAction(action);
         const arr = java.newArray("java.lang.String", []);
@@ -215,6 +228,9 @@ export class MySQLProvider extends PersistenceProvider {
     }
 }
 
+/**
+ * A MariaDB persistence provider
+ */
 export class MariaDBProvider extends PersistenceProvider {
     /**
      * Create a MySQLProvider instance
@@ -226,6 +242,16 @@ export class MariaDBProvider extends PersistenceProvider {
         super(impl);
     }
 
+    /**
+     * Create a new persistence provider instance
+     *
+     * @param url the url of the database
+     * @param user the username to use
+     * @param password the password to use
+     * @param action the sql action
+     * @param showSQL whether to show the generated sql commands
+     * @return the created persistence provider
+     */
     public static async create(url: string, user: string, password: string, action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<MySQLProvider> {
         const _action = actionToJavaAction(action);
         const arr = java.newArray("java.lang.String", []);

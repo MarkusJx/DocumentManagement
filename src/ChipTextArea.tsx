@@ -201,7 +201,7 @@ type MenuItemProps = {
 /**
  * An autocomplete suggestion element for a text field
  */
-class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> {
+export class TextFieldAutoComplete extends React.Component<TextFieldAutoCompleteProps> {
     /**
      * A menu item in the autocomplete menu
      * @protected
@@ -504,7 +504,8 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
         };
 
         return (
-            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea" style={style}>
+            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea" style={style}
+                   ref={e => this.$this = e}>
                 <span className="mdc-notched-outline">
                     <span className="mdc-notched-outline__leading"/>
                     <span className="mdc-notched-outline__notch">
@@ -535,7 +536,6 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
     }
 
     public componentDidMount(): void {
-        this.$this = ReactDOM.findDOMNode(this) as HTMLLabelElement;
         this.textField = new MDCTextField(this.$this);
 
         if (this._value) {
@@ -732,7 +732,7 @@ export interface TextAreaWithAutoCompletePropsBase {
     value?: string;
 }
 
-abstract class TextAreaWithAutoCompleteBase<T extends TextArea, P extends TextAreaWithAutoCompletePropsBase> extends React.Component<P> {
+export abstract class TextAreaWithAutoCompleteBase<T extends TextArea, P extends TextAreaWithAutoCompletePropsBase> extends React.Component<P> {
     /**
      * The HTML element created by this class
      */
@@ -790,6 +790,9 @@ abstract class TextAreaWithAutoCompleteBase<T extends TextArea, P extends TextAr
     abstract render(): React.ReactNode;
 }
 
+/**
+ * A text area with auto complete
+ */
 export class TextAreaWithAutoComplete extends TextAreaWithAutoCompleteBase<TextArea, TextAreaWithAutoCompletePropsBase> {
     /**
      * Create a text area
@@ -812,6 +815,12 @@ export class TextAreaWithAutoComplete extends TextAreaWithAutoCompleteBase<TextA
         );
     }
 
+    /**
+     * Called when a auto complete option is clicked
+     *
+     * @param option the selected option
+     * @protected
+     */
     protected onAutoCompleteOptionClick(option: string): void {
         this.autoComplete.hide();
         this.textArea.textField.value = option;
