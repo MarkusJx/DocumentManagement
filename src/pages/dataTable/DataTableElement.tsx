@@ -316,7 +316,7 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
      * @private
      */
     private async onDirectoryOpen(): Promise<void> {
-        if (this.dirPath) {
+        if (this.dirPath != null) {
             await constants.mainDataTable.setDirectory(this.dirPath);
         }
     }

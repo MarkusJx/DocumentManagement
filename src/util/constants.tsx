@@ -6,6 +6,7 @@ import {database} from "../databaseWrapper";
 import {MainDataTable} from "../pages/dataTable/MainDataTable";
 import {SearchBox} from "../elements/SearchBox";
 import {ScanLoadingScreen} from "../elements/LoadingScreens";
+import {MainComponent} from "../pages/StartScreen";
 import DatabaseManager = database.DatabaseManager;
 
 /**
@@ -21,6 +22,11 @@ export default class constants {
      * The current main data table element
      */
     public static mainDataTable: MainDataTable = null;
+
+    /**
+     * The main component
+     */
+    public static mainComponent: MainComponent = null;
 
     /**
      * The search box

@@ -95,7 +95,9 @@ async function win32_updatePassport(encryptionKey: Buffer): Promise<void> {
             await account.createPassportKey();
         }
 
-        encryptKey = await account.passportSign(encryptionKey);
+        // Sign the encryption key and hash it to get it to a proper length
+        const signed: Buffer = await account.passportSign(encryptionKey);
+        encryptKey = crypto.createHash('sha256').update(signed).digest();
     }
 }
 

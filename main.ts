@@ -98,6 +98,12 @@ function createWindow(): void {
                 }
             },
             {
+                label: 'Load recent',
+                click: () => {
+                    mainWindow.webContents.send('load-recent-database');
+                }
+            },
+            {
                 label: 'Go to start screen',
                 click: () => {
                     mainWindow.webContents.send('goto-start-screen');

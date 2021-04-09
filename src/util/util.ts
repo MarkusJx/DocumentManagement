@@ -1,4 +1,14 @@
 import {exec} from "child_process";
+import {DatabaseSetting} from "../settings/recentConnections";
+import {
+    Action,
+    CustomPersistence,
+    database,
+    MariaDBProvider,
+    MySQLProvider,
+    PersistenceProvider
+} from "../databaseWrapper";
+import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
 
 /**
  * Get the command line option to open a file
@@ -33,6 +43,34 @@ export default class util {
             });
         } else {
             exec(`${getCommandLine()} "${filePath}"`);
+        }
+    }
+
+    public static async getDatabaseManagerFromSettings(settings: DatabaseSetting, action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
+        const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
+            const em = await CustomPersistence.createEntityManager("documents", provider);
+            return await database.DatabaseManager.create(em);
+        };
+
+        switch (settings.provider) {
+            case DatabaseProvider.SQLite: {
+                const setting = settings as SQLiteSettings;
+                return await database.createSQLiteDatabaseManager(setting.file, action, showSQL);
+            }
+            case DatabaseProvider.MariaDB: {
+                const setting = settings as AnySettings;
+                const provider = await MariaDBProvider.create(setting.url, setting.user, setting.password,
+                    action, showSQL);
+                return await fromProvider(provider);
+            }
+            case DatabaseProvider.MySQL: {
+                const setting = settings as AnySettings;
+                const provider = await MySQLProvider.create(setting.url, setting.user, setting.password,
+                    action, showSQL);
+                return await fromProvider(provider);
+            }
+            default:
+                return null;
         }
     }
 }

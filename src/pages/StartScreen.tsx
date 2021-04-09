@@ -7,6 +7,9 @@ import {SearchBox} from "../elements/SearchBox";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
 import {showErrorDialog} from "../elements/ErrorDialog";
+import {DatabaseSetting, Recents} from "../settings/recentConnections";
+import util from "../util/util";
+import LoadRecentPage from "./LoadRecentPage";
 
 /**
  * Whether to show the generated sql commands
@@ -48,9 +51,11 @@ export class MainComponent extends React.Component<{}> {
         this.startScan = this.startScan.bind(this);
         this.startSearch = this.startSearch.bind(this);
         this.onLoad = this.onLoad.bind(this);
+        this.gotoLoadRecentPage = this.gotoLoadRecentPage.bind(this);
 
         this.currentPage = (
-            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
+            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
+                         onLoadRecentClickImpl={this.gotoLoadRecentPage}/>
         );
         this.databaseManager = null;
 
@@ -72,6 +77,15 @@ export class MainComponent extends React.Component<{}> {
             this.startScreenOnCreate();
         });
 
+        ipcRenderer.on('load-recent-database', () => {
+            if (this.databaseManager) {
+                this.databaseManager.close().then();
+                this.databaseManager = null;
+            }
+
+            this.gotoLoadRecentPage();
+        });
+
         ipcRenderer.on('goto-start-screen', () => {
             if (this.databaseManager) {
                 this.databaseManager.close().then();
@@ -79,7 +93,8 @@ export class MainComponent extends React.Component<{}> {
             }
 
             this.currentPage = (
-                <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
+                <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
+                             onLoadRecentClickImpl={this.gotoLoadRecentPage}/>
             );
             this.forceUpdate();
         });
@@ -100,9 +115,67 @@ export class MainComponent extends React.Component<{}> {
         return this.currentPage;
     }
 
-    private gotoStartPage(): void {
+    /**
+     * Go to the start page
+     */
+    public gotoStartPage(): void {
         this.currentPage = (
-            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}/>
+            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
+                         onLoadRecentClickImpl={this.gotoLoadRecentPage}/>
+        );
+        this.forceUpdate();
+    }
+
+    /**
+     * Go to the load recent database page
+     */
+    public gotoLoadRecentPage(): void {
+        this.currentPage = (
+            <LoadRecentPage/>
+        );
+        this.forceUpdate();
+    }
+
+    /**
+     * Called when the database should be loaded
+     *
+     * @param setting the database setting to load
+     */
+    public async onLoad(setting: DatabaseSetting): Promise<void> {
+        this.currentPage = (
+            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
+                           ref={e => constants.mainDataTable = e}/>
+        );
+
+        this.forceUpdate();
+        try {
+            this.databaseManager = await util.getDatabaseManagerFromSettings(setting, Action.UPDATE, SHOW_SQL);
+        } catch (e) {
+            showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
+                "this error may be caused by invalid login credentials. Please check if your connection details are " +
+                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
+
+            this.gotoStartPage();
+            return;
+        }
+
+        try {
+            await Recents.add(setting);
+        } catch (e) {
+            console.error(e);
+            // TODO: log the error
+        }
+
+        constants.init(this.databaseManager);
+
+        this.currentPage = (
+            <div>
+                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
+                           ref={e => this.searchBox = e}/>
+                <MainDataTable directory={await this.databaseManager.getDirectory("")}
+                               databaseManager={this.databaseManager} showProgress={false} key={2}
+                               ref={e => constants.mainDataTable = e}/>
+            </div>
         );
         this.forceUpdate();
     }
@@ -125,44 +198,6 @@ export class MainComponent extends React.Component<{}> {
     private startScreenOnLoad(): void {
         this.currentPage = (
             <LoadScreen onLoad={this.onLoad} key={0}/>
-        );
-        this.forceUpdate();
-    }
-
-    /**
-     * Called when the database should be loaded
-     *
-     * @param loadScreen the load screen instance
-     * @private
-     */
-    private async onLoad(loadScreen: LoadScreen): Promise<void> {
-        this.currentPage = (
-            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
-                           ref={e => constants.mainDataTable = e}/>
-        );
-
-        this.forceUpdate();
-        try {
-            this.databaseManager = await loadScreen.getDatabaseManager(Action.UPDATE, SHOW_SQL);
-        } catch (e) {
-            showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
-                "this error may be caused by invalid login credentials. Please check if your connection details are " +
-                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
-
-            this.gotoStartPage();
-            return;
-        }
-
-        constants.init(this.databaseManager);
-
-        this.currentPage = (
-            <div>
-                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
-                           ref={e => this.searchBox = e}/>
-                <MainDataTable directory={await this.databaseManager.getDirectory("")}
-                               databaseManager={this.databaseManager} showProgress={false} key={2}
-                               ref={e => constants.mainDataTable = e}/>
-            </div>
         );
         this.forceUpdate();
     }
@@ -195,7 +230,7 @@ export class MainComponent extends React.Component<{}> {
 /**
  * The on load listener function
  */
-type onLoad_t = (loadScreen: LoadScreen) => Promise<void>;
+type onLoad_t = (setting: DatabaseSetting) => Promise<void>;
 
 /**
  * The load screen props
@@ -234,16 +269,6 @@ class LoadScreen extends React.Component<LoadScreenProps> {
 
         this.onConfigChange = this.onConfigChange.bind(this);
         this.onLoadImpl = this.onLoadImpl.bind(this);
-    }
-
-    /**
-     * Generate the database manager from the settings
-     *
-     * @param action the creation action
-     * @param showSQL whether to show the sql commands
-     */
-    public async getDatabaseManager(action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
-        return await this.configurator.getDatabaseManager(action, showSQL);
     }
 
     public render(): React.ReactNode {
@@ -295,7 +320,7 @@ class LoadScreen extends React.Component<LoadScreenProps> {
      * @private
      */
     private async onLoadImpl(): Promise<void> {
-        await this.props.onLoad(this);
+        await this.props.onLoad(this.configurator.settings);
     }
 }
 
@@ -510,9 +535,10 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
     private async onStartClick(): Promise<void> {
         this.disableAllButtons();
         constants.scanLoadingScreen.visible = true;
+        const settings = this.configurator.settings;
         let databaseManager: database.DatabaseManager;
         try {
-            databaseManager = await this.configurator.getDatabaseManager(Action.CREATE, SHOW_SQL);
+            databaseManager = await util.getDatabaseManagerFromSettings(settings, Action.CREATE_DROP, SHOW_SQL);
         } catch (e) {
             showErrorDialog("The database could not be created. If you are trying to connect to a remote database, " +
                 "this error may be caused by invalid login credentials. Please check if your connection details are " +
@@ -521,6 +547,8 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
             this.enableButtons();
             return;
         }
+
+        await Recents.add(settings);
 
         constants.init(databaseManager);
         await this.onStartClickImpl(databaseManager, this.state.directory);
@@ -535,6 +563,7 @@ interface StartScreenProps {
     onCreateClickImpl: () => void;
     // Called when the load button was clicked
     onLoadClickImpl: () => void;
+    onLoadRecentClickImpl: () => void;
 }
 
 /**
@@ -554,16 +583,10 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
     private loadButton: OutlinedButton;
 
     /**
-     * Called when the create button was clicked
+     * The load recent database button
      * @private
      */
-    private readonly onCreateClickImpl: () => void;
-
-    /**
-     * Called when the load button was clicked
-     * @private
-     */
-    private readonly onLoadClickImpl: () => void;
+    private loadRecentButton: OutlinedButton;
 
     /**
      * Create the start screen
@@ -574,12 +597,11 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
         super(props);
         this.createButton = null;
         this.loadButton = null;
-
-        this.onCreateClickImpl = props.onCreateClickImpl;
-        this.onLoadClickImpl = props.onLoadClickImpl;
+        this.loadRecentButton = null;
 
         this.onCreateClick = this.onCreateClick.bind(this);
         this.onLoadClick = this.onLoadClick.bind(this);
+        this.onLoadRecentClick = this.onLoadRecentClick.bind(this);
     }
 
     public render(): React.ReactNode {
@@ -640,13 +662,27 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
 
                     <ul style={listStyle}>
                         <li>This loads an existing database</li>
-                        <li>You must select a valid database file</li>
-                        <li>Database files have the ending *.db</li>
+                        <li>You must select a valid database</li>
                     </ul>
 
                     <div className="start-screen-button-alignment">
                         <OutlinedButton text={"Load"} onClick={this.onLoadClick}
                                         ref={e => this.loadButton = e}/>
+                    </div>
+                </div>
+
+                <div style={containerStyle}>
+                    <div style={headingContainerStyle}>
+                        <h2 style={headingStyle}>Load a recently used database</h2>
+                    </div>
+
+                    <ul style={listStyle}>
+                        <li>This lets you select a recently used database</li>
+                    </ul>
+
+                    <div className="start-screen-button-alignment">
+                        <OutlinedButton text={"Load"} onClick={this.onLoadRecentClick}
+                                        ref={e => this.loadRecentButton = e}/>
                     </div>
                 </div>
             </div>
@@ -664,23 +700,30 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
             this.createButton.enabled = enabled;
         if (this.loadButton)
             this.loadButton.enabled = enabled;
+        if (this.loadRecentButton)
+            this.loadRecentButton.enabled = enabled;
     }
 
     /**
      * Called when the create button was clicked
      * @private
      */
-    private async onCreateClick(): Promise<void> {
+    private onCreateClick(): void {
         this.setButtonsEnabled(false);
-        this.onCreateClickImpl();
+        this.props.onCreateClickImpl();
     }
 
     /**
      * Called when the load button was clicked
      * @private
      */
-    private async onLoadClick(): Promise<void> {
+    private onLoadClick(): void {
         this.setButtonsEnabled(false);
-        this.onLoadClickImpl();
+        this.props.onLoadClickImpl();
+    }
+
+    private onLoadRecentClick(): void {
+        this.setButtonsEnabled(false);
+        this.props.onLoadRecentClickImpl();
     }
 }

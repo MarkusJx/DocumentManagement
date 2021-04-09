@@ -25,9 +25,9 @@ export interface RecentDatabase {
  */
 interface StoreType {
     // The encryption key to use to encrypt passwords
-    encryptionKey: Buffer;
+    encryptionKey: string;
     // The initialization vector to use
-    iv: Buffer;
+    iv: string;
     // The recently used databases
     recents: RecentDatabase[];
 }
@@ -54,8 +54,8 @@ export class Recents {
      */
     private static readonly store = new Store<StoreType>({
         defaults: {
-            encryptionKey: crypto.randomBytes(256),
-            iv: crypto.randomBytes(16),
+            encryptionKey: crypto.randomBytes(256).toString('hex'),
+            iv: crypto.randomBytes(16).toString('hex'),
             recents: []
         }
     });
@@ -66,7 +66,7 @@ export class Recents {
      * @return the encryption key
      */
     public static get encryptionKey(): Buffer {
-        return Recents.store.get('encryptionKey');
+        return Buffer.from(Recents.store.get('encryptionKey'), 'hex');
     }
 
     /**
@@ -75,7 +75,7 @@ export class Recents {
      * @return the stored iv
      */
     public static get iv(): Buffer {
-        return Recents.store.get('iv');
+        return Buffer.from(Recents.store.get('iv'), 'hex');
     }
 
     /**
@@ -140,19 +140,23 @@ export class Recents {
      * Check if the database settings contain a setting
      *
      * @param setting the setting to search for
-     * @return true if the setting is contained in the settings
+     * @return the id of the setting if the setting is contained in the settings
      */
-    public static async containsSetting(setting: DatabaseSetting): Promise<boolean> {
+    public static async containsSetting(setting: DatabaseSetting): Promise<string | null> {
         if (setting.provider == DatabaseProvider.SQLite) {
             const _setting = setting as SQLiteSettings;
-            return Recents.recents.some((value: RecentDatabase) => {
+            const recents = Recents.recents;
+            for (let i: number = 0; i < recents.length; i++) {
+                const value = recents[i];
                 if (value.setting.provider == DatabaseProvider.SQLite) {
                     const val = value.setting as SQLiteSettings;
-                    return val.file == _setting.file;
-                } else {
-                    return false;
+                    if (val.file == _setting.file) {
+                        return value.id;
+                    }
                 }
-            });
+            }
+
+            return null;
         } else {
             const _setting = setting as AnySettings;
             const recents = Recents.recents;
@@ -161,12 +165,12 @@ export class Recents {
                 if (value.provider != DatabaseProvider.SQLite) {
                     value = await Recents.decryptSetting(value);
                     if (value.url == _setting.url && value.user == _setting.user && value.password == _setting.password) {
-                        return true;
+                        return recents[i].id;
                     }
                 }
             }
 
-            return false;
+            return null;
         }
     }
 
@@ -177,6 +181,11 @@ export class Recents {
      * @return the generated id
      */
     public static async add(value: DatabaseSetting): Promise<string> {
+        const retrievedSetting: string = await Recents.containsSetting(value);
+        if (retrievedSetting) {
+            return retrievedSetting;
+        }
+
         const recents: RecentDatabase[] = Recents.recents;
         let id: string = generateUid();
         while (Recents.containsId(id)) {
@@ -243,6 +252,6 @@ export class Recents {
      * @param id the id of the setting to delete
      */
     public static delete(id: string): void {
-        Recents.recents = Recents.recents.filter(v => v.id == id);
+        Recents.recents = Recents.recents.filter(v => v.id != id);
     }
 }

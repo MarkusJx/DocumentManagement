@@ -3,14 +3,6 @@ import React from "react";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import * as ReactDOM from "react-dom";
-import {
-    Action,
-    CustomPersistence,
-    database,
-    MariaDBProvider,
-    MySQLProvider,
-    PersistenceProvider
-} from "../databaseWrapper";
 
 /**
  * A database provider
@@ -131,40 +123,6 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
     public clear(): void {
         this._settings = null;
         DatabaseConfigDialog.instance.clear();
-    }
-
-    /**
-     * Generate the database manager from the settings
-     *
-     * @param action the creation action
-     * @param showSQL whether to show the sql commands
-     */
-    public async getDatabaseManager(action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
-        const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
-            const em = await CustomPersistence.createEntityManager("documents", provider);
-            return await database.DatabaseManager.create(em);
-        };
-
-        switch (this.settings.provider) {
-            case DatabaseProvider.SQLite: {
-                const settings = this.settings as SQLiteSettings;
-                return await database.createSQLiteDatabaseManager(settings.file, action, showSQL);
-            }
-            case DatabaseProvider.MariaDB: {
-                const settings = this.settings as AnySettings;
-                const provider = await MariaDBProvider.create(settings.url, settings.user, settings.password,
-                    action, showSQL);
-                return await fromProvider(provider);
-            }
-            case DatabaseProvider.MySQL: {
-                const settings = this.settings as AnySettings;
-                const provider = await MySQLProvider.create(settings.url, settings.user, settings.password,
-                    action, showSQL);
-                return await fromProvider(provider);
-            }
-            default:
-                return null;
-        }
     }
 
     public render(): React.ReactNode {

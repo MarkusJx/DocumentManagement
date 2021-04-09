@@ -11,16 +11,11 @@ import TitleBar from "./util/TitleBar";
  */
 class Main {
     /**
-     * The main component
-     */
-    public static mainComponent: MainComponent = null;
-
-    /**
      * The main function
      */
     public static main(): void {
         ReactDOM.render(
-            <MainComponent ref={e => Main.mainComponent = e}/>,
+            <MainComponent ref={e => constants.mainComponent = e}/>,
             document.getElementById('content-root')
         );
 
@@ -37,7 +32,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 CloseListener.listen(async () => {
-    if (Main.mainComponent && Main.mainComponent.databaseManager) {
-        await Main.mainComponent.databaseManager.close();
+    if (constants.mainComponent && constants.mainComponent.databaseManager) {
+        await constants.mainComponent.databaseManager.close();
     }
 });
