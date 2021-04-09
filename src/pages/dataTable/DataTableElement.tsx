@@ -1,9 +1,9 @@
 import React from "react";
 import * as ReactDOM from "react-dom";
 
-import util from "../util";
-import constants from "../constants";
-import {database} from "../databaseWrapper";
+import util from "../../util/util";
+import constants from "../../util/constants";
+import {database} from "../../databaseWrapper";
 import {MDCTooltip} from "@material/tooltip";
 
 /**
@@ -103,7 +103,8 @@ class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
 
     public render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons" onClick={this.openDocument}>
+            <button className="mdc-icon-button material-icons" onClick={this.openDocument}
+                    disabled={this.documentPath == null}>
                 <div className="mdc-button__icon">open_in_new</div>
             </button>
         );
@@ -114,7 +115,10 @@ class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
      * @private
      */
     private async openDocument(): Promise<void> {
-        util.openFileUsingDefaultProgram(constants.mainDataTable.databaseManager.databaseInfo.sourcePath + '/' + this.documentPath);
+        if (this.documentPath) {
+            util.openFileUsingDefaultProgram(constants.mainDataTable.databaseManager.databaseInfo.sourcePath
+                + '/' + this.documentPath);
+        }
     }
 }
 
@@ -259,7 +263,7 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
                     <EditDocumentButton document={this.document}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    <OpenDocumentButton documentPath={this.document.absolutePath}/>
+                    <OpenDocumentButton documentPath={this.document.exists ? this.document.absolutePath : null}/>
                 </td>
             </tr>
         );
@@ -298,7 +302,8 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
 
     public render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons" onClick={this.onDirectoryOpen}>
+            <button className="mdc-icon-button material-icons" onClick={this.onDirectoryOpen}
+                    disabled={this.dirPath == null}>
                 <div className="mdc-button__icon">
                     keyboard_arrow_right
                 </div>
@@ -311,7 +316,9 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
      * @private
      */
     private async onDirectoryOpen(): Promise<void> {
-        await constants.mainDataTable.setDirectory(this.dirPath);
+        if (this.dirPath) {
+            await constants.mainDataTable.setDirectory(this.dirPath);
+        }
     }
 }
 
@@ -358,7 +365,7 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
                 </td>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell">
-                    <OpenDirectoryButton dirPath={this.directory.path}/>
+                    <OpenDirectoryButton dirPath={this.directory.exists ? this.directory.path : null}/>
                 </td>
             </tr>
         );

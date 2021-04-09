@@ -1,10 +1,10 @@
 import React from "react";
 
-import {database} from "./databaseWrapper";
+import {database} from "../databaseWrapper";
 import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
 import {PropertySetter} from "./PropertyField";
-import MDCCSSProperties from "./MDCCSSProperties";
-import constants from "./constants";
+import MDCCSSProperties from "../util/MDCCSSProperties";
+import constants from "../util/constants";
 import {DateTextField} from "./DateTextField";
 import {Dialog} from "./MDCWrapper";
 

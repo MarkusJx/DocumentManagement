@@ -5,8 +5,8 @@ import {MDCChip} from "@material/chips";
 import {MDCTextField} from "@material/textfield";
 import {MDCRipple} from "@material/ripple";
 import {MDCList} from '@material/list';
-import {Tooltip} from "./Tooltip";
-import MDCCSSProperties from "./MDCCSSProperties";
+import Tooltip from "./Tooltip";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 
 /**
  * A function to check if a chip value exists

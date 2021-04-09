@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import CloseListener from "../util/CloseListener";
 
 /**
  * The passport account id
@@ -25,16 +26,13 @@ let encryptKey: Buffer = null;
  */
 let clearKeyTimeout: NodeJS.Timeout = null;
 
-/**
- * Clear the encryption key buffer
- */
-function clearBuffer(): void {
-    for (let i: number = 0; i < encryptKey.length; i++) {
-        encryptKey[i] = 0;
+// Clear the key buffer on unload
+CloseListener.listen(async () => {
+    if (encryptKey) {
+        encryptKey.fill(0);
+        encryptKey = null;
     }
-
-    encryptKey = null;
-}
+});
 
 /**
  * Reset the encryption key clear timeout
@@ -45,7 +43,10 @@ function resetClearKeyTimeout(): void {
     }
 
     clearKeyTimeout = setTimeout(() => {
-        clearBuffer();
+        if (encryptKey) {
+            encryptKey.fill(0);
+            encryptKey = null;
+        }
         clearKeyTimeout = null;
     }, CLEAR_KEY_TIMEOUT);
 }
@@ -58,10 +59,9 @@ function resetClearKeyTimeout(): void {
  * @param iv the initialization vector to use
  * @return the encrypted string
  */
-function encryptString(str: string, iv: string): string {
-    const ivBuffer = Buffer.from(iv, 'hex');
-    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, encryptKey, ivBuffer);
-    const encrypted = Buffer.concat([cipher.update(str), cipher.final()]);
+function encryptString(str: string, iv: Buffer): string {
+    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, encryptKey, iv);
+    const encrypted = Buffer.concat([cipher.update(Buffer.from(str, 'utf-8')), cipher.final()]);
 
     return encrypted.toString('hex');
 }
@@ -74,9 +74,8 @@ function encryptString(str: string, iv: string): string {
  * @param iv the initialization vector to use
  * @return the decrypted string
  */
-function decryptString(str: string, iv: string): string {
-    const ivBuffer = Buffer.from(iv, 'hex');
-    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, encryptKey, ivBuffer);
+function decryptString(str: string, iv: Buffer): string {
+    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, encryptKey, iv);
     const decrypted = Buffer.concat([cipher.update(Buffer.from(str, 'hex')), cipher.final()]);
 
     return decrypted.toString('utf-8');
@@ -87,7 +86,8 @@ function decryptString(str: string, iv: string): string {
  *
  * @param encryptionKey the encryption key to sign
  */
-async function win32_updatePassport(encryptionKey: string): Promise<void> {
+async function win32_updatePassport(encryptionKey: Buffer): Promise<void> {
+    // @ts-ignore
     const {passport} = await import("node-ms-passport");
     if (!encryptKey) {
         const account = new passport(PASSPORT_ACCOUNT_ID);
@@ -95,7 +95,7 @@ async function win32_updatePassport(encryptionKey: string): Promise<void> {
             await account.createPassportKey();
         }
 
-        encryptKey = Buffer.from(await account.passportSign(encryptionKey), 'hex');
+        encryptKey = await account.passportSign(encryptionKey);
     }
 }
 
@@ -111,7 +111,8 @@ const encryptionStrategies = {
      * @param iv the initialization vector to use
      * @return the encrypted password
      */
-    "win32": async function (password: string, encryptionKey: string, iv: string): Promise<string> {
+    "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
+        // @ts-ignore
         const {passport} = await import("node-ms-passport");
         if (passport.passportAvailable()) {
             await win32_updatePassport(encryptionKey);
@@ -136,7 +137,8 @@ const decryptionStrategies = {
      * @param iv the initialization vector to use
      * @return the decrypted password
      */
-    "win32": async function (password: string, encryptionKey: string, iv: string): Promise<string> {
+    "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
+        // @ts-ignore
         const {passport} = await import("node-ms-passport");
         if (passport.passportAvailable()) {
             await win32_updatePassport(encryptionKey);
@@ -157,7 +159,7 @@ const decryptionStrategies = {
  * @param iv the initialization vector to use
  * @return the encrypted password
  */
-export async function encryptPassword(password: string, encryptionKey: string, iv: string): Promise<string> {
+export async function encryptPassword(password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
     if (encryptionStrategies.hasOwnProperty(process.platform)) {
         return await encryptionStrategies[process.platform](password, encryptionKey, iv);
     } else {
@@ -173,7 +175,7 @@ export async function encryptPassword(password: string, encryptionKey: string, i
  * @param iv the initialization vector to use
  * @return the decrypted password
  */
-export async function decryptPassword(password: string, encryptionKey: string, iv: string): Promise<string> {
+export async function decryptPassword(password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
     if (decryptionStrategies.hasOwnProperty(process.platform)) {
         return await decryptionStrategies[process.platform](password, encryptionKey, iv);
     } else {

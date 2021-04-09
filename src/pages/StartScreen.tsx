@@ -1,12 +1,12 @@
 import React from "react";
 import {ipcRenderer} from "electron";
-import {Action, database, FileScanner} from "./databaseWrapper";
+import {Action, database, FileScanner} from "../databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
-import constants from "./constants";
-import {SearchBox} from "./SearchBox";
-import {Button, OutlinedButton} from "./MDCWrapper";
+import constants from "../util/constants";
+import {SearchBox} from "../elements/SearchBox";
+import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
-import {showErrorDialog} from "./ErrorDialog";
+import {showErrorDialog} from "../elements/ErrorDialog";
 
 /**
  * Whether to show the generated sql commands

@@ -23,7 +23,7 @@ type _TooltipProps = {
 /**
  * The tooltip properties used to create a tooltip
  */
-export type TooltipProps = {
+type TooltipProps = {
     id?: string,
     text: string
 };
@@ -31,7 +31,7 @@ export type TooltipProps = {
 /**
  * A wrapper around the mdc tooltip class
  */
-export class Tooltip extends React.Component<_TooltipProps> {
+export default class Tooltip extends React.Component<_TooltipProps> {
     /**
      * The id of the tooltip
      * @private

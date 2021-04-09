@@ -1,11 +1,11 @@
 import React from "react";
 import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
 import {Button, Checkbox, OutlinedButton, OutlinedTextField} from "./MDCWrapper";
-import {database, PropertyMap} from "./databaseWrapper";
+import {database, PropertyMap} from "../databaseWrapper";
 import {PropertySetter} from "./PropertyField";
 import {DateRangeTextField} from "./DateTextField";
-import MDCCSSProperties from "./MDCCSSProperties";
-import constants from "./constants";
+import MDCCSSProperties from "../util/MDCCSSProperties";
+import constants from "../util/constants";
 
 /**
  * The search box properties

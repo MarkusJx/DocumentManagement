@@ -4,7 +4,7 @@ import {MDCCheckbox} from '@material/checkbox';
 import {MDCRipple} from "@material/ripple";
 import {MDCLinearProgress} from "@material/linear-progress"
 import {MDCMenu} from "@material/menu";
-import MDCCSSProperties from "./MDCCSSProperties";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 import {MDCDialog} from "@material/dialog";
 import {
     TextArea,
@@ -13,6 +13,7 @@ import {
     TextAreaWithAutoCompletePropsBase,
     TextFieldAutoComplete
 } from "./ChipTextArea";
+import {MDCDataTable} from "@material/data-table";
 
 /**
  * A checkbox
@@ -598,5 +599,167 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
     protected onAutoCompleteOptionClick(option: string): void {
         this.autoComplete.hide();
         this.textArea.textField.value = option;
+    }
+}
+
+/**
+ * The mdc data table row properties
+ */
+interface MDCDataTableRowProps {
+    // The row values
+    values: string[];
+}
+
+/**
+ * A mdc data table row
+ */
+export class MDCDataTableRow extends React.Component<MDCDataTableRowProps> {
+    /**
+     * The id of the next element
+     * @private
+     */
+    private id: number = 0;
+
+    public render(): React.ReactNode {
+        return (
+            <tr className="mdc-data-table__row">
+                {this.getRows()}
+            </tr>
+        );
+    }
+
+    /**
+     * Generate the row cells
+     *
+     * @return the generated row cells
+     * @private
+     */
+    private getRows(): React.ReactNode {
+        let firstElement: boolean = true;
+        return this.props.values.map(value => {
+            // Add some special properties to the first cell
+            if (firstElement) {
+                firstElement = false;
+                return (
+                    <th className="mdc-data-table__cell" scope="row" key={`${value}-${this.id++}`}>
+                        {value}
+                    </th>
+                );
+            } else {
+                return (
+                    <td className="mdc-data-table__cell" key={`${value}-${this.id++}`}>
+                        {value}
+                    </td>
+                );
+            }
+        });
+    }
+}
+
+/**
+ * The mdc data table container properties
+ */
+interface MDCDataTableContainerProps {
+    // The data table headers
+    headers: string[];
+}
+
+/**
+ * The mdc data table container
+ */
+export class MDCDataTableContainer extends React.Component<MDCDataTableContainerProps> {
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-data-table__table-container">
+                <table aria-label="Documents" className="mdc-data-table__table">
+                    <thead>
+                    <tr className="mdc-data-table__header-row">
+                        {this.generateHeaderRow()}
+                    </tr>
+                    </thead>
+                    <tbody className="mdc-data-table__content">
+                    {this.props.children}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
+    /**
+     * Generate the header row
+     *
+     * @return the generated header row
+     * @private
+     */
+    private generateHeaderRow(): React.ReactNode {
+        return (
+            this.props.headers.map(value => (
+                <th className="mdc-data-table__header-cell" role="columnheader" scope="col" key={value}>
+                    {value}
+                </th>
+            ))
+        )
+    }
+}
+
+/**
+ * A mdc data table progress indicator
+ */
+export class MDCDataTableProgressIndicator extends React.Component {
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-data-table__progress-indicator">
+                <div className="mdc-data-table__scrim"/>
+                <div
+                    className="mdc-linear-progress mdc-linear-progress--indeterminate mdc-data-table__linear-progress"
+                    role="progressbar" aria-label="Data is being loaded...">
+                    <div className="mdc-linear-progress__buffer">
+                        <div className="mdc-linear-progress__buffer-bar"/>
+                        <div className="mdc-linear-progress__buffer-dots"/>
+                    </div>
+                    <div className="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+                        <span className="mdc-linear-progress__bar-inner"/>
+                    </div>
+                    <div className="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+                        <span className="mdc-linear-progress__bar-inner"/>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+}
+
+/**
+ * The data table properties
+ */
+interface DataTableProps {
+    // The data table style
+    style?: MDCCSSProperties;
+}
+
+/**
+ * A mdc data table
+ */
+export class DataTable extends React.Component<DataTableProps> {
+    /**
+     * The underlying html element
+     */
+    public element: HTMLElement = null;
+
+    /**
+     * The actual mdc data table
+     */
+    public dataTable: MDCDataTable = null;
+
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-data-table" style={this.props.style} ref={e => this.element = e}>
+                {this.props.children}
+            </div>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.dataTable = new MDCDataTable(this.element);
     }
 }

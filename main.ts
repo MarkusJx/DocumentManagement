@@ -121,6 +121,19 @@ function createWindow(): void {
         ]
     }));
 
+    let shouldClose: boolean = false;
+    mainWindow.on('close', (e) => {
+        if (!shouldClose) {
+            shouldClose = true;
+            e.preventDefault();
+            mainWindow.webContents.send('close');
+        }
+    });
+
+    ipcMain.on('before-close-finished', () => {
+        mainWindow.close();
+    });
+
     // and load the index.html of the app.
     mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html')).then();
 

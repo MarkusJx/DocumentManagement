@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {MDCRipple} from '@material/ripple';
-import {database} from "./databaseWrapper";
-import MDCCSSProperties from "./MDCCSSProperties";
+import {database} from "../databaseWrapper";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 import {OutlinedTextFieldWithAutoComplete} from "./MDCWrapper";
 
 /**

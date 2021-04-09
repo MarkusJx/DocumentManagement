@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {Dialog} from "./MDCWrapper";
-import MDCCSSProperties from "./MDCCSSProperties";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 
 /**
  * The static error dialog

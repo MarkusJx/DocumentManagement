@@ -1,7 +1,7 @@
 // This file contains the world's finest loading screens
 import React from "react";
 import {ProgressBar} from "./MDCWrapper";
-import MDCCSSProperties from "./MDCCSSProperties";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 
 /**
  * The scan loading screen state

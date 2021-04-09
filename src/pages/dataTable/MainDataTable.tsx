@@ -1,10 +1,14 @@
 import React from "react";
-import ReactDOM from "react-dom";
-import {MDCDataTable} from "@material/data-table";
-import {database} from "../databaseWrapper";
+import {database} from "../../databaseWrapper";
 import {DataTableDirectoryElement, DataTableDocumentElement, DirectoryUpElement} from "./DataTableElement";
-import MDCCSSProperties from "../MDCCSSProperties";
-import constants from "../constants";
+import MDCCSSProperties from "../../util/MDCCSSProperties";
+import constants from "../../util/constants";
+import {
+    DataTable,
+    MDCDataTableContainer,
+    MDCDataTableProgressIndicator,
+    MDCDataTableRow
+} from "../../elements/MDCWrapper";
 
 /**
  * The main data table properties
@@ -39,7 +43,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * The actual mdc data table
      * @private
      */
-    private dataTable: MDCDataTable;
+    private dataTable: DataTable;
 
     /**
      * The data table pagination bar
@@ -128,12 +132,11 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @param loading whether to show it
      */
     public setLoading(loading: boolean): void {
-        const $this: Element = ReactDOM.findDOMNode(this) as Element;
-        const buttons = $this.getElementsByTagName('button');
+        const buttons = this.dataTable.element.getElementsByTagName('button');
         constants.searchBox.startButtonEnabled = !loading;
 
         if (loading) {
-            this.dataTable.showProgress();
+            this.dataTable.dataTable.showProgress();
 
             for (let i = 0; i < buttons.length; i++) {
                 buttons[i].disabled = true;
@@ -141,7 +144,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
 
             this.dataTablePagination.disableAllButtons();
         } else {
-            this.dataTable.hideProgress();
+            this.dataTable.dataTable.hideProgress();
 
             for (let i = 0; i < buttons.length; i++) {
                 buttons[i].disabled = false;
@@ -170,54 +173,22 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         }
 
         return (
-            <div className="mdc-data-table" style={style}>
-                <div className="mdc-data-table__table-container">
-                    <table aria-label="Documents" className="mdc-data-table__table">
-                        <thead>
-                        <tr className="mdc-data-table__header-row">
-                            <th className="mdc-data-table__header-cell" role="columnheader" scope="col">Name</th>
-                            <th className="mdc-data-table__header-cell" role="columnheader" scope="col">Status</th>
-                            <th className="mdc-data-table__header-cell" role="columnheader" scope="col">Type</th>
-                            <th className="mdc-data-table__header-cell" role="columnheader" scope="col">Edit</th>
-                            <th className="mdc-data-table__header-cell" role="columnheader" scope="col">Open</th>
-                        </tr>
-                        </thead>
-                        {this.getTableBody()}
-                    </table>
-                </div>
-
-                <div className="mdc-data-table__progress-indicator">
-                    <div className="mdc-data-table__scrim"/>
-                    <div
-                        className="mdc-linear-progress mdc-linear-progress--indeterminate mdc-data-table__linear-progress"
-                        role="progressbar" aria-label="Data is being loaded...">
-                        <div className="mdc-linear-progress__buffer">
-                            <div className="mdc-linear-progress__buffer-bar"/>
-                            <div className="mdc-linear-progress__buffer-dots"/>
-                        </div>
-                        <div className="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
-                            <span className="mdc-linear-progress__bar-inner"/>
-                        </div>
-                        <div className="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
-                            <span className="mdc-linear-progress__bar-inner"/>
-                        </div>
-                    </div>
-                </div>
-
+            <DataTable style={style} ref={e => this.dataTable = e}>
+                <MDCDataTableContainer headers={["Name", "Status", "Type", "Edit", "Open"]}>
+                    {this.getTableBody()}
+                </MDCDataTableContainer>
+                <MDCDataTableProgressIndicator/>
                 <MDCDataTablePagination visible={false} databaseManager={this.databaseManager}
                                         ref={e => this.dataTablePagination = e}/>
-            </div>
+            </DataTable>
         );
     }
 
     public componentDidMount(): void {
-        const $this: Element = ReactDOM.findDOMNode(this) as Element;
-        this.dataTable = new MDCDataTable($this);
-
         if (this.showProgress) {
-            this.dataTable.showProgress();
+            this.dataTable.dataTable.showProgress();
         } else {
-            this.dataTable.hideProgress();
+            this.dataTable.dataTable.hideProgress();
         }
     }
 
@@ -227,38 +198,28 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @return the table HTML node
      * @private
      */
-    private getTableBody(): React.ReactNode {
+    private getTableBody(): React.ReactNode | React.ReactNode[] {
         if (this.directory == null) {
             return (
-                <tbody className="mdc-data-table__content">
-                <tr className="mdc-data-table__row">
-                    <th className="mdc-data-table__cell" scope="row">Loading...</th>
-                    <td className="mdc-data-table__cell"/>
-                    <td className="mdc-data-table__cell"/>
-                    <td className="mdc-data-table__cell"/>
-                    <td className="mdc-data-table__cell"/>
-                </tr>
-                </tbody>
+                <MDCDataTableRow values={["Loading...", "", "", "", ""]}/>
             );
         } else {
-            return (
-                <tbody className="mdc-data-table__content">
-                {
-                    (this.directory.path != null && this.directory.path.length > 0) ?
-                        <DirectoryUpElement currentDirectory={this.directory} key={this.directory.path}/> : null
-                }
-                {
-                    this.directory.documents.map(doc => (
-                        <DataTableDocumentElement document={doc} key={doc.absolutePath}/>
-                    ))
-                }
-                {
-                    this.directory.directories.map(dir => (
-                        <DataTableDirectoryElement directory={dir} key={dir.name}/>
-                    ))
-                }
-                </tbody>
-            );
+            const res: React.ReactNode[] = [];
+            if (this.directory.path != null && this.directory.path.length > 0) {
+                res.push(
+                    <DirectoryUpElement currentDirectory={this.directory} key={this.directory.path}/>
+                );
+            }
+
+            res.push(...this.directory.documents.map(doc => (
+                <DataTableDocumentElement document={doc} key={doc.absolutePath}/>
+            )));
+
+            res.push(...this.directory.directories.map(dir => (
+                <DataTableDirectoryElement directory={dir} key={dir.name}/>
+            )));
+
+            return res;
         }
     }
 }

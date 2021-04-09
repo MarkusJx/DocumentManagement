@@ -1,7 +1,7 @@
-import {Button, Dialog, DropdownMenu, OutlinedButton, OutlinedTextField} from "./MDCWrapper";
+import {Button, Dialog, DropdownMenu, OutlinedButton, OutlinedTextField} from "../elements/MDCWrapper";
 import React from "react";
 import {ipcRenderer} from "electron";
-import MDCCSSProperties from "./MDCCSSProperties";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 import * as ReactDOM from "react-dom";
 import {
     Action,
@@ -10,7 +10,7 @@ import {
     MariaDBProvider,
     MySQLProvider,
     PersistenceProvider
-} from "./databaseWrapper";
+} from "../databaseWrapper";
 
 /**
  * A database provider

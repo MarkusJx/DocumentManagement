@@ -42,7 +42,7 @@
     "typescript": "^4.2.2"
   },
   "optionalDependencies": {
-    "node-ms-passport": "^1.0.2"
+    "node-ms-passport": "^1.1.0"
   },
   "cmake-js": {
     "runtime": "electron",

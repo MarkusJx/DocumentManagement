@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import Store from "electron-store";
-import {AnySettings, DatabaseProvider, SQLiteSettings} from "../DatabaseConfigurator";
+import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
 import {decryptPassword, encryptPassword} from "./passwordEncryption";
 
 /**
@@ -25,9 +25,9 @@ export interface RecentDatabase {
  */
 interface StoreType {
     // The encryption key to use to encrypt passwords
-    encryptionKey: string;
+    encryptionKey: Buffer;
     // The initialization vector to use
-    iv: string;
+    iv: Buffer;
     // The recently used databases
     recents: RecentDatabase[];
 }
@@ -47,23 +47,6 @@ function generateUid(): string {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
-/**
- * Check if an array contains a value
- *
- * @param arr the array to check
- * @param check the check function
- * @return true if arr contains the value
- */
-function contains<T>(arr: T[], check: (value: T) => boolean): boolean {
-    for (let i: number = 0; i < arr.length; i++) {
-        if (check(arr[i])) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 export class Recents {
     /**
      * The store used to store all data
@@ -71,8 +54,8 @@ export class Recents {
      */
     private static readonly store = new Store<StoreType>({
         defaults: {
-            encryptionKey: generateUid(),
-            iv: crypto.randomBytes(16).toString('hex'),
+            encryptionKey: crypto.randomBytes(256),
+            iv: crypto.randomBytes(16),
             recents: []
         }
     });
@@ -82,7 +65,7 @@ export class Recents {
      *
      * @return the encryption key
      */
-    public static get encryptionKey(): string {
+    public static get encryptionKey(): Buffer {
         return Recents.store.get('encryptionKey');
     }
 
@@ -91,7 +74,7 @@ export class Recents {
      *
      * @return the stored iv
      */
-    public static get iv(): string {
+    public static get iv(): Buffer {
         return Recents.store.get('iv');
     }
 
@@ -120,7 +103,7 @@ export class Recents {
      * @return true if the stored database settings contain the id
      */
     public static containsId(id: string): boolean {
-        return contains(Recents.recents, value => value.id == id);
+        return Recents.recents.some(val => val.id == id);
     }
 
     /**
@@ -159,10 +142,10 @@ export class Recents {
      * @param setting the setting to search for
      * @return true if the setting is contained in the settings
      */
-    public static containsSetting(setting: DatabaseSetting): boolean {
+    public static async containsSetting(setting: DatabaseSetting): Promise<boolean> {
         if (setting.provider == DatabaseProvider.SQLite) {
             const _setting = setting as SQLiteSettings;
-            return contains(Recents.recents, (value: RecentDatabase) => {
+            return Recents.recents.some((value: RecentDatabase) => {
                 if (value.setting.provider == DatabaseProvider.SQLite) {
                     const val = value.setting as SQLiteSettings;
                     return val.file == _setting.file;
@@ -172,14 +155,18 @@ export class Recents {
             });
         } else {
             const _setting = setting as AnySettings;
-            return contains(Recents.recents, (value: RecentDatabase) => {
-                if (value.setting.provider != DatabaseProvider.SQLite) {
-                    const val = value.setting as AnySettings;
-                    return val.url == _setting.url && val.user == _setting.user && val.password == _setting.password;
-                } else {
-                    return false;
+            const recents = Recents.recents;
+            for (let i: number = 0; i < recents.length; i++) {
+                let value = recents[i].setting as AnySettings;
+                if (value.provider != DatabaseProvider.SQLite) {
+                    value = await Recents.decryptSetting(value);
+                    if (value.url == _setting.url && value.user == _setting.user && value.password == _setting.password) {
+                        return true;
+                    }
                 }
-            });
+            }
+
+            return false;
         }
     }
 

@@ -1,8 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {MainComponent} from "./StartScreen";
-import {ScanLoadingScreen} from "./LoadingScreens";
-import constants from "./constants";
+import {MainComponent} from "./pages/StartScreen";
+import {ScanLoadingScreen} from "./elements/LoadingScreens";
+import constants from "./util/constants";
+import CloseListener from "./util/CloseListener";
+import TitleBar from "./util/TitleBar";
 
 /**
  * The main class
@@ -10,9 +12,8 @@ import constants from "./constants";
 class Main {
     /**
      * The main component
-     * @private
      */
-    private static mainComponent: MainComponent = null;
+    public static mainComponent: MainComponent = null;
 
     /**
      * The main function
@@ -28,20 +29,15 @@ class Main {
             document.getElementById('loading-screen-container')
         )
     }
-
-    /**
-     * Called before the content is unloaded
-     */
-    public static onUnload(): void {
-        if (Main.mainComponent.databaseManager) {
-            Main.mainComponent.databaseManager.close().then();
-        }
-    }
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
     Main.main();
-    import("./Titlebar").then(i => i.create());
+    TitleBar.create();
 });
 
-window.onbeforeunload = Main.onUnload.bind(Main);
+CloseListener.listen(async () => {
+    if (Main.mainComponent && Main.mainComponent.databaseManager) {
+        await Main.mainComponent.databaseManager.close();
+    }
+});

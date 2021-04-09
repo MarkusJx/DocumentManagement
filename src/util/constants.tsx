@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import {FileEditor} from "./FileEditor";
-import {database} from "./databaseWrapper";
-import {MainDataTable} from "./dataTable/MainDataTable";
-import {SearchBox} from "./SearchBox";
-import {ScanLoadingScreen} from "./LoadingScreens";
+import {FileEditor} from "../elements/FileEditor";
+import {database} from "../databaseWrapper";
+import {MainDataTable} from "../pages/dataTable/MainDataTable";
+import {SearchBox} from "../elements/SearchBox";
+import {ScanLoadingScreen} from "../elements/LoadingScreens";
 import DatabaseManager = database.DatabaseManager;
 
 /**
