@@ -6,6 +6,9 @@ import Snackbars from "../util/Snackbars";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {MDCRipple} from "@material/ripple";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * The settings dialog element
@@ -81,20 +84,24 @@ class SettingsDialogElement extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog to close
         this.dialog.listen('MDCDialog:closing', (event) => {
-            this.storeSettings();
-            if (event.detail.action == 'accept') {
-                // Save the settings
-                Recents.settings = this.currentSettings;
-                Snackbars.settingsSnackbar.snackbarText = "Settings saved";
-                Snackbars.settingsSnackbar.open();
-            } else if (JSON.stringify(this.currentSettings) != JSON.stringify(Recents.settings)) {
-                // Only show the discard dialog when there were actual changes made
-                Snackbars.settingsSnackbar.snackbarText = "Settings discarded";
-                Snackbars.settingsSnackbar.open();
-            }
+            try {
+                this.storeSettings();
+                if (event.detail.action == 'accept') {
+                    // Save the settings
+                    Recents.settings = this.currentSettings;
+                    Snackbars.settingsSnackbar.snackbarText = "Settings saved";
+                    Snackbars.settingsSnackbar.open();
+                } else if (JSON.stringify(this.currentSettings) != JSON.stringify(Recents.settings)) {
+                    // Only show the discard dialog when there were actual changes made
+                    Snackbars.settingsSnackbar.snackbarText = "Settings discarded";
+                    Snackbars.settingsSnackbar.open();
+                }
 
-            this.currentSettings = null;
-            if (this.onClose) this.onClose();
+                this.currentSettings = null;
+                if (this.onClose) this.onClose();
+            } catch (e) {
+                logger.error("An error occurred while closing the settings dialog:", e);
+            }
         });
 
         // Attach the mdc ripples
@@ -157,13 +164,22 @@ export default class SettingsDialog {
 // Listen for the 'open-settings' event and
 // open the settings dialog if requested
 ipcRenderer.on('open-settings', () => {
-    SettingsDialog.open();
+    try {
+        SettingsDialog.open();
+    } catch (e) {
+        logger.error("An error occurred while opening the settings dialog:", e);
+    }
 });
 
 // Generate the settings dialog into the HTML on load
 window.addEventListener('DOMContentLoaded', () => {
-    ReactDOM.render(
-        <SettingsDialogElement ref={e => settingsDialog = e}/>,
-        document.getElementById('settings-dialog-container')
-    );
+    logger.info("Mounting the settings dialog");
+    try {
+        ReactDOM.render(
+            <SettingsDialogElement ref={e => settingsDialog = e}/>,
+            document.getElementById('settings-dialog-container')
+        );
+    } catch (e) {
+        logger.error("An error occurred while mounting the settings dialog:", e);
+    }
 });

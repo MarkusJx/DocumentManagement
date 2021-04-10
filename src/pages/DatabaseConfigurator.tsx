@@ -3,6 +3,9 @@ import React from "react";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import * as ReactDOM from "react-dom";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * A database provider
@@ -335,27 +338,36 @@ class DatabaseConfigDialog extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
-            if (event.detail.action === "accept") {
-                this.lastData = {
-                    provider: this.currentProvider,
-                    url: this.urlTextField.value,
-                    user: this.usernameTextField.value,
-                    password: this.passwordTextField.value
-                };
-            }
+            try {
+                if (event.detail.action === "accept") {
+                    this.lastData = {
+                        provider: this.currentProvider,
+                        url: this.urlTextField.value,
+                        user: this.usernameTextField.value,
+                        password: this.passwordTextField.value
+                    };
+                }
 
-            this.urlTextField.clear();
-            this.usernameTextField.clear();
-            this.passwordTextField.clear();
-            this.onclose();
+                this.urlTextField.clear();
+                this.usernameTextField.clear();
+                this.passwordTextField.clear();
+                this.onclose();
+            } catch (e) {
+                logger.error("An error occurred while closing the database config dialog:", e);
+            }
         });
     }
 }
 
 // Add a config dialog to the DOM
 window.addEventListener('DOMContentLoaded', () => {
-    ReactDOM.render(
-        <DatabaseConfigDialog ref={e => DatabaseConfigDialog.instance = e}/>,
-        document.getElementById('database-config-dialog-container')
-    );
+    logger.info("Mounting the database config dialog");
+    try {
+        ReactDOM.render(
+            <DatabaseConfigDialog ref={e => DatabaseConfigDialog.instance = e}/>,
+            document.getElementById('database-config-dialog-container')
+        );
+    } catch (e) {
+        logger.error("An error occurred while mounting the database config dialog:", e);
+    }
 });

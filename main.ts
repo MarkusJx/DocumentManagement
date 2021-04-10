@@ -3,8 +3,39 @@ import {autoUpdater} from "electron-updater";
 import windowStateKeeper from "electron-window-state";
 import Store from "electron-store";
 import path from 'path';
+import log4js from "log4js";
 
 app.allowRendererProcessReuse = false;
+
+log4js.configure({
+    appenders: {
+        out: {
+            type: 'stdout',
+            layout: {
+                type: 'pattern',
+                pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
+            }
+        },
+        app: {
+            type: 'file',
+            filename: 'main.log',
+            layout: {
+                type: 'pattern',
+                pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
+            },
+            maxLogSize: 100000
+        }
+    },
+    categories: {
+        default: {
+            appenders: ['out', 'app'],
+            level: 'info',
+            enableCallStack: true
+        }
+    }
+});
+
+const logger = log4js.getLogger();
 
 ipcMain.handle('select-directory', async (_event, ...args) => {
     const result = await dialog.showOpenDialog({
@@ -46,11 +77,29 @@ ipcMain.handle('select-database', async (_event, ...args) => {
     }
 });
 
+ipcMain.handle('show-error-dialog', (_event, ...args) => {
+    dialog.showErrorBox(args[0], args[1]);
+});
+
+/**
+ * Print the system info
+ */
+function printSystemInfo() {
+    logger.info("Operating system:", process.platform);
+    logger.info("Architecture:", process.arch);
+    logger.info("System version:", process.getSystemVersion());
+    logger.info("Total memory:", process.getSystemMemoryInfo().total);
+}
+
+printSystemInfo();
+
 function createWindow(): void {
+    logger.info("Creating the main window");
     Store.initRenderer();
     autoUpdater.checkForUpdatesAndNotify().then(r => {
-        if (r != null)
-            console.log(r);
+        if (r != null) {
+            logger.info("Update check result:", r);
+        }
     });
 
     const menu = new Menu();
@@ -69,7 +118,6 @@ function createWindow(): void {
         height: mainWindowState.height,
         minHeight: 500,
         minWidth: 530,
-        titleBarStyle: "hidden",
         frame: false,
         resizable: true,
         webPreferences: {
@@ -78,9 +126,12 @@ function createWindow(): void {
             worldSafeExecuteJavaScript: true,
             nodeIntegration: false,
             webSecurity: true,
-            enableRemoteModule: true
+            enableRemoteModule: true,
+            devTools: true
         }
     });
+
+    mainWindowState.manage(mainWindow);
 
     menu.append(new MenuItem({
         label: 'File',
@@ -122,14 +173,33 @@ function createWindow(): void {
                 label: 'Exit',
                 click: () => {
                     app.quit();
-                }
+                },
+                accelerator: 'Alt+F4'
             }
         ]
     }));
 
+    menu.append(new MenuItem({
+        label: 'Options',
+        submenu: [
+            {
+                label: 'Toggle DevTools',
+                click: () => {
+                    if (mainWindow.webContents.isDevToolsOpened()) {
+                        mainWindow.webContents.closeDevTools();
+                    } else {
+                        mainWindow.webContents.openDevTools();
+                    }
+                },
+                accelerator: 'Control+Shift+I'
+            }
+        ]
+    }))
+
     let shouldClose: boolean = false;
     mainWindow.on('close', (e) => {
         if (!shouldClose) {
+            logger.info("Running before close actions");
             shouldClose = true;
             e.preventDefault();
             mainWindow.webContents.send('close');
@@ -137,14 +207,14 @@ function createWindow(): void {
     });
 
     ipcMain.on('before-close-finished', () => {
+        logger.info("The before close actions finished, closing the window");
         mainWindow.close();
     });
 
     // and load the index.html of the app.
-    mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html')).then();
-
-    // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html')).then(() => {
+        logger.info("Main window loaded");
+    });
 }
 
 // This method will be called when Electron has finished
@@ -164,5 +234,8 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', function (): void {
-    if (process.platform !== 'darwin') app.quit();
+    if (process.platform !== 'darwin') {
+        logger.info("Quit");
+        app.quit();
+    }
 });

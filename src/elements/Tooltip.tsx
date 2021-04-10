@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import {MDCTooltip} from "@material/tooltip";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 // The current tooltip container
 let tooltipContainer: TooltipContainer = null;
@@ -168,9 +171,14 @@ class TooltipContainer extends React.Component<TooltipContainerProps> {
 
 // Listen for content load and create the tooltip container
 window.addEventListener('DOMContentLoaded', () => {
-    ReactDOM.render(
-        <TooltipContainer ref={e => tooltipContainer = e}/>,
-        document.getElementById('tooltip-container')
-    );
+    logger.info("Mounting the tooltip container");
+    try {
+        ReactDOM.render(
+            <TooltipContainer ref={e => tooltipContainer = e}/>,
+            document.getElementById('tooltip-container')
+        );
+    } catch (e) {
+        logger.error("An error occurred while creating the tooltip container");
+    }
 });
 

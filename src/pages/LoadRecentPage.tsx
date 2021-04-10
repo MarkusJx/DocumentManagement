@@ -5,6 +5,9 @@ import constants from "../util/constants";
 import {showErrorDialog} from "../elements/ErrorDialog";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "./DatabaseConfigurator";
 import MDCCSSProperties from "../util/MDCCSSProperties";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * A page for loading a recent database
@@ -187,9 +190,11 @@ class RecentDatabaseElement extends React.Component<RecentDatabaseElementProps> 
     private async onLoad(): Promise<void> {
         this.props.parent.disableAllButtons();
         try {
+            logger.info("Loading a recent database with id:", this.props.database.id);
             const toLoad = await Recents.get(this.props.database.id);
             await constants.mainComponent.onLoad(toLoad.setting);
         } catch (e) {
+            logger.error("An error occurred while loading a recently used database:", e);
             showErrorDialog("Could not load the database. Error:", e.message);
             constants.mainComponent.gotoStartPage();
         }

@@ -6,6 +6,9 @@ import {PropertySetter} from "./PropertyField";
 import {DateRangeTextField} from "./DateTextField";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import constants from "../util/constants";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * The search box properties
@@ -268,7 +271,12 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * @private
      */
     private tagExists(value: string): boolean {
-        return this.databaseManager.tagExists(value);
+        try {
+            return this.databaseManager.tagExists(value);
+        } catch (e) {
+            logger.error("An error occurred while checking if a tag exists:", e);
+            return false;
+        }
     }
 
     /**
@@ -279,6 +287,11 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * @private
      */
     private getTagOptions(value: string): string[] {
-        return this.databaseManager.getTagsLike(value).map(t => t.name);
+        try {
+            return this.databaseManager.getTagsLike(value).map(t => t.name);
+        } catch (e) {
+            logger.error("An error occurred while getting all tags like a value:", e);
+            return [];
+        }
     }
 }

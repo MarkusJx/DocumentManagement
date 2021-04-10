@@ -11,11 +11,14 @@ import {DatabaseSetting, RecentDatabase, Recents} from "../settings/recentConnec
 import util from "../util/util";
 import LoadRecentPage from "./LoadRecentPage";
 import SettingsDialog from "../settings/SettingsDialog";
+import {getLogger} from "log4js";
 
 /**
  * Whether to show the generated sql commands
  */
-const SHOW_SQL: boolean = true;
+const SHOW_SQL: boolean = false;
+
+const logger = getLogger();
 
 /**
  * The main component class
@@ -75,51 +78,38 @@ export class MainComponent extends React.Component<{}> {
 
         // Load the most recently used database if requested (and possible)
         if (Recents.settings.loadRecentOnStartup && Recents.mostRecentId) {
+            logger.info("Loading the most recently used database");
             this.startScreenButtonsEnabled = false;
             Recents.getMostRecent().then((setting: RecentDatabase) => {
                 this.onLoad(setting.setting).then().catch((e) => {
+                    logger.error("Could not load the most recent database", e);
                     showErrorDialog("Could not load the most recent database", e.message);
                     this.gotoStartPage();
                 });
             }).catch((e) => {
+                logger.error("Could not load the most recent database", e);
                 showErrorDialog("Could not load the most recent database", e.message);
                 this.gotoStartPage();
             });
         }
 
         ipcRenderer.on('load-database', () => {
-            if (this.databaseManager) {
-                this.databaseManager.close().then();
-                this.databaseManager = null;
-            }
-
+            this.closeDatabaseManager();
             this.startScreenOnLoad();
         });
 
         ipcRenderer.on('create-database', () => {
-            if (this.databaseManager) {
-                this.databaseManager.close().then();
-                this.databaseManager = null;
-            }
-
+            this.closeDatabaseManager();
             this.startScreenOnCreate();
         });
 
         ipcRenderer.on('load-recent-database', () => {
-            if (this.databaseManager) {
-                this.databaseManager.close().then();
-                this.databaseManager = null;
-            }
-
+            this.closeDatabaseManager();
             this.gotoLoadRecentPage();
         });
 
         ipcRenderer.on('goto-start-screen', () => {
-            if (this.databaseManager) {
-                this.databaseManager.close().then();
-                this.databaseManager = null;
-            }
-
+            this.closeDatabaseManager();
             this.gotoStartPage();
         });
     }
@@ -128,11 +118,61 @@ export class MainComponent extends React.Component<{}> {
      * Start the search
      */
     public async startSearch(): Promise<void> {
-        constants.mainDataTable.setLoading(true);
-        const filter: database.DocumentFilter = await this.searchBox.getFilter();
-        const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter, 0);
-        await constants.mainDataTable.setSearchResults(documents, filter);
-        constants.mainDataTable.setLoading(false);
+        try {
+            constants.mainDataTable.setLoading(true);
+            const filter: database.DocumentFilter = await this.searchBox.getFilter();
+            const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter, 0);
+            await constants.mainDataTable.setSearchResults(documents, filter);
+            constants.mainDataTable.setLoading(false);
+        } catch (e) {
+            logger.error("An error occurred while searching for documents:", e);
+            showErrorDialog("Could not start the search. Error:", e.message);
+        }
+    }
+
+    /**
+     * Called when the database should be loaded
+     *
+     * @param setting the database setting to load
+     */
+    public async onLoad(setting: DatabaseSetting): Promise<void> {
+        logger.info("Loading database");
+        this.currentPage = (
+            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
+                           ref={e => constants.mainDataTable = e}/>
+        );
+
+        this.forceUpdate();
+        try {
+            this.databaseManager = await util.getDatabaseManagerFromSettings(setting, Action.UPDATE, SHOW_SQL);
+        } catch (e) {
+            logger.error("Could not load the database", e);
+            showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
+                "this error may be caused by invalid login credentials. Please check if your connection details are " +
+                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
+
+            this.gotoStartPage();
+            return;
+        }
+
+        try {
+            await Recents.add(setting);
+        } catch (e) {
+            logger.error("Could not add the setting to the list of recently used databases", e);
+        }
+
+        constants.init(this.databaseManager);
+
+        this.currentPage = (
+            <div>
+                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
+                           ref={e => this.searchBox = e}/>
+                <MainDataTable directory={await this.databaseManager.getDirectory("")}
+                               databaseManager={this.databaseManager} showProgress={false} key={2}
+                               ref={e => constants.mainDataTable = e}/>
+            </div>
+        );
+        this.forceUpdate();
     }
 
     public render(): React.ReactNode {
@@ -168,48 +208,13 @@ export class MainComponent extends React.Component<{}> {
         this.forceUpdate();
     }
 
-    /**
-     * Called when the database should be loaded
-     *
-     * @param setting the database setting to load
-     */
-    public async onLoad(setting: DatabaseSetting): Promise<void> {
-        this.currentPage = (
-            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
-                           ref={e => constants.mainDataTable = e}/>
-        );
-
-        this.forceUpdate();
-        try {
-            this.databaseManager = await util.getDatabaseManagerFromSettings(setting, Action.UPDATE, SHOW_SQL);
-        } catch (e) {
-            showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
-                "this error may be caused by invalid login credentials. Please check if your connection details are " +
-                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
-
-            this.gotoStartPage();
-            return;
+    private closeDatabaseManager(): void {
+        if (this.databaseManager) {
+            this.databaseManager.close().then().catch(e => {
+                logger.error("Could not close the database manager:", e);
+            });
+            this.databaseManager = null;
         }
-
-        try {
-            await Recents.add(setting);
-        } catch (e) {
-            console.error(e);
-            // TODO: log the error
-        }
-
-        constants.init(this.databaseManager);
-
-        this.currentPage = (
-            <div>
-                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
-                           ref={e => this.searchBox = e}/>
-                <MainDataTable directory={await this.databaseManager.getDirectory("")}
-                               databaseManager={this.databaseManager} showProgress={false} key={2}
-                               ref={e => constants.mainDataTable = e}/>
-            </div>
-        );
-        this.forceUpdate();
     }
 
     /**
@@ -241,9 +246,17 @@ export class MainComponent extends React.Component<{}> {
     private async startScan(manager: database.DatabaseManager, file: string): Promise<void> {
         this.databaseManager = manager;
 
-        const fileScanner = new FileScanner(file);
-        const rootDir = await fileScanner.scan();
-        await this.databaseManager.persistDirectory(rootDir, file);
+        try {
+            logger.info("Running file scan");
+            const fileScanner = new FileScanner(file);
+            const rootDir = await fileScanner.scan();
+            await this.databaseManager.persistDirectory(rootDir, file);
+        } catch (e) {
+            logger.error("An error occurred while scanning the file system:", e);
+            showErrorDialog("An error occurred while scanning the file system", e.message);
+            this.gotoStartPage();
+            return;
+        }
 
         this.currentPage = (
             <div>
@@ -556,8 +569,13 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
      * @private
      */
     private async selectDirectory(): Promise<void> {
-        this.disableAllButtons();
-        this.directory = await ipcRenderer.invoke('select-directory', "Select a directory to scan");
+        try {
+            this.disableAllButtons();
+            this.directory = await ipcRenderer.invoke('select-directory', "Select a directory to scan");
+        } catch (e) {
+            logger.error("Could not select an directory:", e);
+            showErrorDialog("The directory select operation failed");
+        }
     }
 
     /**
@@ -569,9 +587,11 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
         constants.scanLoadingScreen.visible = true;
         const settings = this.configurator.settings;
         let databaseManager: database.DatabaseManager;
+
         try {
             databaseManager = await util.getDatabaseManagerFromSettings(settings, Action.CREATE_DROP, SHOW_SQL);
         } catch (e) {
+            logger.error("Could not create a database", e);
             showErrorDialog("The database could not be created. If you are trying to connect to a remote database, " +
                 "this error may be caused by invalid login credentials. Please check if your connection details are " +
                 "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
@@ -580,7 +600,11 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
             return;
         }
 
-        await Recents.add(settings);
+        try {
+            await Recents.add(settings);
+        } catch (e) {
+            logger.error("Could not add the database setting to the store:", e);
+        }
 
         constants.init(databaseManager);
         await this.onStartClickImpl(databaseManager, this.state.directory);

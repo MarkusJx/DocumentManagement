@@ -2,6 +2,9 @@ import crypto from "crypto";
 import Store from "electron-store";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
 import {decryptPassword, encryptPassword} from "./passwordEncryption";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * A database setting
@@ -151,6 +154,7 @@ export class Recents {
      * @param id the new id
      */
     public static set mostRecentId(id: string) {
+        logger.info("Setting most recent database setting id:", id);
         if (!id) {
             throw new TypeError("The id must not be null");
         }
@@ -165,6 +169,7 @@ export class Recents {
      */
     public static async getMostRecent(): Promise<RecentDatabase> {
         if (Recents.mostRecentId) {
+            logger.info("Retrieved most recent database setting id:", Recents.mostRecentId);
             return await Recents.get(Recents.mostRecentId);
         } else {
             return null;
@@ -272,6 +277,8 @@ export class Recents {
             value = await Recents.encryptSetting(value as AnySettings);
         }
 
+        logger.info("Adding new database setting with id:", id);
+
         recents.push({
             id: id,
             localPath: null,
@@ -312,6 +319,7 @@ export class Recents {
      * @param value the setting to set
      */
     public static async set(value: RecentDatabase): Promise<void> {
+        logger.info("Setting database setting with id:", value.id);
         Recents.delete(value.id);
 
         const recents: RecentDatabase[] = Recents.recents;
@@ -329,6 +337,7 @@ export class Recents {
      * @param id the id of the setting to delete
      */
     public static delete(id: string): void {
+        logger.info("Deleting recent database setting with id:", id);
         Recents.recents = Recents.recents.filter(v => v.id != id);
     }
 }

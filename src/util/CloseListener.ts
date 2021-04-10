@@ -1,4 +1,7 @@
 import {ipcRenderer} from "electron";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * A close listener function
@@ -30,11 +33,12 @@ export default class CloseListener {
      * NOTE: This should not be called outside this file
      */
     public static async callListeners(): Promise<void> {
+        logger.info("Calling all close listeners");
         for (let i: number = 0; i < CloseListener.listeners.length; i++) {
             try {
                 await CloseListener.listeners[i]();
             } catch (e) {
-                // TODO: Log error
+                logger.error("Error while calling a close listener", e);
             }
         }
     }
@@ -44,4 +48,5 @@ export default class CloseListener {
 ipcRenderer.on('close', async () => {
     await CloseListener.callListeners();
     ipcRenderer.send('before-close-finished');
+    logger.info("Before close finished");
 });

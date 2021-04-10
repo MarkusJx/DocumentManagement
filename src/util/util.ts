@@ -9,6 +9,10 @@ import {
     PersistenceProvider
 } from "../databaseWrapper";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
+import {getLogger} from "log4js";
+import {ipcRenderer} from "electron";
+
+const logger = getLogger();
 
 /**
  * Get the command line option to open a file
@@ -52,6 +56,8 @@ export default class util {
             return await database.DatabaseManager.create(em);
         };
 
+        logger.info("Creating a database manager from settings:", settings.provider);
+
         switch (settings.provider) {
             case DatabaseProvider.SQLite: {
                 const setting = settings as SQLiteSettings;
@@ -70,7 +76,15 @@ export default class util {
                 return await fromProvider(provider);
             }
             default:
+                logger.error("Invalid database provider supplied:", settings.provider);
                 return null;
         }
+    }
+
+    public static showNativeErrorDialog(title: string, message: string): void {
+        logger.info("Opening a native error dialog");
+        ipcRenderer.invoke('show-error-dialog', title, message).then().catch(e => {
+            logger.error("An error occurred while opening the native error dialog:", e);
+        });
     }
 }

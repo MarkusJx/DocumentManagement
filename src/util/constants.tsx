@@ -7,7 +7,10 @@ import {MainDataTable} from "../pages/dataTable/MainDataTable";
 import {SearchBox} from "../elements/SearchBox";
 import {ScanLoadingScreen} from "../elements/LoadingScreens";
 import {MainComponent} from "../pages/StartScreen";
+import {getLogger} from "log4js";
 import DatabaseManager = database.DatabaseManager;
+
+const logger = getLogger();
 
 /**
  * Constants to be used everywhere
@@ -44,9 +47,14 @@ export default class constants {
      * @param databaseManager the database manager
      */
     public static init(databaseManager: DatabaseManager): void {
-        ReactDOM.render(
-            <FileEditor databaseManager={databaseManager} ref={e => constants.fileEditor = e}/>,
-            document.getElementById('file-editor-dialog-container')
-        );
+        logger.info("Initializing file editor");
+        try {
+            ReactDOM.render(
+                <FileEditor databaseManager={databaseManager} ref={e => constants.fileEditor = e}/>,
+                document.getElementById('file-editor-dialog-container')
+            );
+        } catch (e) {
+            logger.error("Error while initializing the file editor:", e);
+        }
     }
 }

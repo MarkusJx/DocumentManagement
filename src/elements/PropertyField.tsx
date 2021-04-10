@@ -4,6 +4,9 @@ import {MDCRipple} from '@material/ripple';
 import {database} from "../databaseWrapper";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {OutlinedTextFieldWithAutoComplete} from "./MDCWrapper";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * The properties for the {@link PropertyField}
@@ -107,7 +110,12 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      * @private
      */
     private getPropertyAutoCompleteOptions(input: string): string[] {
-        return this._databaseManager.getPropertiesLike(input).map(p => p.name);
+        try {
+            return this._databaseManager.getPropertiesLike(input).map(p => p.name);
+        } catch (e) {
+            logger.error("An error occurred while getting all properties like a value:", e);
+            return [];
+        }
     }
 
     /**
@@ -117,7 +125,12 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      * @private
      */
     private getPropertyValueAutoCompleteOptions(input: string): string[] {
-        return this._databaseManager.getPropertyValuesLike(input).map(p => p.value);
+        try {
+            return this._databaseManager.getPropertyValuesLike(input).map(p => p.value);
+        } catch (e) {
+            logger.error("An error occurred while getting all property values like a value:", e);
+            return [];
+        }
     }
 }
 

@@ -2,11 +2,16 @@ import java from "java";
 import {promisify} from "util";
 import * as fs from "fs";
 import path from "path";
+import {getLogger} from "log4js";
 
-if (fs.existsSync(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', 'dbLib-1.0-SNAPSHOT.jar'))) {
-    java.classpath.push(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', 'dbLib-1.0-SNAPSHOT.jar'));
+const JAR_NAME = 'dbLib-1.0-SNAPSHOT.jar';
+const logger = getLogger();
+
+logger.info("Loading the java library");
+if (fs.existsSync(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR_NAME))) {
+    java.classpath.push(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR_NAME));
 } else {
-    java.classpath.push(path.join(__dirname, '..', '..', '..', 'dbLib', 'build', 'libs', 'dbLib-1.0-SNAPSHOT.jar'));
+    java.classpath.push(path.join(__dirname, '..', '..', '..', 'dbLib', 'build', 'libs', JAR_NAME));
 }
 
 const Arrays = java.import('java.util.Arrays');
@@ -185,6 +190,7 @@ export class SQLiteProvider extends PersistenceProvider {
      * @param showSQL whether to show the generated sql commands
      */
     public static async create(databaseFile: string = "", action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<SQLiteProvider> {
+        logger.info("Creating a new SQLite provider");
         const _action = actionToJavaAction(action);
         const arr = java.newArray("java.lang.String", []);
         const impl = await java_newInstance("io.github.markusjx.database.persistence.SQLiteProvider",
@@ -219,6 +225,7 @@ export class MySQLProvider extends PersistenceProvider {
      * @return the created persistence provider
      */
     public static async create(url: string, user: string, password: string, action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<MySQLProvider> {
+        logger.info("Creating a new MySQL provider");
         const _action = actionToJavaAction(action);
         const arr = java.newArray("java.lang.String", []);
         const impl = await java_newInstance("io.github.markusjx.database.persistence.MySQLProvider",
@@ -253,6 +260,7 @@ export class MariaDBProvider extends PersistenceProvider {
      * @return the created persistence provider
      */
     public static async create(url: string, user: string, password: string, action: Action = Action.CREATE_DROP, showSQL: boolean = true): Promise<MySQLProvider> {
+        logger.info("Creating a new Maria DB provider");
         const _action = actionToJavaAction(action);
         const arr = java.newArray("java.lang.String", []);
         const impl = await java_newInstance("io.github.markusjx.database.persistence.MariaDBProvider",

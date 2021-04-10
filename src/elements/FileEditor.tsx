@@ -7,6 +7,10 @@ import MDCCSSProperties from "../util/MDCCSSProperties";
 import constants from "../util/constants";
 import {DateTextField} from "./DateTextField";
 import {Dialog} from "./MDCWrapper";
+import {showErrorDialog} from "./ErrorDialog";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * Properties for the file editor
@@ -111,29 +115,34 @@ export class FileEditor extends React.Component<FileEditorProps> {
     public componentDidMount(): void {
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
-            if (event.detail.action === "accept") {
-                // Set the main data table to loading
-                constants.mainDataTable.setLoading(true);
+            try {
+                if (event.detail.action === "accept") {
+                    // Set the main data table to loading
+                    constants.mainDataTable.setLoading(true);
 
-                // Get the values
-                const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
-                const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues;
-                const date: Date = this.dateTextField.value;
+                    // Get the values
+                    const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
+                    const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues;
+                    const date: Date = this.dateTextField.value;
 
-                // Persist the values
-                await this.currentDocument.setTags(tags, false);
-                await this.currentDocument.setProperties(properties, date == null);
-                if (date != null) {
-                    await this.currentDocument.setDate(date, true);
+                    // Persist the values
+                    await this.currentDocument.setTags(tags, false);
+                    await this.currentDocument.setProperties(properties, date == null);
+                    if (date != null) {
+                        await this.currentDocument.setDate(date, true);
+                    }
+
+                    // Set the main table to not loading anymore
+                    constants.mainDataTable.setLoading(false);
                 }
 
-                // Set the main table to not loading anymore
-                constants.mainDataTable.setLoading(false);
+                // Clear all text areas
+                this.chipTextArea.clear();
+                this.propertySetter.clear();
+            } catch (e) {
+                showErrorDialog("An error occurred while saving the properties", e.message);
+                logger.error("An error occurred while closing the file editor:", e);
             }
-
-            // Clear all text areas
-            this.chipTextArea.clear();
-            this.propertySetter.clear();
         });
     }
 
@@ -160,8 +169,13 @@ export class FileEditor extends React.Component<FileEditorProps> {
      * @private
      */
     private getAutoCompleteOptions(val: string): string[] {
-        const tags: database.Tag[] = this.databaseManager.getTagsLike(val);
-        return tags.map(t => t.name);
+        try {
+            const tags: database.Tag[] = this.databaseManager.getTagsLike(val);
+            return tags.map(t => t.name);
+        } catch (e) {
+            logger.error("An error occurred while trying to get the tag auto complete options:", e);
+            return [];
+        }
     }
 
     /**
@@ -172,6 +186,11 @@ export class FileEditor extends React.Component<FileEditorProps> {
      * @private
      */
     private chipValueExists(value: string): boolean {
-        return this.databaseManager.tagExists(value);
+        try {
+            return this.databaseManager.tagExists(value);
+        } catch (e) {
+            logger.error("An error occurred while checking if a chip value exists:", e);
+            return false;
+        }
     }
 }

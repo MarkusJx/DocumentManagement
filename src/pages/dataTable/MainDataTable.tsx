@@ -9,6 +9,10 @@ import {
     MDCDataTableProgressIndicator,
     MDCDataTableRow
 } from "../../elements/MDCWrapper";
+import {getLogger} from "log4js";
+import {showErrorDialog} from "../../elements/ErrorDialog";
+
+const logger = getLogger();
 
 /**
  * The main data table properties
@@ -447,12 +451,18 @@ class MDCDataTablePagination extends React.Component<MDCDataTablePaginationProps
      * @private
      */
     private async updateSearchResults(offset: number): Promise<void> {
-        constants.mainDataTable.setLoading(true);
-        // Get the documents
-        const documents: database.Document[] = await this.databaseManager.getDocumentsBy(this.filter, offset);
-        // No need to set the offset and limit, MainDataTable#setSearchResults will handle this
-        await constants.mainDataTable.setSearchResults(documents, this.filter, offset, this.state.total);
-        constants.mainDataTable.setLoading(false);
+        try {
+            constants.mainDataTable.setLoading(true);
+            // Get the documents
+            const documents: database.Document[] = await this.databaseManager.getDocumentsBy(this.filter, offset);
+            // No need to set the offset and limit, MainDataTable#setSearchResults will handle this
+            await constants.mainDataTable.setSearchResults(documents, this.filter, offset, this.state.total);
+            constants.mainDataTable.setLoading(false);
+        } catch (e) {
+            logger.error("An error occurred while updating the search results:", e);
+            showErrorDialog("An error occurred while updating the search results", e.message);
+            constants.mainComponent.gotoStartPage();
+        }
     }
 
     /**

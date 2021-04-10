@@ -3,6 +3,8 @@ package io.github.markusjx.util;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.jdbc.Work;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 
@@ -10,6 +12,8 @@ import javax.persistence.EntityManager;
  * Some database utilities
  */
 public final class DatabaseUtils {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseUtils.class);
+
     /**
      * Don't.
      */
@@ -32,7 +36,7 @@ public final class DatabaseUtils {
             transaction.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not do session work", e);
             transaction.rollback();
             return false;
         }

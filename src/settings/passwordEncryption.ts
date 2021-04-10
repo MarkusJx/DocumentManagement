@@ -1,5 +1,8 @@
 import crypto from "crypto";
 import CloseListener from "../util/CloseListener";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * The passport account id
@@ -43,10 +46,16 @@ function resetClearKeyTimeout(): void {
     }
 
     clearKeyTimeout = setTimeout(() => {
-        if (encryptKey) {
-            encryptKey.fill(0);
-            encryptKey = null;
+        try {
+            if (encryptKey) {
+                logger.info("Clearing the encryption key buffer");
+                encryptKey.fill(0);
+                encryptKey = null;
+            }
+        } catch (e) {
+            logger.error("An error occurred while clearing the encryption key buffer:", e);
         }
+
         clearKeyTimeout = null;
     }, CLEAR_KEY_TIMEOUT);
 }
@@ -87,6 +96,7 @@ function decryptString(str: string, iv: Buffer): string {
  * @param encryptionKey the encryption key to sign
  */
 async function win32_updatePassport(encryptionKey: Buffer): Promise<void> {
+    logger.info("Updating the encryption key");
     // @ts-ignore
     const {passport} = await import("node-ms-passport");
     if (!encryptKey) {
@@ -114,8 +124,15 @@ const encryptionStrategies = {
      * @return the encrypted password
      */
     "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
-        // @ts-ignore
-        const {passport} = await import("node-ms-passport");
+        let passport: typeof import("node-ms-passport").passport = null;
+        try {
+            // @ts-ignore
+            passport = (await import("node-ms-passport")).passport;
+        } catch (e) {
+            logger.error("An error occurred while trying to import node-ms-passport:", e);
+            return password;
+        }
+
         if (passport.passportAvailable()) {
             await win32_updatePassport(encryptionKey);
 
@@ -140,8 +157,15 @@ const decryptionStrategies = {
      * @return the decrypted password
      */
     "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
-        // @ts-ignore
-        const {passport} = await import("node-ms-passport");
+        let passport: typeof import("node-ms-passport").passport = null;
+        try {
+            // @ts-ignore
+            passport = (await import("node-ms-passport")).passport;
+        } catch (e) {
+            logger.error("An error occurred while trying to import node-ms-passport:", e);
+            return password;
+        }
+
         if (passport.passportAvailable()) {
             await win32_updatePassport(encryptionKey);
 

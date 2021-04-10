@@ -5,6 +5,10 @@ import util from "../../util/util";
 import constants from "../../util/constants";
 import {database} from "../../databaseWrapper";
 import {MDCTooltip} from "@material/tooltip";
+import {getLogger} from "log4js";
+import {showErrorDialog} from "../../elements/ErrorDialog";
+
+const logger = getLogger();
 
 /**
  * The last or next id. dunno.
@@ -67,7 +71,12 @@ class EditDocumentButton extends React.Component<EditDocumentButtonProps> {
      * @private
      */
     private onEditButtonClick(): void {
-        constants.fileEditor.open(this.document);
+        try {
+            constants.fileEditor.open(this.document);
+        } catch (e) {
+            logger.error("An error occurred while trying to open the file editor:", e);
+            showErrorDialog("Could not open the file editor", e.message);
+        }
     }
 }
 
@@ -115,9 +124,14 @@ class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
      * @private
      */
     private async openDocument(): Promise<void> {
-        if (this.documentPath) {
-            util.openFileUsingDefaultProgram(constants.mainDataTable.databaseManager.databaseInfo.sourcePath
-                + '/' + this.documentPath);
+        try {
+            if (this.documentPath) {
+                util.openFileUsingDefaultProgram(constants.mainDataTable.databaseManager.databaseInfo.sourcePath
+                    + '/' + this.documentPath);
+            }
+        } catch (e) {
+            logger.error("An error occurred while opening a document:", e);
+            showErrorDialog("An error occurred while opening a document:", e.message);
         }
     }
 }
@@ -316,8 +330,14 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
      * @private
      */
     private async onDirectoryOpen(): Promise<void> {
-        if (this.dirPath != null) {
-            await constants.mainDataTable.setDirectory(this.dirPath);
+        try {
+            if (this.dirPath != null) {
+                await constants.mainDataTable.setDirectory(this.dirPath);
+            }
+        } catch (e) {
+            logger.error("An error occurred while opening a directory:", e);
+            showErrorDialog("An error occurred while opening a directory:", e.message);
+            constants.mainComponent.gotoStartPage();
         }
     }
 }

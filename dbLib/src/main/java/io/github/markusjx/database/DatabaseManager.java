@@ -6,6 +6,8 @@ import io.github.markusjx.datatypes.ChainedHashMap;
 import io.github.markusjx.datatypes.DocumentSearchResult;
 import io.github.markusjx.util.DatabaseUtils;
 import io.github.markusjx.util.ListUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
  * A class for managing the database
  */
 public class DatabaseManager {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
+
     /**
      * The maximum amount of search results for fuzzy searches
      */
@@ -39,6 +43,7 @@ public class DatabaseManager {
     public DatabaseManager(EntityManager manager) {
         Objects.requireNonNull(manager);
         this.manager = manager;
+        logger.info("Creating the database manager");
     }
 
     /**
@@ -107,7 +112,7 @@ public class DatabaseManager {
                     .setParameter("tags", tags)
                     .getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get all tags in both in the database and a list", e);
             return null;
         }
     }
@@ -151,7 +156,7 @@ public class DatabaseManager {
                     .setParameter("props", properties)
                     .getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get all properties both in a list and the database", e);
             return null;
         }
     }
@@ -191,7 +196,7 @@ public class DatabaseManager {
                     .setParameter("values", propertyValues)
                     .getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get all property values both in a list and the database", e);
             return null;
         }
     }
@@ -270,7 +275,7 @@ public class DatabaseManager {
 
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get all documents both in a list and the database", e);
             return null;
         }
     }
@@ -312,7 +317,10 @@ public class DatabaseManager {
 
         // Remove all documents already existing in the database
         documents = ListUtils.removeAll(documents, toRemove, true, true);
-        if (documents.isEmpty()) return true;
+        if (documents.isEmpty()) {
+            logger.debug("The document list was empty after removing all documents already in the database");
+            return true;
+        }
 
         // Start a transaction and persist all documents
         try {
@@ -321,7 +329,7 @@ public class DatabaseManager {
             for (Document d : documents) manager.persist(d);
             manager.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not persist the documents", e);
             return false;
         }
 
@@ -352,7 +360,7 @@ public class DatabaseManager {
                     .setParameter("dirs", directories)
                     .getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get all directories both in a list and the database", e);
             return null;
         }
     }
@@ -379,7 +387,7 @@ public class DatabaseManager {
             }
             manager.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not persist the documents", e);
             return false;
         }
 
@@ -396,7 +404,7 @@ public class DatabaseManager {
         try {
             return manager.find(DatabaseInfo.class, 0);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get the database info", e);
             return null;
         }
     }
@@ -414,7 +422,7 @@ public class DatabaseManager {
             manager.getTransaction().commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not persist the database info", e);
             return false;
         }
     }
@@ -438,10 +446,12 @@ public class DatabaseManager {
      * @param path the path of the directory
      * @return the retrieved directory
      */
+    @SuppressWarnings("unused")
     public Directory getDirectory(String path) {
         try {
             return manager.find(Directory.class, path);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("Could not get a directory by its path", e);
             return null;
         }
     }
@@ -534,7 +544,8 @@ public class DatabaseManager {
     public Tag getTagByName(String name) {
         try {
             return manager.find(Tag.class, name);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("Could not get a tag by its name", e);
             return null;
         }
     }
@@ -575,7 +586,8 @@ public class DatabaseManager {
     public Property getPropertyByName(String name) {
         try {
             return manager.find(Property.class, name);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("Could not get a property by its name", e);
             return null;
         }
     }
@@ -650,10 +662,11 @@ public class DatabaseManager {
      */
     @SuppressWarnings("unused")
     public void close() {
+        logger.info("Closing the database manager");
         try {
             this.manager.flush();
         } catch (TransactionRequiredException ignored) {
-            // Ignore this exception
+            logger.info("Could not flush the EntityManager as there is no transaction in progress");
         }
 
         this.manager.clear();
