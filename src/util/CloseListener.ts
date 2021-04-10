@@ -31,7 +31,11 @@ export default class CloseListener {
      */
     public static async callListeners(): Promise<void> {
         for (let i: number = 0; i < CloseListener.listeners.length; i++) {
-            await CloseListener.listeners[i]();
+            try {
+                await CloseListener.listeners[i]();
+            } catch (e) {
+                // TODO: Log error
+            }
         }
     }
 }

@@ -7,9 +7,10 @@ import {SearchBox} from "../elements/SearchBox";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
 import {showErrorDialog} from "../elements/ErrorDialog";
-import {DatabaseSetting, Recents} from "../settings/recentConnections";
+import {DatabaseSetting, RecentDatabase, Recents} from "../settings/recentConnections";
 import util from "../util/util";
 import LoadRecentPage from "./LoadRecentPage";
+import SettingsDialog from "../settings/SettingsDialog";
 
 /**
  * Whether to show the generated sql commands
@@ -37,6 +38,18 @@ export class MainComponent extends React.Component<{}> {
     private searchBox: SearchBox;
 
     /**
+     * The start screen
+     * @private
+     */
+    private startScreen: StartScreen;
+
+    /**
+     * Whether the start screen buttons should be enabled
+     * @private
+     */
+    private startScreenButtonsEnabled: boolean;
+
+    /**
      * Create the main component
      *
      * @param props the properties
@@ -45,6 +58,8 @@ export class MainComponent extends React.Component<{}> {
         super(props);
 
         this.searchBox = null;
+        this.databaseManager = null;
+        this.startScreenButtonsEnabled = true;
 
         this.startScreenOnCreate = this.startScreenOnCreate.bind(this);
         this.startScreenOnLoad = this.startScreenOnLoad.bind(this);
@@ -55,9 +70,22 @@ export class MainComponent extends React.Component<{}> {
 
         this.currentPage = (
             <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
-                         onLoadRecentClickImpl={this.gotoLoadRecentPage}/>
+                         onLoadRecentClickImpl={this.gotoLoadRecentPage} ref={e => this.startScreen = e}/>
         );
-        this.databaseManager = null;
+
+        // Load the most recently used database if requested (and possible)
+        if (Recents.settings.loadRecentOnStartup && Recents.mostRecentId) {
+            this.startScreenButtonsEnabled = false;
+            Recents.getMostRecent().then((setting: RecentDatabase) => {
+                this.onLoad(setting.setting).then().catch((e) => {
+                    showErrorDialog("Could not load the most recent database", e.message);
+                    this.gotoStartPage();
+                });
+            }).catch((e) => {
+                showErrorDialog("Could not load the most recent database", e.message);
+                this.gotoStartPage();
+            });
+        }
 
         ipcRenderer.on('load-database', () => {
             if (this.databaseManager) {
@@ -92,11 +120,7 @@ export class MainComponent extends React.Component<{}> {
                 this.databaseManager = null;
             }
 
-            this.currentPage = (
-                <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
-                             onLoadRecentClickImpl={this.gotoLoadRecentPage}/>
-            );
-            this.forceUpdate();
+            this.gotoStartPage();
         });
     }
 
@@ -115,15 +139,23 @@ export class MainComponent extends React.Component<{}> {
         return this.currentPage;
     }
 
+    public componentDidMount(): void {
+        if (this.startScreen) {
+            this.startScreen.setButtonsEnabled(this.startScreenButtonsEnabled);
+        }
+    }
+
     /**
      * Go to the start page
      */
     public gotoStartPage(): void {
+        this.startScreenButtonsEnabled = true;
         this.currentPage = (
             <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
-                         onLoadRecentClickImpl={this.gotoLoadRecentPage}/>
+                         onLoadRecentClickImpl={this.gotoLoadRecentPage} ref={e => this.startScreen = e}/>
         );
         this.forceUpdate();
+        this.componentDidMount();
     }
 
     /**
@@ -563,6 +595,7 @@ interface StartScreenProps {
     onCreateClickImpl: () => void;
     // Called when the load button was clicked
     onLoadClickImpl: () => void;
+    // Called when the load recent button was clicked
     onLoadRecentClickImpl: () => void;
 }
 
@@ -589,6 +622,12 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
     private loadRecentButton: OutlinedButton;
 
     /**
+     * The open settings button
+     * @private
+     */
+    private openSettingsButton: OutlinedButton;
+
+    /**
      * Create the start screen
      *
      * @param props the properties
@@ -598,10 +637,12 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
         this.createButton = null;
         this.loadButton = null;
         this.loadRecentButton = null;
+        this.openSettingsButton = null;
 
         this.onCreateClick = this.onCreateClick.bind(this);
         this.onLoadClick = this.onLoadClick.bind(this);
         this.onLoadRecentClick = this.onLoadRecentClick.bind(this);
+        this.onOpenSettings = this.onOpenSettings.bind(this);
     }
 
     public render(): React.ReactNode {
@@ -685,6 +726,21 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
                                         ref={e => this.loadRecentButton = e}/>
                     </div>
                 </div>
+
+                <div style={containerStyle}>
+                    <div style={headingContainerStyle}>
+                        <h2 style={headingStyle}>Settings</h2>
+                    </div>
+
+                    <ul style={listStyle}>
+                        <li>Open and edit the settings</li>
+                    </ul>
+
+                    <div className="start-screen-button-alignment">
+                        <OutlinedButton text={"Open"} onClick={this.onOpenSettings}
+                                        ref={e => this.openSettingsButton = e}/>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -693,15 +749,16 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
      * Set whether all buttons should be enabled
      *
      * @param enabled set to true if the buttons should be enabled
-     * @private
      */
-    private setButtonsEnabled(enabled: boolean): void {
+    public setButtonsEnabled(enabled: boolean): void {
         if (this.createButton)
             this.createButton.enabled = enabled;
         if (this.loadButton)
             this.loadButton.enabled = enabled;
         if (this.loadRecentButton)
             this.loadRecentButton.enabled = enabled;
+        if (this.openSettingsButton)
+            this.openSettingsButton.enabled = enabled;
     }
 
     /**
@@ -722,8 +779,23 @@ class StartScreen extends React.Component<StartScreenProps, {}> {
         this.props.onLoadClickImpl();
     }
 
+    /**
+     * Called when a recent database should be loaded
+     * @private
+     */
     private onLoadRecentClick(): void {
         this.setButtonsEnabled(false);
         this.props.onLoadRecentClickImpl();
+    }
+
+    /**
+     * Called when the settings should be opened
+     * @private
+     */
+    private onOpenSettings(): void {
+        this.setButtonsEnabled(false);
+        SettingsDialog.open(() => {
+            this.setButtonsEnabled(true);
+        });
     }
 }

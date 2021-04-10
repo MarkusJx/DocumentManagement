@@ -4,8 +4,10 @@ import {MDCCheckbox} from '@material/checkbox';
 import {MDCRipple} from "@material/ripple";
 import {MDCLinearProgress} from "@material/linear-progress"
 import {MDCMenu} from "@material/menu";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import {MDCDialog} from "@material/dialog";
+import {MDCSnackbar} from "@material/snackbar";
+import {MDCSwitch} from "@material/switch";
+import MDCCSSProperties from "../util/MDCCSSProperties";
 import {
     TextArea,
     TextAreaProps,
@@ -439,16 +441,14 @@ interface DialogProps {
  */
 export class Dialog extends React.Component<DialogProps> {
     /**
+     * The mdc dialog
+     */
+    public dialog: MDCDialog;
+    /**
      * The dialog element
      * @private
      */
     private element: HTMLElement;
-
-    /**
-     * The mdc dialog
-     * @private
-     */
-    private dialog: MDCDialog;
 
     /**
      * Create a dialog
@@ -761,5 +761,159 @@ export class DataTable extends React.Component<DataTableProps> {
 
     public componentDidMount(): void {
         this.dataTable = new MDCDataTable(this.element);
+    }
+}
+
+/**
+ * The snackbar properties
+ */
+export interface SnackbarProps {
+    // The text of the close button
+    closeButtonText: string;
+    // The text of the snackbar
+    snackbarText?: string;
+    // The snackbar style
+    style?: MDCCSSProperties;
+}
+
+interface SnackbarState {
+    // The text of the snackbar
+    snackbarText: string;
+}
+
+/**
+ * A mdc snackbar
+ */
+export class Snackbar extends React.Component<SnackbarProps, SnackbarState> {
+    /**
+     * The actual snackbar implementation
+     */
+    public snackbar: MDCSnackbar = null;
+    /**
+     * The actual HTML element
+     * @private
+     */
+    private element: HTMLElement = null;
+
+    /**
+     * Create a snackbar
+     *
+     * @param props the properties
+     */
+    public constructor(props: SnackbarProps) {
+        super(props);
+
+        this.state = {
+            snackbarText: this.props.snackbarText
+        };
+    }
+
+    /**
+     * Set the snackbar text
+     *
+     * @param text the new text
+     */
+    public set snackbarText(text: string) {
+        this.setState({
+            snackbarText: text
+        });
+    }
+
+    /**
+     * Open the snackbar
+     */
+    public open(): void {
+        this.snackbar.open();
+    }
+
+    /**
+     * Close the snackbar
+     */
+    public close(): void {
+        this.snackbar.close();
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-snackbar" style={this.props.style} ref={e => this.element = e}>
+                <div className="mdc-snackbar__surface" role="status" aria-relevant="additions">
+                    <div className="mdc-snackbar__label" aria-atomic="false">
+                        {this.state.snackbarText}
+                    </div>
+                    <div className="mdc-snackbar__actions" aria-atomic="true">
+                        <button type="button" className="mdc-button mdc-snackbar__action">
+                            <div className="mdc-button__ripple"/>
+                            <span className="mdc-button__label">
+                                {this.props.closeButtonText}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.snackbar = new MDCSnackbar(this.element);
+    }
+}
+
+/**
+ * The switch properties
+ */
+interface SwitchProps {
+    // The switch id
+    id: string;
+    // The switch style
+    style?: MDCCSSProperties;
+}
+
+/**
+ * A mdc switch
+ */
+export class Switch extends React.Component<SwitchProps> {
+    /**
+     * The switch implementation
+     */
+    public switch: MDCSwitch = null;
+    /**
+     * The switch html element
+     * @private
+     */
+    private element: HTMLElement = null;
+
+    /**
+     * Get if the switch is checked
+     *
+     * @return true if the switch is checked
+     */
+    public get checked(): boolean {
+        return this.switch.checked;
+    }
+
+    /**
+     * Set whether the switch should be checked
+     *
+     * @param checked whether the switch should be checked
+     */
+    public set checked(checked: boolean) {
+        this.switch.checked = checked;
+    }
+
+    public render() {
+        return (
+            <div className="mdc-switch" ref={e => this.element = e} style={this.props.style}>
+                <div className="mdc-switch__track"/>
+                <div className="mdc-switch__thumb-underlay">
+                    <div className="mdc-switch__thumb"/>
+                    <input type="checkbox" id={this.props.id} className="mdc-switch__native-control" role="switch"
+                           aria-checked="false"/>
+                </div>
+            </div>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.switch = new MDCSwitch(this.element);
     }
 }

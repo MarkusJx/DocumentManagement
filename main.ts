@@ -112,7 +112,7 @@ function createWindow(): void {
             {
                 label: 'Settings',
                 click: () => {
-                    // TODO
+                    mainWindow.webContents.send('open-settings');
                 }
             },
             {

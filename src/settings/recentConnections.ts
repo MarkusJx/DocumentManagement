@@ -21,6 +21,18 @@ export interface RecentDatabase {
 }
 
 /**
+ * The settings interface
+ */
+export interface Settings {
+    // Whether to load the most recent database on startup
+    loadRecentOnStartup: boolean;
+}
+
+const defaultSettings: Settings = {
+    loadRecentOnStartup: false
+};
+
+/**
  * The store type
  */
 interface StoreType {
@@ -30,6 +42,10 @@ interface StoreType {
     iv: string;
     // The recently used databases
     recents: RecentDatabase[];
+    // The id of the last used database
+    mostRecent: string;
+    // The settings element
+    settings: Settings;
 }
 
 /**
@@ -56,7 +72,9 @@ export class Recents {
         defaults: {
             encryptionKey: crypto.randomBytes(256).toString('hex'),
             iv: crypto.randomBytes(16).toString('hex'),
-            recents: []
+            recents: [],
+            mostRecent: null,
+            settings: defaultSettings
         }
     });
 
@@ -94,6 +112,63 @@ export class Recents {
      */
     public static set recents(value: RecentDatabase[]) {
         Recents.store.set('recents', value);
+    }
+
+    /**
+     * Get the settings
+     *
+     * @return the saved settings
+     */
+    public static get settings(): Settings {
+        return Recents.store.get('settings');
+    }
+
+    /**
+     * Set the settings
+     *
+     * @param settings the new settings
+     */
+    public static set settings(settings: Settings) {
+        if (!settings) {
+            throw new TypeError("The settings object must not be null");
+        }
+
+        Recents.store.set('settings', settings);
+    }
+
+    /**
+     * Get the id of the most recent used database
+     *
+     * @return the id
+     */
+    public static get mostRecentId(): string {
+        return Recents.store.get('mostRecent');
+    }
+
+    /**
+     * Set the id of the most recent used database
+     *
+     * @param id the new id
+     */
+    public static set mostRecentId(id: string) {
+        if (!id) {
+            throw new TypeError("The id must not be null");
+        }
+
+        Recents.store.set('mostRecent', id);
+    }
+
+    /**
+     * Get the most recent used database
+     *
+     * @return the most recent database setting
+     */
+    public static async getMostRecent(): Promise<RecentDatabase> {
+        if (Recents.mostRecentId) {
+            return await Recents.get(Recents.mostRecentId);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -183,6 +258,7 @@ export class Recents {
     public static async add(value: DatabaseSetting): Promise<string> {
         const retrievedSetting: string = await Recents.containsSetting(value);
         if (retrievedSetting) {
+            Recents.mostRecentId = retrievedSetting;
             return retrievedSetting;
         }
 
@@ -202,6 +278,7 @@ export class Recents {
             setting: value
         });
 
+        Recents.mostRecentId = id;
         Recents.recents = recents;
         return id;
     }

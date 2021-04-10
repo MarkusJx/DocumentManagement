@@ -11,11 +11,16 @@ body {
 }
 
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label.text-area-label {
-    color: #4a6eff
+    color: #4a6eff;
 }
 
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
-    color: #4a6eff
+    color: #4a6eff;
+}
+
+.mdc-snackbar__action:not(:disabled) {
+    color: #00d0ff;
+    --mdc-theme-primary: #00d0ff99;
 }
 
 .titlebar {
