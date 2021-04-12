@@ -1284,6 +1284,15 @@ export namespace database {
         }
 
         /**
+         * Get the root directory
+         *
+         * @return the root directory or null if not found
+         */
+        public getRootDirectory(): Promise<Directory> {
+            return this.getDirectory("");
+        }
+
+        /**
          * Check if a tag exists
          *
          * @param name the tag name
@@ -1407,9 +1416,8 @@ export namespace database {
          * Get the database info
          *
          * @return the retrieved database info
-         * @private
          */
-        private async getDatabaseInfo(): Promise<DatabaseInfo> {
+        public async getDatabaseInfo(): Promise<DatabaseInfo> {
             const impl: any = await java_callMethod(this.impl, "getDatabaseInfo");
 
             if (impl != null) {

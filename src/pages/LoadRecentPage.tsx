@@ -195,7 +195,7 @@ class RecentDatabaseElement extends React.Component<RecentDatabaseElementProps> 
             await constants.mainComponent.onLoad(toLoad.setting);
         } catch (e) {
             logger.error("An error occurred while loading a recently used database:", e);
-            showErrorDialog("Could not load the database. Error:", e.message);
+            showErrorDialog("Could not load the database. Error:", e.stack);
             constants.mainComponent.gotoStartPage();
         }
     }

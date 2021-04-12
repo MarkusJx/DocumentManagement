@@ -55,7 +55,7 @@
       "ui/index.html",
       "ui/style.css",
       "out/**",
-      "!node_modules/java/build/jvm_dll_path.json"
+      "!node_modules/java/build/jvm_dll_path.jsons"
     ],
     "extraResources": [
       "dbLib/build/libs/*.jar",
@@ -68,7 +68,7 @@
       },
       {
         "from": "resources/jvm_dll_path.json",
-        "to": "app/node_modules/java/build/jvm_dll_path.json"
+        "to": "app.asar.unpacked/node_modules/java/build/jvm_dll_path.json"
       }
     ],
     "nsis": {
@@ -79,6 +79,8 @@
       ]
     },
     "asar": false,
-    "asarUnpack": "node_modules/java/**"
+    "asarUnpack": [
+      "node_modules/java"
+    ]
   }
 }

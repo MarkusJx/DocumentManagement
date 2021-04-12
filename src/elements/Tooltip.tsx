@@ -36,6 +36,18 @@ type TooltipProps = {
  */
 export default class Tooltip extends React.Component<_TooltipProps> {
     /**
+     * The mdc tooltip
+     * @private
+     */
+    private tooltip: MDCTooltip;
+
+    /**
+     * The tooltip html element
+     * @private
+     */
+    private element: HTMLElement;
+
+    /**
      * The id of the tooltip
      * @private
      */
@@ -57,6 +69,8 @@ export default class Tooltip extends React.Component<_TooltipProps> {
         super(props);
         this.id = props.id;
         this.text = props.text;
+        this.tooltip = null;
+        this.element = null;
     }
 
     /**
@@ -85,7 +99,8 @@ export default class Tooltip extends React.Component<_TooltipProps> {
         };
 
         return (
-            <div id={this.id} className="mdc-tooltip" role="tooltip" aria-hidden="true" style={style}>
+            <div id={this.id} className="mdc-tooltip" role="tooltip" aria-hidden="true" style={style}
+                 ref={e => this.element = e}>
                 <div className="mdc-tooltip__surface">
                     {this.text}
                 </div>
@@ -94,8 +109,11 @@ export default class Tooltip extends React.Component<_TooltipProps> {
     }
 
     public componentDidMount(): void {
-        const $this = ReactDOM.findDOMNode(this) as Element;
-        MDCTooltip.attachTo($this);
+        this.tooltip = new MDCTooltip(this.element);
+    }
+
+    public componentWillUnmount(): void {
+        this.tooltip.destroy();
     }
 }
 

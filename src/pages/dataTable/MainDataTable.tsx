@@ -11,6 +11,9 @@ import {
 } from "../../elements/MDCWrapper";
 import {getLogger} from "log4js";
 import {showErrorDialog} from "../../elements/ErrorDialog";
+import {SearchBox} from "../../elements/SearchBox";
+import Tooltip from "../../elements/Tooltip";
+import MainDataTableTopAppBar from "./MainDataTableTopAppBar";
 
 const logger = getLogger();
 
@@ -41,7 +44,12 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     /**
      * The database manager
      */
-    public readonly databaseManager: database.DatabaseManager;
+    public databaseManager: database.DatabaseManager;
+
+    /**
+     * The search box
+     */
+    public searchBox: SearchBox;
 
     /**
      * The actual mdc data table
@@ -71,6 +79,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         this.dataTable = null;
         this.databaseManager = props.databaseManager;
         this.dataTablePagination = null;
+        this.searchBox = null;
         if (props.showProgress == undefined || typeof props.showProgress !== "boolean") {
             this.showProgress = false;
         } else {
@@ -80,6 +89,8 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         this.state = {
             directory: props.directory
         };
+
+        this.startSearch = this.startSearch.bind(this);
     }
 
     /**
@@ -102,6 +113,37 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         });
 
         this.dataTablePagination.visible = false;
+    }
+
+    /**
+     * Set the database manager and load the root directory from the database
+     *
+     * @param databaseManager the database manager to load from
+     */
+    public async loadFinished(databaseManager: database.DatabaseManager): Promise<void> {
+        this.databaseManager = databaseManager;
+        this.directory = await this.databaseManager.getRootDirectory();
+        if (this.directory == null) {
+            throw new Error("The directory was not found");
+        }
+
+        this.setLoading(false);
+    }
+
+    /**
+     * Start the search
+     */
+    public async startSearch(): Promise<void> {
+        try {
+            constants.mainDataTable.setLoading(true);
+            const filter: database.DocumentFilter = await this.searchBox.getFilter();
+            const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter, 0);
+            await constants.mainDataTable.setSearchResults(documents, filter);
+            constants.mainDataTable.setLoading(false);
+        } catch (e) {
+            logger.error("An error occurred while searching for documents:", e);
+            showErrorDialog("Could not start the search. Error:", e.message);
+        }
     }
 
     /**
@@ -174,17 +216,22 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         const style: MDCCSSProperties = {
             "--mdc-theme-primary": "#0056ff",
             width: "100%"
-        }
+        };
 
         return (
-            <DataTable style={style} ref={e => this.dataTable = e}>
-                <MDCDataTableContainer headers={["Name", "Status", "Type", "Edit", "Open"]}>
-                    {this.getTableBody()}
-                </MDCDataTableContainer>
-                <MDCDataTableProgressIndicator/>
-                <MDCDataTablePagination visible={false} databaseManager={this.databaseManager}
-                                        ref={e => this.dataTablePagination = e}/>
-            </DataTable>
+            <MainDataTableTopAppBar parent={this}>
+                {this.databaseManager ?
+                    <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
+                               ref={e => this.searchBox = e}/> : null}
+                <DataTable style={style} ref={e => this.dataTable = e}>
+                    <MDCDataTableContainer headers={["Name", "Status", "Type", "Edit", "Open"]}>
+                        {this.getTableBody()}
+                    </MDCDataTableContainer>
+                    <MDCDataTableProgressIndicator/>
+                    <MDCDataTablePagination visible={false} databaseManager={this.databaseManager}
+                                            ref={e => this.dataTablePagination = e}/>
+                </DataTable>
+            </MainDataTableTopAppBar>
         );
     }
 
@@ -194,6 +241,27 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         } else {
             this.dataTable.dataTable.hideProgress();
         }
+
+        Tooltip.create({
+            text: "Go to the start page",
+            id: "main-top-app-bar-nav-tooltip"
+        });
+
+        Tooltip.create({
+            text: "Show/Hide the search bar",
+            id: "main-top-app-bar-action-search-tooltip"
+        });
+
+        Tooltip.create({
+            text: "Options",
+            id: "main-top-app-bar-action-options-tooltip"
+        });
+    }
+
+    public componentWillUnmount(): void {
+        Tooltip.delete("main-top-app-bar-nav-tooltip");
+        Tooltip.delete("main-top-app-bar-action-search-tooltip");
+        Tooltip.delete("main-top-app-bar-action-options-tooltip");
     }
 
     /**

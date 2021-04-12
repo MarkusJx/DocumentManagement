@@ -86,15 +86,18 @@ class SettingsDialogElement extends React.Component {
         this.dialog.listen('MDCDialog:closing', (event) => {
             try {
                 this.storeSettings();
-                if (event.detail.action == 'accept') {
-                    // Save the settings
-                    Recents.settings = this.currentSettings;
-                    Snackbars.settingsSnackbar.snackbarText = "Settings saved";
-                    Snackbars.settingsSnackbar.open();
-                } else if (JSON.stringify(this.currentSettings) != JSON.stringify(Recents.settings)) {
-                    // Only show the discard dialog when there were actual changes made
-                    Snackbars.settingsSnackbar.snackbarText = "Settings discarded";
-                    Snackbars.settingsSnackbar.open();
+                // Only show the settings saved/discarded dialog
+                // when there were actual changes made
+                if (JSON.stringify(this.currentSettings) != JSON.stringify(Recents.settings)) {
+                    if (event.detail.action == 'accept') {
+                        // Save the settings
+                        Recents.settings = this.currentSettings;
+                        Snackbars.settingsSnackbar.snackbarText = "Settings saved";
+                        Snackbars.settingsSnackbar.open();
+                    } else {
+                        Snackbars.settingsSnackbar.snackbarText = "Settings discarded";
+                        Snackbars.settingsSnackbar.open();
+                    }
                 }
 
                 this.currentSettings = null;

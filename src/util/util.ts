@@ -11,6 +11,7 @@ import {
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
 import {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
+import fs from "fs";
 
 const logger = getLogger();
 
@@ -50,6 +51,28 @@ export default class util {
         }
     }
 
+    /**
+     * Check if a file exists
+     *
+     * @param filePath the path to the file to find
+     * @return true if the file exists
+     */
+    public static fileExists(filePath: string): Promise<boolean> {
+        return new Promise(resolve => {
+            fs.access(filePath, fs.constants.F_OK, err => {
+                resolve(!err);
+            });
+        });
+    }
+
+    /**
+     * Get a database manager from database settings
+     *
+     * @param settings the settings to create the database from
+     * @param action the database create action
+     * @param showSQL whether to print the generated SQL accounts
+     * @return the created database manager
+     */
     public static async getDatabaseManagerFromSettings(settings: DatabaseSetting, action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
         const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
             const em = await CustomPersistence.createEntityManager("documents", provider);
@@ -61,6 +84,10 @@ export default class util {
         switch (settings.provider) {
             case DatabaseProvider.SQLite: {
                 const setting = settings as SQLiteSettings;
+                if (!await util.fileExists(setting.file)) {
+                    throw new Error("The database file does not exist");
+                }
+
                 return await database.createSQLiteDatabaseManager(setting.file, action, showSQL);
             }
             case DatabaseProvider.MariaDB: {
@@ -81,6 +108,12 @@ export default class util {
         }
     }
 
+    /**
+     * Show an os native error dialog
+     *
+     * @param title the dialog title
+     * @param message the error message
+     */
     public static showNativeErrorDialog(title: string, message: string): void {
         logger.info("Opening a native error dialog");
         ipcRenderer.invoke('show-error-dialog', title, message).then().catch(e => {

@@ -75,7 +75,7 @@ public class DatabaseManager {
      * @param creationDate the document creation date
      * @param tagNames     the tag names. Will be created if not existing
      */
-    public void createDocument(String filename, String path, ChainedHashMap<String, String> properties, LocalDate creationDate, String... tagNames) {
+    public synchronized void createDocument(String filename, String path, ChainedHashMap<String, String> properties, LocalDate creationDate, String... tagNames) {
         manager.getTransaction().begin();
         // Create a PropertyValueSet list
         List<PropertyValueSet> propList = new ArrayList<>();
@@ -106,7 +106,7 @@ public class DatabaseManager {
      * @param tags the {@link Tag}s to search for
      * @return the overlapping tags
      */
-    public List<Tag> getAllTagsIn(final List<Tag> tags) {
+    public synchronized List<Tag> getAllTagsIn(final List<Tag> tags) {
         try {
             return manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
                     .setParameter("tags", tags)
@@ -123,7 +123,7 @@ public class DatabaseManager {
      * @param tags the {@link Tag}s to persist
      * @return true, if the operation was successful
      */
-    public boolean persistTags(final List<Tag> tags) {
+    public synchronized boolean persistTags(final List<Tag> tags) {
         // Get all tags already in the database
         List<Tag> toRemove = getAllTagsIn(tags);
         if (toRemove == null) return false;
@@ -150,7 +150,7 @@ public class DatabaseManager {
      * @param properties the properties to search for
      * @return the overlapping properties
      */
-    public List<Property> getAllPropertiesIn(final List<Property> properties) {
+    public synchronized List<Property> getAllPropertiesIn(final List<Property> properties) {
         try {
             return manager.createQuery("select p from Property as p where p in :props", Property.class)
                     .setParameter("props", properties)
@@ -167,7 +167,7 @@ public class DatabaseManager {
      * @param properties the properties to persist
      * @return true, if the operation was successful
      */
-    public boolean persistProperties(final List<Property> properties) {
+    public synchronized boolean persistProperties(final List<Property> properties) {
         // Get all already inserted properties
         List<Property> toRemove = getAllPropertiesIn(properties);
         if (toRemove == null) return false;
@@ -190,7 +190,7 @@ public class DatabaseManager {
      * @param propertyValues the values to search for
      * @return the overlapping values
      */
-    public List<PropertyValue> getAllPropertyValuesIn(final List<PropertyValue> propertyValues) {
+    public synchronized List<PropertyValue> getAllPropertyValuesIn(final List<PropertyValue> propertyValues) {
         try {
             return manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
                     .setParameter("values", propertyValues)
@@ -207,7 +207,7 @@ public class DatabaseManager {
      * @param propertyValues the {@link PropertyValue}s to persist
      * @return whether the operation was successful
      */
-    public boolean persistPropertyValues(final List<PropertyValue> propertyValues) {
+    public synchronized boolean persistPropertyValues(final List<PropertyValue> propertyValues) {
         // Get all already existing property values
         List<PropertyValue> toRemove = getAllPropertyValuesIn(propertyValues);
         if (toRemove == null) return false;
@@ -235,7 +235,7 @@ public class DatabaseManager {
      * @return whether the operation was successful
      */
     @SuppressWarnings("unused")
-    public boolean persistPropertyValueSets(final List<PropertyValueSet> sets) {
+    public synchronized boolean persistPropertyValueSets(final List<PropertyValueSet> sets) {
         ChainedHashMap<Property, PropertyValue> map = new ChainedHashMap<>();
         List<PropertyValue> propertyValues = new ArrayList<>(sets.size());
 
@@ -262,7 +262,7 @@ public class DatabaseManager {
      * @param documents the documents to search for
      * @return the overlapping documents
      */
-    public List<Document> getAllDocumentsIn(final List<Document> documents) {
+    public synchronized List<Document> getAllDocumentsIn(final List<Document> documents) {
         try {
             Collection<List<Document>> lists = ListUtils.partition(documents, 999);
             List<Document> result = new ArrayList<>();
@@ -286,7 +286,7 @@ public class DatabaseManager {
      * @param documents the documents to persist
      * @return true, if the operation was successful
      */
-    public boolean persistDocuments(List<Document> documents) {
+    public synchronized boolean persistDocuments(List<Document> documents) {
         List<Tag> tags = new ArrayList<>();
         List<Property> properties = new ArrayList<>();
         List<PropertyValue> propertyValues = new ArrayList<>();
@@ -342,7 +342,7 @@ public class DatabaseManager {
      * @param document the document to persist
      */
     @SuppressWarnings("unused")
-    public void persistDocument(Document document) {
+    public synchronized void persistDocument(Document document) {
         manager.getTransaction().begin();
         manager.persist(document);
         manager.getTransaction().commit();
@@ -354,7 +354,7 @@ public class DatabaseManager {
      * @param directories the directories to search for
      * @return the overlapping directories
      */
-    public List<Directory> getAllDirectoriesIn(final List<Directory> directories) {
+    public synchronized List<Directory> getAllDirectoriesIn(final List<Directory> directories) {
         try {
             return manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
                     .setParameter("dirs", directories)
@@ -371,7 +371,7 @@ public class DatabaseManager {
      * @param directories the directories to persist
      * @return true, if the operation was successful
      */
-    public boolean persistDirectories(List<Directory> directories) {
+    public synchronized boolean persistDirectories(List<Directory> directories) {
         List<Directory> toRemove = getAllDirectoriesIn(directories);
         if (toRemove == null) return false;
 
@@ -400,7 +400,7 @@ public class DatabaseManager {
      * @return the retrieved {@link DatabaseInfo}
      */
     @SuppressWarnings("unused")
-    public DatabaseInfo getDatabaseInfo() {
+    public synchronized DatabaseInfo getDatabaseInfo() {
         try {
             return manager.find(DatabaseInfo.class, 0);
         } catch (Exception e) {
@@ -415,7 +415,7 @@ public class DatabaseManager {
      * @param info the {@link DatabaseInfo} to persist
      * @return true, if the operation was successful
      */
-    public boolean persistDatabaseInfo(DatabaseInfo info) {
+    public synchronized boolean persistDatabaseInfo(DatabaseInfo info) {
         try {
             manager.getTransaction().begin();
             manager.persist(info);
@@ -434,7 +434,7 @@ public class DatabaseManager {
      * @param sourcePath the source path of the directory
      * @return whether all objects could be persisted
      */
-    public boolean persistDirectory(Directory directory, String sourcePath) {
+    public synchronized boolean persistDirectory(Directory directory, String sourcePath) {
         return persistDatabaseInfo(new DatabaseInfo(sourcePath)) &&
                 persistDocuments(directory.getAllDocuments()) &&
                 persistDirectories(directory.getAllDirectories());
@@ -447,7 +447,7 @@ public class DatabaseManager {
      * @return the retrieved directory
      */
     @SuppressWarnings("unused")
-    public Directory getDirectory(String path) {
+    public synchronized Directory getDirectory(String path) {
         try {
             return manager.find(Directory.class, path);
         } catch (Exception e) {
@@ -462,7 +462,7 @@ public class DatabaseManager {
      * @param name the tag name
      * @return the created tag instance
      */
-    public Tag createTag(String name) {
+    public synchronized Tag createTag(String name) {
         Tag t = new Tag(name);
 
         // Persist the tag
@@ -480,7 +480,7 @@ public class DatabaseManager {
      * @param singleTransaction whether to begin and commit a new transaction
      * @return the newly created tag
      */
-    public Tag createTag(String name, boolean singleTransaction) {
+    public synchronized Tag createTag(String name, boolean singleTransaction) {
         if (singleTransaction) {
             return createTag(name);
         } else {
@@ -496,7 +496,7 @@ public class DatabaseManager {
      *
      * @param name the name of the property
      */
-    public void createProperty(String name) {
+    public synchronized void createProperty(String name) {
         Property p = new Property(name);
 
         // Persist the property
@@ -515,7 +515,7 @@ public class DatabaseManager {
      * @param value    the property value
      * @return the created {@link PropertyValueSet}
      */
-    public PropertyValueSet createPropertyValueSet(String property, String value) {
+    public synchronized PropertyValueSet createPropertyValueSet(String property, String value) {
         Property p = manager.getReference(Property.class, property);
         PropertyValue pv;
 
@@ -541,7 +541,7 @@ public class DatabaseManager {
      * @param name the name of the tag
      * @return the found tag or null if not found
      */
-    public Tag getTagByName(String name) {
+    public synchronized Tag getTagByName(String name) {
         try {
             return manager.find(Tag.class, name);
         } catch (Exception e) {
@@ -557,7 +557,7 @@ public class DatabaseManager {
      * @return whether the tag exists
      */
     @SuppressWarnings("unused")
-    public boolean tagExists(String name) {
+    public synchronized boolean tagExists(String name) {
         return manager.createQuery("select distinct count(t) from Tag as t where t.name = :name", Long.class)
                 .setParameter("name", name)
                 .getSingleResult() > 0;
@@ -570,7 +570,7 @@ public class DatabaseManager {
      * @return the tags similar to the name
      */
     @SuppressWarnings("unused")
-    public List<Tag> getTagsLike(String name) {
+    public synchronized List<Tag> getTagsLike(String name) {
         return manager.createQuery("select t from Tag as t where t.name like :name", Tag.class)
                 .setParameter("name", name + '%')
                 .setMaxResults(FUZZY_SEARCH_MAX_RESULTS)
@@ -583,7 +583,7 @@ public class DatabaseManager {
      * @param name the name of the property to search for
      * @return the property
      */
-    public Property getPropertyByName(String name) {
+    public synchronized Property getPropertyByName(String name) {
         try {
             return manager.find(Property.class, name);
         } catch (Exception e) {
@@ -599,7 +599,7 @@ public class DatabaseManager {
      * @return the properties similar to name
      */
     @SuppressWarnings("unused")
-    public List<Property> getPropertiesLike(String name) {
+    public synchronized List<Property> getPropertiesLike(String name) {
         return manager.createQuery("select p from Property as p where p.name like :name", Property.class)
                 .setParameter("name", name + '%')
                 .setMaxResults(FUZZY_SEARCH_MAX_RESULTS)
@@ -613,7 +613,7 @@ public class DatabaseManager {
      * @return the properties with a value similar to {@code value}
      */
     @SuppressWarnings("unused")
-    public List<PropertyValue> getPropertyValuesLike(String value) {
+    public synchronized List<PropertyValue> getPropertyValuesLike(String value) {
         return manager.createQuery("select p from PropertyValue as p where p.value like :value", PropertyValue.class)
                 .setParameter("value", value + '%')
                 .setMaxResults(FUZZY_SEARCH_MAX_RESULTS)
@@ -628,7 +628,7 @@ public class DatabaseManager {
      * @param filter the filters
      * @return the retrieved documents
      */
-    public List<Document> getDocumentsBy(DocumentFilter filter, int offset) {
+    public synchronized List<Document> getDocumentsBy(DocumentFilter filter, int offset) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Document> query = filter.getFilterRequest(cb);
 
@@ -650,7 +650,7 @@ public class DatabaseManager {
      * @return the number of rows
      */
     @SuppressWarnings("unused")
-    public long getNumDocumentsBy(DocumentFilter filter) {
+    public synchronized long getNumDocumentsBy(DocumentFilter filter) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Long> query = filter.getFilterRequestCount(cb);
 
@@ -661,7 +661,7 @@ public class DatabaseManager {
      * Close the database connection
      */
     @SuppressWarnings("unused")
-    public void close() {
+    public synchronized void close() {
         logger.info("Closing the database manager");
         try {
             this.manager.flush();

@@ -7,6 +7,7 @@ import {MDCMenu} from "@material/menu";
 import {MDCDialog} from "@material/dialog";
 import {MDCSnackbar} from "@material/snackbar";
 import {MDCSwitch} from "@material/switch";
+import {MDCTopAppBar} from "@material/top-app-bar";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {
     TextArea,
@@ -245,6 +246,84 @@ export class ProgressBar extends React.Component {
     }
 }
 
+interface MenuProps {
+    // The options in the menu
+    options: string[];
+    // A function to be called when an option is clicked
+    onOptionClick: (selectedOption: string) => void;
+    // Optional styles
+    style?: MDCCSSProperties;
+}
+
+/**
+ * A mdc menu
+ */
+export class Menu extends React.Component<MenuProps> {
+    /**
+     * The mdc menu
+     */
+    public menu: MDCMenu = null;
+    /**
+     * The menu surface element
+     * @private
+     */
+    private menuItem: HTMLDivElement = null;
+
+    /**
+     * Check if the menu is open
+     *
+     * @return true if the menu is open
+     */
+    public get open(): boolean {
+        return this.menu.open;
+    }
+
+    /**
+     * Set whether the menu should be opened
+     *
+     * @param value whether the menu should be opened
+     */
+    public set open(value: boolean) {
+        this.menu.open = value;
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-menu mdc-menu-surface" ref={e => this.menuItem = e} style={this.props.style}>
+                <ul className="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabIndex={-1}>
+                    {this.generateMenuItems()}
+                </ul>
+            </div>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.menu = new MDCMenu(this.menuItem);
+    }
+
+    /**
+     * Generate the menu items
+     *
+     * @return the generated menu items
+     * @private
+     */
+    private generateMenuItems(): React.ReactNode {
+        return (
+            this.props.options.map(option => (
+                <li className="mdc-list-item" role="menuitem" onClick={this.optionClick.bind(this, option)}
+                    key={`list-item-${option}`}>
+                    <span className="mdc-list-item__ripple"/>
+                    <span className="mdc-list-item__text">{option}</span>
+                </li>
+            ))
+        );
+    }
+
+    private optionClick(option: string): void {
+        this.props.onOptionClick(option);
+    }
+}
+
 /**
  * The dropdown menu properties
  */
@@ -276,22 +355,16 @@ export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMen
     private openButton: HTMLButtonElement;
 
     /**
-     * The menu surface element
-     * @private
-     */
-    private menuItem: HTMLDivElement;
-
-    /**
-     * The mdc menu
-     * @private
-     */
-    private menu: MDCMenu;
-
-    /**
      * The current open button label
      * @private
      */
     private cur: string;
+
+    /**
+     * The menu element
+     * @private
+     */
+    private menu: Menu;
 
     /**
      * Create a dropdown menu
@@ -302,8 +375,6 @@ export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMen
         super(props);
 
         this.openButton = null;
-        this.menuItem = null;
-        this.menu = null;
         this.cur = this.props.initialLabel;
 
         this.state = {
@@ -366,17 +437,12 @@ export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMen
                        style={{marginLeft: 'auto'}}>arrow_drop_down</i>
                 </button>
 
-                <div className="mdc-menu mdc-menu-surface" ref={e => this.menuItem = e}>
-                    <ul className="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabIndex={-1}>
-                        {this.generateMenuItems()}
-                    </ul>
-                </div>
+                <Menu options={this.props.options} onOptionClick={this.optionClick} ref={e => this.menu = e}/>
             </div>
         );
     }
 
     public componentDidMount(): void {
-        this.menu = new MDCMenu(this.menuItem);
         MDCRipple.attachTo(this.openButton);
     }
 
@@ -393,24 +459,6 @@ export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMen
      */
     private openButtonClick(): void {
         this.menu.open = !this.menu.open;
-    }
-
-    /**
-     * Generate the menu items
-     *
-     * @return the generated menu items
-     * @private
-     */
-    private generateMenuItems(): React.ReactNode {
-        return (
-            this.props.options.map(option => (
-                <li className="mdc-list-item" role="menuitem" onClick={this.optionClick.bind(this, option)}
-                    key={`list-item-${option}`}>
-                    <span className="mdc-list-item__ripple"/>
-                    <span className="mdc-list-item__text">{option}</span>
-                </li>
-            ))
-        );
     }
 }
 
@@ -594,9 +642,9 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
      * On auto complete option click
      *
      * @param option the selected option
-     * @protected
+     * @private
      */
-    protected onAutoCompleteOptionClick(option: string): void {
+    private onAutoCompleteOptionClick(option: string): void {
         this.autoComplete.hide();
         this.textArea.textField.value = option;
     }
@@ -915,5 +963,144 @@ export class Switch extends React.Component<SwitchProps> {
 
     public componentDidMount(): void {
         this.switch = new MDCSwitch(this.element);
+    }
+}
+
+/**
+ * Properties with just an optional style element
+ */
+interface StyleProps {
+    // The optional style
+    style?: MDCCSSProperties;
+}
+
+/**
+ * Classes for creating a top app bar
+ */
+export namespace topAppBar {
+    /**
+     * The top app bar header
+     */
+    export class Header extends React.Component<StyleProps> {
+        /**
+         * The mdc top app bar object
+         */
+        public topAppBar: MDCTopAppBar = null;
+        /**
+         * The header html element
+         * @private
+         */
+        private element: HTMLElement = null;
+
+        public render(): React.ReactNode {
+            return (
+                <header className="mdc-top-app-bar mdc-top-app-bar--dense" ref={e => this.element = e}
+                        style={this.props.style}>
+                    <div className="mdc-top-app-bar__row">
+                        {this.props.children}
+                    </div>
+                </header>
+            );
+        }
+
+        public componentDidMount() {
+            this.topAppBar = new MDCTopAppBar(this.element);
+        }
+    }
+
+    /**
+     * The navigation section properties
+     */
+    interface NavigationSectionProps {
+        // The top app bar title
+        title: string;
+    }
+
+    /**
+     * The navigation section.
+     * Usually contains the navigation button,
+     * which is a {@link topAppBar.NavigationButton}
+     */
+    export class NavigationSection extends React.Component<NavigationSectionProps> {
+        public render(): React.ReactNode {
+            return (
+                <section className="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                    {this.props.children}
+                    <span className="mdc-top-app-bar__title">{this.props.title}</span>
+                </section>
+            );
+        }
+    }
+
+    /**
+     * The top app bar button properties
+     */
+    interface ButtonProps extends StyleProps {
+        // Called when the element is clicked
+        onClick: () => void;
+        // The button label
+        label: string;
+        // The button icon name
+        iconName: string;
+        // The element this is described by
+        describedby?: string;
+        // Whether the button is enabled
+        enabled?: boolean;
+    }
+
+    export class NavigationButton extends React.Component<ButtonProps> {
+        public render(): React.ReactNode {
+            return (
+                <button className="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button"
+                        aria-label={this.props.label} onClick={this.props.onClick} style={this.props.style}
+                        aria-describedby={this.props.describedby} disabled={this.props.enabled === false}>
+                    {this.props.iconName}
+                </button>
+            );
+        }
+    }
+
+    /**
+     * The action buttons section.
+     * Usually contains {@link topAppBar.ActionButton}s
+     */
+    export class ActionButtonsSection extends React.Component {
+        public render(): React.ReactNode {
+            return (
+                <section className="mdc-top-app-bar__section mdc-top-app-bar__section--align-end"
+                         role="toolbar">
+                    {this.props.children}
+                </section>
+            );
+        }
+    }
+
+    /**
+     * A top app bar action button
+     */
+    export class ActionButton extends React.Component<ButtonProps> {
+        public render(): React.ReactNode {
+            return (
+                <button className="material-icons mdc-top-app-bar__action-item mdc-icon-button"
+                        disabled={this.props.enabled === false} aria-label={this.props.label}
+                        onClick={this.props.onClick} aria-describedby={this.props.describedby}>
+                    {this.props.iconName}
+                </button>
+            );
+        }
+    }
+
+    /**
+     * The main element which contains all
+     * elements below the top app bar
+     */
+    export class Main extends React.Component {
+        public render(): React.ReactNode {
+            return (
+                <main className="mdc-top-app-bar--dense-fixed-adjust">
+                    {this.props.children}
+                </main>
+            );
+        }
     }
 }

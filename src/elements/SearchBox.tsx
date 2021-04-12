@@ -55,6 +55,12 @@ export class SearchBox extends React.Component<SearchBoxProps> {
     private mainContentElement: HTMLDivElement;
 
     /**
+     * The html container element
+     * @private
+     */
+    private container: HTMLDivElement;
+
+    /**
      * Whether the main content is shown
      * @private
      */
@@ -103,6 +109,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         this.mainContentShown = false;
         this.dateRangeTextField = null;
         this.startButton = null;
+        this.container = null;
 
         this.tagExists = this.tagExists.bind(this);
         this.getTagOptions = this.getTagOptions.bind(this);
@@ -155,7 +162,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
     public render(): React.ReactNode {
         const style: MDCCSSProperties = {
             "--mdc-theme-primary": "#4a6eff",
-            padding: "20px"
+            padding: "0 20px"
         };
 
         const main_content_style: MDCCSSProperties = {
@@ -196,8 +203,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         };
 
         return (
-            <div style={style}>
-                <Button text={"Show/Hide search"} onClick={this.showHideMainContent}/>
+            <div style={style} ref={e => this.container = e}>
                 <div style={main_content_style} ref={e => this.mainContentElement = e}>
                     <OutlinedTextField title={"File name"} ref={e => this.filenameTextArea = e}
                                        labelId={"search-file-name"}/>
@@ -235,18 +241,19 @@ export class SearchBox extends React.Component<SearchBoxProps> {
 
     /**
      * Show or hide the main content
-     * @private
      */
-    private showHideMainContent(): void {
+    public showHideMainContent(): void {
         this.mainContentShown = !this.mainContentShown;
         if (this.mainContentShown) {
             this.mainContentElement.style.height = "unset";
             this.mainContentElement.style.marginTop = "20px";
             this.mainContentElement.style.display = "grid";
+            this.container.style.padding = '0 20px 20px 20px';
         } else {
             this.mainContentElement.style.height = "0";
             this.mainContentElement.style.marginTop = "0";
             this.mainContentElement.style.display = "none";
+            this.container.style.padding = '0';
             this.clear();
         }
     }

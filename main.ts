@@ -93,6 +93,9 @@ function printSystemInfo() {
 
 printSystemInfo();
 
+/**
+ * Create the main window
+ */
 function createWindow(): void {
     logger.info("Creating the main window");
     Store.initRenderer();
@@ -100,6 +103,8 @@ function createWindow(): void {
         if (r != null) {
             logger.info("Update check result:", r);
         }
+    }).catch(e => {
+        logger.error("Could not check for updates:", e);
     });
 
     const menu = new Menu();
@@ -211,10 +216,15 @@ function createWindow(): void {
         mainWindow.close();
     });
 
-    // and load the index.html of the app.
+    // Load index.html
+    logger.info("Loading index.html");
     mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html')).then(() => {
-        logger.info("Main window loaded");
+        logger.info("index.html loaded");
+    }).catch(e => {
+        logger.error("Could not load the index.html:", e);
     });
+
+    mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

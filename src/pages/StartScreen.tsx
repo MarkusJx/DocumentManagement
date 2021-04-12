@@ -3,7 +3,6 @@ import {ipcRenderer} from "electron";
 import {Action, database, FileScanner} from "../databaseWrapper";
 import {MainDataTable} from "./dataTable/MainDataTable";
 import constants from "../util/constants";
-import {SearchBox} from "../elements/SearchBox";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
 import {showErrorDialog} from "../elements/ErrorDialog";
@@ -20,25 +19,18 @@ const SHOW_SQL: boolean = false;
 
 const logger = getLogger();
 
+interface MainComponentState {
+    currentPage: React.CElement<any, any>;
+}
+
 /**
  * The main component class
  */
-export class MainComponent extends React.Component<{}> {
-    /**
-     * The current page
-     */
-    public currentPage: React.CElement<any, any>;
-
+export class MainComponent extends React.Component<{}, MainComponentState> {
     /**
      * The database manager
      */
     public databaseManager: database.DatabaseManager;
-
-    /**
-     * The search box
-     * @private
-     */
-    private searchBox: SearchBox;
 
     /**
      * The start screen
@@ -60,21 +52,21 @@ export class MainComponent extends React.Component<{}> {
     public constructor(props: {}) {
         super(props);
 
-        this.searchBox = null;
         this.databaseManager = null;
         this.startScreenButtonsEnabled = true;
 
         this.startScreenOnCreate = this.startScreenOnCreate.bind(this);
         this.startScreenOnLoad = this.startScreenOnLoad.bind(this);
         this.startScan = this.startScan.bind(this);
-        this.startSearch = this.startSearch.bind(this);
         this.onLoad = this.onLoad.bind(this);
         this.gotoLoadRecentPage = this.gotoLoadRecentPage.bind(this);
 
-        this.currentPage = (
-            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
-                         onLoadRecentClickImpl={this.gotoLoadRecentPage} ref={e => this.startScreen = e}/>
-        );
+        this.state = {
+            currentPage: (
+                <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
+                             onLoadRecentClickImpl={this.gotoLoadRecentPage} ref={e => this.startScreen = e}/>
+            )
+        };
 
         // Load the most recently used database if requested (and possible)
         if (Recents.settings.loadRecentOnStartup && Recents.mostRecentId) {
@@ -115,42 +107,38 @@ export class MainComponent extends React.Component<{}> {
     }
 
     /**
-     * Start the search
-     */
-    public async startSearch(): Promise<void> {
-        try {
-            constants.mainDataTable.setLoading(true);
-            const filter: database.DocumentFilter = await this.searchBox.getFilter();
-            const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter, 0);
-            await constants.mainDataTable.setSearchResults(documents, filter);
-            constants.mainDataTable.setLoading(false);
-        } catch (e) {
-            logger.error("An error occurred while searching for documents:", e);
-            showErrorDialog("Could not start the search. Error:", e.message);
-        }
-    }
-
-    /**
      * Called when the database should be loaded
      *
      * @param setting the database setting to load
      */
     public async onLoad(setting: DatabaseSetting): Promise<void> {
         logger.info("Loading database");
-        this.currentPage = (
-            <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
-                           ref={e => constants.mainDataTable = e}/>
-        );
+        this.setState({
+            currentPage: (
+                <MainDataTable databaseManager={null} directory={null} showProgress={true} key={1}
+                               ref={e => constants.mainDataTable = e}/>
+            )
+        });
 
-        this.forceUpdate();
         try {
             this.databaseManager = await util.getDatabaseManagerFromSettings(setting, Action.UPDATE, SHOW_SQL);
         } catch (e) {
-            logger.error("Could not load the database", e);
+            logger.error("Could not load the database:", e);
             showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
                 "this error may be caused by invalid login credentials. Please check if your connection details are " +
-                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
+                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.stack);
 
+            this.gotoStartPage();
+            return;
+        }
+
+        // Check if the database info is set. If not, the database must be invalid.
+        if (await this.databaseManager.getDatabaseInfo() == null) {
+            showErrorDialog("The requested database could not be loaded: The database info could not be retrieved. " +
+                "Probably the selected database was never initialized properly. The fastest way to fix this " +
+                "would be to re-create the database using the 'Create Database' option in the main menu.");
+            logger.error("The setting with provider", setting.provider, "could not be loaded:",
+                "databaseManager.getDatabaseInfo() returned null");
             this.gotoStartPage();
             return;
         }
@@ -163,20 +151,17 @@ export class MainComponent extends React.Component<{}> {
 
         constants.init(this.databaseManager);
 
-        this.currentPage = (
-            <div>
-                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
-                           ref={e => this.searchBox = e}/>
-                <MainDataTable directory={await this.databaseManager.getDirectory("")}
-                               databaseManager={this.databaseManager} showProgress={false} key={2}
-                               ref={e => constants.mainDataTable = e}/>
-            </div>
-        );
-        this.forceUpdate();
+        try {
+            await constants.mainDataTable.loadFinished(this.databaseManager);
+        } catch (e) {
+            logger.error("Could not load the main data table:", e);
+            showErrorDialog("Could not load the data table", e.stack);
+            this.gotoStartPage();
+        }
     }
 
     public render(): React.ReactNode {
-        return this.currentPage;
+        return this.state.currentPage;
     }
 
     public componentDidMount(): void {
@@ -190,11 +175,12 @@ export class MainComponent extends React.Component<{}> {
      */
     public gotoStartPage(): void {
         this.startScreenButtonsEnabled = true;
-        this.currentPage = (
-            <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
-                         onLoadRecentClickImpl={this.gotoLoadRecentPage} ref={e => this.startScreen = e}/>
-        );
-        this.forceUpdate();
+        this.setState({
+            currentPage: (
+                <StartScreen onCreateClickImpl={this.startScreenOnCreate} onLoadClickImpl={this.startScreenOnLoad}
+                             onLoadRecentClickImpl={this.gotoLoadRecentPage} ref={e => this.startScreen = e}/>
+            )
+        });
         this.componentDidMount();
     }
 
@@ -202,15 +188,22 @@ export class MainComponent extends React.Component<{}> {
      * Go to the load recent database page
      */
     public gotoLoadRecentPage(): void {
-        this.currentPage = (
-            <LoadRecentPage/>
-        );
-        this.forceUpdate();
+        this.setState({
+            currentPage: (
+                <LoadRecentPage/>
+            )
+        });
     }
 
+    /**
+     * Close the database manager
+     * @private
+     */
     private closeDatabaseManager(): void {
         if (this.databaseManager) {
-            this.databaseManager.close().then().catch(e => {
+            this.databaseManager.close().then(() => {
+                logger.info("Closed the database manager");
+            }).catch(e => {
                 logger.error("Could not close the database manager:", e);
             });
             this.databaseManager = null;
@@ -222,10 +215,11 @@ export class MainComponent extends React.Component<{}> {
      * @private
      */
     private startScreenOnCreate(): void {
-        this.currentPage = (
-            <StartScanScreen onStartClickImpl={this.startScan}/>
-        );
-        this.forceUpdate();
+        this.setState({
+            currentPage: (
+                <StartScanScreen onStartClickImpl={this.startScan}/>
+            )
+        });
     }
 
     /**
@@ -233,10 +227,11 @@ export class MainComponent extends React.Component<{}> {
      * @private
      */
     private startScreenOnLoad(): void {
-        this.currentPage = (
-            <LoadScreen onLoad={this.onLoad} key={0}/>
-        );
-        this.forceUpdate();
+        this.setState({
+            currentPage: (
+                <LoadScreen onLoad={this.onLoad} key={0}/>
+            )
+        });
     }
 
     /**
@@ -258,16 +253,13 @@ export class MainComponent extends React.Component<{}> {
             return;
         }
 
-        this.currentPage = (
-            <div>
-                <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
-                           ref={e => this.searchBox = e}/>
+        this.setState({
+            currentPage: (
                 <MainDataTable directory={await this.databaseManager.getDirectory("")}
                                databaseManager={this.databaseManager} showProgress={false} key={3}
                                ref={e => constants.mainDataTable = e}/>
-            </div>
-        );
-        this.forceUpdate();
+            )
+        });
         constants.scanLoadingScreen.visible = false;
     }
 }

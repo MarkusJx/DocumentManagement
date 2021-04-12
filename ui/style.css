@@ -10,6 +10,23 @@ body {
     background: white;
 }
 
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #999;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label.text-area-label {
     color: #4a6eff;
 }

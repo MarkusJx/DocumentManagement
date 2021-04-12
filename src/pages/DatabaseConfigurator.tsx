@@ -2,7 +2,7 @@ import {Button, Dialog, DropdownMenu, OutlinedButton, OutlinedTextField} from ".
 import React from "react";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "../util/MDCCSSProperties";
-import * as ReactDOM from "react-dom";
+import ReactDOM from "react-dom";
 import {getLogger} from "log4js";
 
 const logger = getLogger();
