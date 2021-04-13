@@ -50,6 +50,8 @@ export interface AnySettings extends DatabaseSettings {
 interface DatabaseConfiguratorProps {
     // A function to be called when a value is changed
     onChange: () => void;
+    // whether the database should be created (important for SQLite)
+    createDatabase?: boolean;
 }
 
 /**
@@ -186,7 +188,8 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
     private async setUpDatabaseManager(): Promise<void> {
         if (this.dropdownMenu.selectedOption === DatabaseProvider.SQLite) {
             this.setUpDBButton.enabled = false;
-            const file: string = await ipcRenderer.invoke('select-database', false, "Select a database file");
+            const file: string = await ipcRenderer.invoke('select-database', this.props.createDatabase,
+                this.props.createDatabase ? "Select or create a database file" : "Select a database file");
 
             if (file != null) {
                 this._settings = {

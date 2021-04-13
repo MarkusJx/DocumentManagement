@@ -218,7 +218,7 @@ function createWindow(): void {
 
     // Load index.html
     logger.info("Loading index.html");
-    mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html')).then(() => {
+    mainWindow.loadFile(path.join(__dirname, '..', 'app', 'ui', 'index.html')).then(() => {
         logger.info("index.html loaded");
     }).catch(e => {
         logger.error("Could not load the index.html:", e);

@@ -146,11 +146,13 @@ async function run() {
 
     const buildCache = new BuildCache(["package.json", "package-lock.json", "build.js"], "general");
     const gradleCache = new BuildCache(["dbLib/src/**", "dbLib/build.gradle"], "gradle");
-    const tscCache = new BuildCache(["src/**", "main.ts", "tsconfig.json"], "tsc")
+    const tscCache = new BuildCache(["app/src/**", "app/main.ts", "tsconfig.json"], "tsc")
+    const scssCache = new BuildCache(["app/styles/**"], "scss");
 
     const buildCache_build = await buildCache.shouldRebuild();
     const gradleCache_build = await gradleCache.shouldRebuild();
     const tscCache_build = await tscCache.shouldRebuild();
+    const scssCache_build = await scssCache.shouldRebuild();
 
     if (buildCache_build) {
         console.log("The build cache is out of date, building everything");
@@ -182,6 +184,18 @@ async function run() {
         }
     } else {
         console.log("The typescript cache is up-to-date, not building");
+    }
+
+    if (buildCache_build || scssCache_build) {
+        console.log("The scss cache is out of date, running node-sass");
+        try {
+            await spawnAsync("node-sass", ["app/styles", "-o", "out/styles"]);
+        } catch (e) {
+            scssCache.buildFailed();
+            throw e;
+        }
+    } else {
+        console.log("The scss cache is up-to-date, not building");
     }
 
     console.log("Done.");

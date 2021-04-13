@@ -506,7 +506,8 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
                 </div>
 
                 <div className="start-scan-screen-grid-element">
-                    <DatabaseConfigurator onChange={this.enableButtons} ref={e => this.configurator = e}/>
+                    <DatabaseConfigurator onChange={this.enableButtons} ref={e => this.configurator = e}
+                                          createDatabase={true}/>
                 </div>
 
                 <div className="start-scan-screen-grid-element">
@@ -581,7 +582,7 @@ class StartScanScreen extends React.Component<StartScanScreenProps, StartScanScr
         let databaseManager: database.DatabaseManager;
 
         try {
-            databaseManager = await util.getDatabaseManagerFromSettings(settings, Action.CREATE_DROP, SHOW_SQL);
+            databaseManager = await util.getDatabaseManagerFromSettings(settings, Action.CREATE_DROP, SHOW_SQL, true);
         } catch (e) {
             logger.error("Could not create a database", e);
             showErrorDialog("The database could not be created. If you are trying to connect to a remote database, " +

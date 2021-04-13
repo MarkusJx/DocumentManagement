@@ -1,0 +1,132 @@
+// The sync dialog width
+$width: 500px;
+// The sync dialog height
+$height: 600px;
+// The sync dialog max height
+$maxHeight: 90vh;
+// The sync dialog max width
+$maxWidth: 90vw;
+// The sync dialog title bar height
+$titleBarHeight: 46px;
+// The scale to start increasing from when showing the dialog
+$scaleFrom: 0.8;
+// The duration it takes to show or hide the dialog
+$showHideDuration: 0.125s;
+
+// The sync dialog background
+.sync-dialog-background {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  background-color: #2d2d2d6e;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  opacity: 0;
+  display: none;
+}
+
+// Hide the sync dialog background
+@keyframes hide-sync-dialog-background {
+  0% {
+    display: block;
+    opacity: 1;
+  }
+  99% {
+    display: block;
+    opacity: 0;
+  }
+  100% {
+    display: none;
+    opacity: 0;
+  }
+}
+
+// The hidden sync dialog background
+.sync-dialog-background.hidden {
+  animation: hide-sync-dialog-background #{$showHideDuration} ease-in-out;
+}
+
+// Show the sync dialog background
+@keyframes show-sync-dialog-background {
+  0% {
+    display: none;
+    opacity: 0;
+  }
+  1% {
+    display: block;
+    opacity: 0;
+  }
+  100% {
+    display: block;
+    opacity: 1;
+  }
+}
+
+// The visible sync dialog background
+.sync-dialog-background.visible {
+  opacity: 1;
+  display: block;
+  animation: show-sync-dialog-background #{$showHideDuration} ease-in-out;
+}
+
+// Show the sync dialog
+@keyframes show-sync-dialog {
+  0% {
+    transform: scale(#{$scaleFrom}, #{$scaleFrom});
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+// The visible sync dialog
+.sync-dialog-background.visible .sync-dialog-dialog {
+  animation: show-sync-dialog #{$showHideDuration} ease-in-out;
+}
+
+// Hide the sync dialog
+@keyframes hide-sync-dialog {
+  0% {
+    transform: scale(1, 1);
+  }
+  100% {
+    transform: scale(#{$scaleFrom}, #{$scaleFrom});
+  }
+}
+
+// The hide sync dialog
+.sync-dialog-background.hidden .sync-dialog-dialog {
+  animation: hide-sync-dialog #{$showHideDuration} ease-in-out;
+}
+
+// The sync dialog
+.sync-dialog-dialog {
+  background: white;
+  width: $width;
+  height: $height;
+  max-width: $maxWidth;
+  max-height: calc(#{$maxHeight} - #{$titleBarHeight});
+  border-radius: 6px;
+  top: calc(50% - calc(min(#{$height}, calc(#{$maxHeight} - #{$titleBarHeight})) / 2));
+  left: calc(50% - calc(min(#{$width}, #{$maxWidth}) / 2));
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  --mdc-theme-primary: blue;
+  position: absolute;
+  overflow: hidden;
+}
+
+// The sync dialog top bar
+.sync-dialog-dialog-top-bar {
+  width: 100%;
+  height: 48px;
+  background-color: #214456;
+}
+
+// The sync dialog actions
+.sync-dialog-actions {
+  display: grid;
+  grid-template-columns: min-content min-content;
+  width: max-content;
+  margin-left: auto;
+}

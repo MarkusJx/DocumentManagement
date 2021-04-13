@@ -4,6 +4,7 @@ import constants from "../../util/constants";
 import MDCCSSProperties from "../../util/MDCCSSProperties";
 import {MainDataTable} from "./MainDataTable";
 import SettingsDialog from "../../settings/SettingsDialog";
+import SyncDialog from "../../dialogs/SyncDialog";
 
 /**
  * The main data table top app bar properties
@@ -67,6 +68,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                 break;
             }
             case settings.SYNCHRONIZE: {
+                SyncDialog.open(constants.mainDataTable.databaseManager).then();
                 // TODO
                 break;
             }

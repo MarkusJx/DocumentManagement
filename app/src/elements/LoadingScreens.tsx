@@ -47,7 +47,8 @@ export class ScanLoadingScreen extends React.Component<{}, ScanLoadingScreenStat
             backgroundColor: '#2d2d2d6e',
             top: '0',
             left: '0',
-            display: this.state.visible ? 'block' : 'none'
+            display: this.state.visible ? 'block' : 'none',
+            zIndex: 999
         };
 
         const style: MDCCSSProperties = {

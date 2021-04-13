@@ -482,6 +482,8 @@ interface DialogProps {
     contentId: string;
     // The dialog title
     title: string;
+    // The accept button text
+    acceptButtonText?: string;
 }
 
 /**
@@ -553,7 +555,9 @@ export class Dialog extends React.Component<DialogProps> {
                             <button type="button" className="mdc-button mdc-dialog__button"
                                     data-mdc-dialog-action="accept">
                                 <div className="mdc-button__ripple"/>
-                                <span className="mdc-button__label">Ok</span>
+                                <span className="mdc-button__label">
+                                    {this.props.acceptButtonText ? this.props.acceptButtonText : "Ok"}
+                                </span>
                             </button>
                         </div>
                     </div>

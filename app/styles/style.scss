@@ -19,20 +19,22 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #999;
-    border-radius: 20px;
+  background: #999;
+  border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+  background: #555;
 }
 
+$textFieldFocusedColor: #4a6eff;
+
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label.text-area-label {
-    color: #4a6eff;
+  color: $textFieldFocusedColor;
 }
 
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
-    color: #4a6eff;
+  color: $textFieldFocusedColor;
 }
 
 .mdc-snackbar__action:not(:disabled) {

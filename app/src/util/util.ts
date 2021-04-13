@@ -12,6 +12,7 @@ import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseCo
 import {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
 import fs from "fs";
+import path from "path";
 
 const logger = getLogger();
 
@@ -71,9 +72,11 @@ export default class util {
      * @param settings the settings to create the database from
      * @param action the database create action
      * @param showSQL whether to print the generated SQL accounts
+     * @param create whether the database should be created
      * @return the created database manager
      */
-    public static async getDatabaseManagerFromSettings(settings: DatabaseSetting, action: Action, showSQL: boolean): Promise<database.DatabaseManager> {
+    public static async getDatabaseManagerFromSettings(settings: DatabaseSetting, action: Action, showSQL: boolean,
+                                                       create: boolean = false): Promise<database.DatabaseManager> {
         const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
             const em = await CustomPersistence.createEntityManager("documents", provider);
             return await database.DatabaseManager.create(em);
@@ -84,7 +87,7 @@ export default class util {
         switch (settings.provider) {
             case DatabaseProvider.SQLite: {
                 const setting = settings as SQLiteSettings;
-                if (!await util.fileExists(setting.file)) {
+                if (!create && !await util.fileExists(setting.file)) {
                     throw new Error("The database file does not exist");
                 }
 
@@ -118,6 +121,22 @@ export default class util {
         logger.info("Opening a native error dialog");
         ipcRenderer.invoke('show-error-dialog', title, message).then().catch(e => {
             logger.error("An error occurred while opening the native error dialog:", e);
+        });
+    }
+
+    /**
+     * Import a css file
+     *
+     * @param file the path to the file to import relative to the source path
+     */
+    public static importCss(file: string): void {
+        const element: HTMLLinkElement = document.createElement('link');
+        element.href = path.join(__dirname, '..', '..', file);
+        element.rel = "stylesheet";
+        element.type = "text/css";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.head.appendChild(element);
         });
     }
 }
