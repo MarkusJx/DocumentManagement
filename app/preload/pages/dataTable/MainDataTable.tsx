@@ -1,6 +1,11 @@
 import React from "react";
 import {database} from "../../databaseWrapper";
-import {DataTableDirectoryElement, DataTableDocumentElement, DirectoryUpElement} from "./DataTableElement";
+import {
+    DataTableDirectoryElement,
+    DataTableDocumentElement,
+    DataTableElement,
+    DirectoryUpElement
+} from "./DataTableElement";
 import MDCCSSProperties from "../../util/MDCCSSProperties";
 import constants from "../../util/constants";
 import {
@@ -64,6 +69,12 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     private dataTablePagination: MDCDataTablePagination;
 
     /**
+     * The data table elements
+     * @private
+     */
+    private dataTableElements: DataTableElement<any>[];
+
+    /**
      * Whether to show a progress bar on load
      * @private
      */
@@ -80,6 +91,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         this.databaseManager = props.databaseManager;
         this.dataTablePagination = null;
         this.searchBox = null;
+        this.dataTableElements = [];
         if (props.showProgress == undefined || typeof props.showProgress !== "boolean") {
             this.showProgress = false;
         } else {
@@ -178,23 +190,17 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @param loading whether to show it
      */
     public setLoading(loading: boolean): void {
-        const buttons = this.dataTable.element.getElementsByTagName('button');
-        constants.searchBox.startButtonEnabled = !loading;
+        constants.searchBox.startButtonEnabled = !loading
+        this.dataTableElements = this.dataTableElements.filter(e => e != null);
 
         if (loading) {
             this.dataTable.dataTable.showProgress();
-
-            for (let i = 0; i < buttons.length; i++) {
-                buttons[i].disabled = true;
-            }
+            this.dataTableElements.forEach(e => e.enabled = false);
 
             this.dataTablePagination.disableAllButtons();
         } else {
             this.dataTable.dataTable.hideProgress();
-
-            for (let i = 0; i < buttons.length; i++) {
-                buttons[i].disabled = false;
-            }
+            this.dataTableElements.forEach(e => e.enabled = true);
 
             // Call componentDidMount on the pagination element to disable the buttons
             this.dataTablePagination.componentDidMount();
@@ -251,17 +257,11 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             text: "Show/Hide the search bar",
             id: "main-top-app-bar-action-search-tooltip"
         });
-
-        Tooltip.create({
-            text: "Options",
-            id: "main-top-app-bar-action-options-tooltip"
-        });
     }
 
     public componentWillUnmount(): void {
         Tooltip.delete("main-top-app-bar-nav-tooltip");
         Tooltip.delete("main-top-app-bar-action-search-tooltip");
-        Tooltip.delete("main-top-app-bar-action-options-tooltip");
     }
 
     /**
@@ -271,6 +271,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @private
      */
     private getTableBody(): React.ReactNode | React.ReactNode[] {
+        this.dataTableElements = [];
         if (this.directory == null) {
             return (
                 <MDCDataTableRow values={["Loading...", "", "", "", ""]}/>
@@ -284,11 +285,12 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             }
 
             res.push(...this.directory.documents.map(doc => (
-                <DataTableDocumentElement document={doc} key={doc.absolutePath}/>
+                <DataTableDocumentElement document={doc} key={doc.absolutePath}
+                                          ref={e => this.dataTableElements.push(e)}/>
             )));
 
             res.push(...this.directory.directories.map(dir => (
-                <DataTableDirectoryElement directory={dir} key={dir.name}/>
+                <DataTableDirectoryElement directory={dir} key={dir.name} ref={e => this.dataTableElements.push(e)}/>
             )));
 
             return res;

@@ -96,8 +96,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                         <topAppBar.ActionButton onClick={this.showHideSearch} label="Search" iconName="search"
                                                 describedby="main-top-app-bar-action-search-tooltip"/>
                         <div className="mdc-menu-surface--anchor">
-                            <topAppBar.ActionButton onClick={this.openTopAppBarMenu} label="More" iconName="more_vert"
-                                                    describedby="main-top-app-bar-action-options-tooltip"/>
+                            <topAppBar.ActionButton onClick={this.openTopAppBarMenu} label="More" iconName="more_vert"/>
                             <Menu options={menuOptions} onOptionClick={MainDataTableTopAppBar.topAppBarOptionClick}
                                   ref={e => this.topAppBarMenu = e} style={{marginTop: '48px'}}/>
                         </div>

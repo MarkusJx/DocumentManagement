@@ -146,7 +146,7 @@ async function run() {
 
     const buildCache = new BuildCache(["package.json", "package-lock.json", "build.js"], "general");
     const gradleCache = new BuildCache(["dbLib/src/**", "dbLib/build.gradle"], "gradle");
-    const tscCache = new BuildCache(["app/src/**", "app/main.ts", "tsconfig.json"], "tsc")
+    const tscCache = new BuildCache(["app/preload/**", "app/main.ts", "tsconfig.json"], "tsc")
     const scssCache = new BuildCache(["app/styles/**"], "scss");
 
     const buildCache_build = await buildCache.shouldRebuild();

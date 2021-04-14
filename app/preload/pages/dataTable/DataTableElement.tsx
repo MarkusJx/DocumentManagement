@@ -27,8 +27,27 @@ function getId(): string {
 /**
  * A data table element
  */
-abstract class DataTableElement<T> extends React.Component<T> {
-    abstract render(): React.ReactNode;
+export abstract class DataTableElement<T> extends React.Component<T> {
+    /**
+     * Set whether the buttons should be enabled
+     *
+     * @param enabled whether the buttons should be enabled
+     */
+    public abstract set enabled(enabled: boolean);
+
+    public abstract render(): React.ReactNode;
+}
+
+/**
+ * A data table button
+ */
+export abstract class DataTableButton<T> extends React.Component<T> {
+    /**
+     * Set whether the button should be enabled
+     *
+     * @param enabled whether the button should be enabled
+     */
+    public abstract set enabled(enabled: boolean);
 }
 
 /**
@@ -39,12 +58,14 @@ type EditDocumentButtonProps = {
     document: database.Document
 }
 
-class EditDocumentButton extends React.Component<EditDocumentButtonProps> {
+export class EditDocumentButton extends DataTableButton<EditDocumentButtonProps> {
     /**
      * The document to edit on click
      * @private
      */
     private readonly document: database.Document;
+
+    private button: HTMLButtonElement = null;
 
     /**
      * Create an document edit button
@@ -58,9 +79,16 @@ class EditDocumentButton extends React.Component<EditDocumentButtonProps> {
         this.onEditButtonClick = this.onEditButtonClick.bind(this);
     }
 
+    public set enabled(enabled: boolean) {
+        if (this.button) {
+            this.button.disabled = !enabled;
+        }
+    }
+
     public render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons" onClick={this.onEditButtonClick}>
+            <button className="mdc-icon-button material-icons" onClick={this.onEditButtonClick}
+                    ref={e => this.button = e}>
                 <div className="mdc-button__icon">create</div>
             </button>
         );
@@ -91,12 +119,18 @@ type OpenDocumentButtonProps = {
 /**
  * A button for opening a document
  */
-class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
+class OpenDocumentButton extends DataTableButton<OpenDocumentButtonProps> {
     /**
      * The path of the document to open on click
      * @private
      */
     private readonly documentPath: string;
+
+    /**
+     * The button element
+     * @private
+     */
+    private button: HTMLButtonElement;
 
     /**
      * Create a open document button
@@ -106,14 +140,25 @@ class OpenDocumentButton extends React.Component<OpenDocumentButtonProps> {
     public constructor(props: OpenDocumentButtonProps) {
         super(props);
         this.documentPath = props.documentPath;
+        this.button = null;
 
         this.openDocument = this.openDocument.bind(this);
+    }
+
+    public set enabled(enabled: boolean) {
+        if (this.button) {
+            if (enabled) {
+                this.button.disabled = this.documentPath == null;
+            } else {
+                this.button.disabled = true;
+            }
+        }
     }
 
     public render(): JSX.Element {
         return (
             <button className="mdc-icon-button material-icons" onClick={this.openDocument}
-                    disabled={this.documentPath == null}>
+                    disabled={this.documentPath == null} ref={e => this.button = e}>
                 <div className="mdc-button__icon">open_in_new</div>
             </button>
         );
@@ -245,6 +290,16 @@ export type DataTableDocumentElementProps = {
  */
 export class DataTableDocumentElement extends DataTableElement<DataTableDocumentElementProps> {
     /**
+     * The open document button
+     */
+    public openButton: OpenDocumentButton = null;
+
+    /**
+     * The edit document button
+     */
+    public editButton: EditDocumentButton = null;
+
+    /**
      * The document to show
      * @private
      */
@@ -258,6 +313,11 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
     public constructor(props: DataTableDocumentElementProps) {
         super(props);
         this.document = props.document;
+    }
+
+    public set enabled(enabled: boolean) {
+        this.editButton.enabled = enabled;
+        this.openButton.enabled = enabled;
     }
 
     public render(): JSX.Element {
@@ -274,10 +334,11 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
                     <Tooltip id={tooltipId} title={"File"}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    <EditDocumentButton document={this.document}/>
+                    <EditDocumentButton document={this.document} ref={e => this.editButton = e}/>
                 </td>
                 <td className="mdc-data-table__cell">
-                    <OpenDocumentButton documentPath={this.document.exists ? this.document.absolutePath : null}/>
+                    <OpenDocumentButton documentPath={this.document.exists ? this.document.absolutePath : null}
+                                        ref={e => this.openButton = e}/>
                 </td>
             </tr>
         );
@@ -295,12 +356,18 @@ type OpenDirectoryButtonProps = {
 /**
  * An open directory button
  */
-class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
+class OpenDirectoryButton extends DataTableButton<OpenDirectoryButtonProps> {
     /**
      * The directory path
      * @private
      */
     private readonly dirPath: string;
+
+    /**
+     * The button element
+     * @private
+     */
+    private button: HTMLButtonElement;
 
     /**
      * Create an open directory button
@@ -310,14 +377,25 @@ class OpenDirectoryButton extends React.Component<OpenDirectoryButtonProps> {
     public constructor(props: OpenDirectoryButtonProps) {
         super(props);
         this.dirPath = props.dirPath
+        this.button = null;
 
         this.onDirectoryOpen = this.onDirectoryOpen.bind(this);
+    }
+
+    public set enabled(enabled: boolean) {
+        if (this.button) {
+            if (enabled) {
+                this.button.disabled = this.dirPath == null;
+            } else {
+                this.button.disabled = true;
+            }
+        }
     }
 
     public render(): JSX.Element {
         return (
             <button className="mdc-icon-button material-icons" onClick={this.onDirectoryOpen}
-                    disabled={this.dirPath == null}>
+                    disabled={this.dirPath == null} ref={e => this.button = e}>
                 <div className="mdc-button__icon">
                     keyboard_arrow_right
                 </div>
@@ -355,6 +433,11 @@ export type DataTableDirectoryElementProps = {
  */
 export class DataTableDirectoryElement extends DataTableElement<DataTableDirectoryElementProps> {
     /**
+     * The open directory button
+     */
+    public button: OpenDirectoryButton = null;
+
+    /**
      * The directory to display
      * @private
      */
@@ -368,6 +451,10 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
     public constructor(props: DataTableDirectoryElementProps) {
         super(props);
         this.directory = props.directory;
+    }
+
+    public set enabled(enabled: boolean) {
+        this.button.enabled = enabled;
     }
 
     public render(): JSX.Element {
@@ -385,7 +472,8 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
                 </td>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell">
-                    <OpenDirectoryButton dirPath={this.directory.exists ? this.directory.path : null}/>
+                    <OpenDirectoryButton dirPath={this.directory.exists ? this.directory.path : null}
+                                         ref={e => this.button = e}/>
                 </td>
             </tr>
         );

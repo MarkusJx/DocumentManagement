@@ -105,18 +105,14 @@ export interface ButtonProps {
 export interface ButtonState {
     // Whether the button is enabled
     enabled: boolean;
+    // The button title
+    title: string;
 }
 
 /**
  * A material button
  */
 export class Button<P extends ButtonProps = ButtonProps> extends React.Component<P, ButtonState> {
-    /**
-     * The button text
-     * @protected
-     */
-    protected readonly text: string;
-
     /**
      * The on click listener
      * @protected
@@ -138,11 +134,11 @@ export class Button<P extends ButtonProps = ButtonProps> extends React.Component
         super(props);
 
         this.state = {
-            enabled: true
+            enabled: true,
+            title: props.text
         };
 
         this.className = props.className;
-        this.text = props.text;
         this.onClick = props.onClick.bind(this);
     }
 
@@ -157,6 +153,17 @@ export class Button<P extends ButtonProps = ButtonProps> extends React.Component
         });
     }
 
+    /**
+     * Set the button title
+     *
+     * @param val the new title
+     */
+    public set title(val: string) {
+        this.setState({
+            title: val
+        });
+    }
+
     public render(): React.ReactNode {
         const className = this.className ? `mdc-button ${this.className}` : 'mdc-button';
         return (
@@ -164,7 +171,7 @@ export class Button<P extends ButtonProps = ButtonProps> extends React.Component
                     disabled={!this.state.enabled}>
                 <span className="mdc-button__ripple"/>
                 <span className="mdc-button__label">
-                    {this.text}
+                    {this.state.title}
                 </span>
             </button>
         );
@@ -196,7 +203,7 @@ export class OutlinedButton extends Button {
                     disabled={!this.state.enabled}>
                 <span className="mdc-button__ripple"/>
                 <span className="mdc-button__label">
-                    {this.text}
+                    {this.state.title}
                 </span>
             </button>
         );
@@ -204,13 +211,26 @@ export class OutlinedButton extends Button {
 }
 
 /**
+ * The progress bar properties
+ */
+interface ProgressBarProps {
+    // An optional style
+    style?: MDCCSSProperties;
+}
+
+/**
  * A progress bar
  */
-export class ProgressBar extends React.Component {
+export class ProgressBar extends React.Component<ProgressBarProps> {
     /**
      * The mdc progress bar element
      */
-    public element: MDCLinearProgress;
+    public progressBar: MDCLinearProgress;
+    /**
+     * The html element
+     * @private
+     */
+    private element: HTMLElement;
 
     /**
      * Create a progress bar
@@ -225,7 +245,8 @@ export class ProgressBar extends React.Component {
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-linear-progress mdc-linear-progress--indeterminate" role="progressbar">
+            <div className="mdc-linear-progress mdc-linear-progress--indeterminate" role="progressbar"
+                 style={this.props.style} ref={e => this.element = e}>
                 <div className="mdc-linear-progress__buffer">
                     <div className="mdc-linear-progress__buffer-bar"/>
                     <div className="mdc-linear-progress__buffer-dots"/>
@@ -241,8 +262,7 @@ export class ProgressBar extends React.Component {
     }
 
     public componentDidMount() {
-        const $this = ReactDOM.findDOMNode(this) as Element;
-        this.element = new MDCLinearProgress($this);
+        this.progressBar = new MDCLinearProgress(this.element);
     }
 }
 

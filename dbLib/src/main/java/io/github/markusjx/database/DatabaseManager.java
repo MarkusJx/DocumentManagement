@@ -349,6 +349,24 @@ public class DatabaseManager {
     }
 
     /**
+     * Remove all documents that are not in a list
+     *
+     * @param documents the document list to match
+     * @return true if the operation was successful
+     */
+    @SuppressWarnings("unused")
+    public synchronized boolean removeAllDocumentsNotIn(List<Document> documents) {
+        try {
+            manager.createQuery("delete from Document as d where d not in :docs", Document.class)
+                    .setParameter("docs", documents);
+            return true;
+        } catch (Exception e) {
+            logger.error("Could not remove all documents not in a list:", e);
+            return false;
+        }
+    }
+
+    /**
      * Get all directories in the database matching those in the given list
      *
      * @param directories the directories to search for
@@ -360,7 +378,7 @@ public class DatabaseManager {
                     .setParameter("dirs", directories)
                     .getResultList();
         } catch (Exception e) {
-            logger.error("Could not get all directories both in a list and the database", e);
+            logger.error("Could not get all directories both in a list and the database:", e);
             return null;
         }
     }
@@ -395,6 +413,24 @@ public class DatabaseManager {
     }
 
     /**
+     * Remove all directories that are not in a list
+     *
+     * @param directories the directories list to match
+     * @return true if the operation was successful
+     */
+    @SuppressWarnings("unused")
+    public synchronized boolean removeAllDirectoriesNotIn(List<Directory> directories) {
+        try {
+            manager.createQuery("delete from Directory as d where d not in :dirs", Directory.class)
+                    .setParameter("dirs", directories);
+            return true;
+        } catch (Exception e) {
+            logger.error("Could not remove all directories not in a list:", e);
+            return false;
+        }
+    }
+
+    /**
      * Get the {@link DatabaseInfo} for this database
      *
      * @return the retrieved {@link DatabaseInfo}
@@ -404,7 +440,7 @@ public class DatabaseManager {
         try {
             return manager.find(DatabaseInfo.class, 0);
         } catch (Exception e) {
-            logger.error("Could not get the database info", e);
+            logger.error("Could not get the database info:", e);
             return null;
         }
     }
@@ -438,6 +474,61 @@ public class DatabaseManager {
         return persistDatabaseInfo(new DatabaseInfo(sourcePath)) &&
                 persistDocuments(directory.getAllDocuments()) &&
                 persistDirectories(directory.getAllDirectories());
+    }
+
+    /**
+     * Get the number of documents in a directory but not in the database
+     *
+     * @param directory the directory to match
+     * @return the number of matching documents
+     */
+    @SuppressWarnings("unused")
+    public synchronized long getDocumentsNotIn(Directory directory) {
+        try {
+            final List<Document> documents = directory.getAllDocuments();
+            return manager.createQuery("select count(d) from Document as d where d not in :docs", Long.class)
+                    .setParameter("docs", documents)
+                    .getSingleResult();
+        } catch (Exception e) {
+            logger.error("Could not get the documents not in a directory:", e);
+            return -1;
+        }
+    }
+
+    /**
+     * Get the number of directories in another directory but not in the database
+     *
+     * @param directory the directory to match
+     * @return the number of matching directories
+     */
+    @SuppressWarnings("unused")
+    public synchronized long getDirectoriesNotIn(Directory directory) {
+        try {
+            final List<Directory> directories = directory.getAllDirectories();
+            return manager.createQuery("select count(d) from Directory as d where d not in :dirs", Long.class)
+                    .setParameter("dirs", directories)
+                    .getSingleResult();
+        } catch (Exception e) {
+            logger.error("Could not get the directories not in a directory:", e);
+            return -1;
+        }
+    }
+
+    /**
+     * Synchronize a directory
+     *
+     * @param directory the directory to sync with
+     * @return true if the operation was successful
+     */
+    @SuppressWarnings("unused")
+    public synchronized boolean synchronizeDirectory(Directory directory) {
+        final List<Directory> directories = directory.getAllDirectories();
+        final List<Document> documents = directory.getAllDocuments();
+
+        return removeAllDirectoriesNotIn(directories) &&
+                removeAllDocumentsNotIn(documents) &&
+                persistDocuments(documents) &&
+                persistDirectories(directories);
     }
 
     /**

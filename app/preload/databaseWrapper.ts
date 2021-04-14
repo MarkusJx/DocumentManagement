@@ -1268,6 +1268,36 @@ export namespace database {
         }
 
         /**
+         * Get the number of documents in a directory but not in the database
+         *
+         * @param directory the directory to match
+         * @return the number of matching documents
+         */
+        public async getDocumentsNotIn(directory: DirectoryProxy): Promise<number> {
+            return await java_callMethod(this.impl, "getDocumentsNotIn", directory.impl);
+        }
+
+        /**
+         * Get the number of directories in another directory but not in the database
+         *
+         * @param directory the directory to match
+         * @return the number of matching directories
+         */
+        public async getDirectoriesNotIn(directory: DirectoryProxy): Promise<number> {
+            return await java_callMethod(this.impl, "getDirectoriesNotIn", directory.impl);
+        }
+
+        /**
+         * Synchronize a directory
+         *
+         * @param directory the directory to sync with
+         * @return true if the operation was successful
+         */
+        public async synchronizeDirectory(directory: DirectoryProxy): Promise<boolean> {
+            return await java_callMethod(this.impl, "synchronizeDirectory", directory.impl);
+        }
+
+        /**
          * Get a directory by its path
          *
          * @param _path the path to the directory

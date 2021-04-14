@@ -126,7 +126,7 @@ function createWindow(): void {
         frame: false,
         resizable: true,
         webPreferences: {
-            preload: path.join(__dirname, 'src', 'main.js'),
+            preload: path.join(__dirname, 'preload', 'index.js'),
             contextIsolation: true,
             worldSafeExecuteJavaScript: true,
             nodeIntegration: false,

@@ -12,9 +12,13 @@ $titleBarHeight: 46px;
 $scaleFrom: 0.8;
 // The duration it takes to show or hide the dialog
 $showHideDuration: 0.125s;
+// The font
+$font: 'Open Sans', sans-serif;
+
+@import "app/styles/shared";
 
 // The sync dialog background
-.sync-dialog-background {
+.sync-dialog__background {
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -24,84 +28,77 @@ $showHideDuration: 0.125s;
   z-index: 999;
   opacity: 0;
   display: none;
-}
 
-// Hide the sync dialog background
-@keyframes hide-sync-dialog-background {
-  0% {
+  // The hidden sync dialog background
+  &.hidden {
     display: block;
+    // Hide the sync dialog background
+    @include inline-animation($showHideDuration) {
+      0% {
+        display: block;
+        opacity: 1;
+      }
+      99% {
+        display: block;
+        opacity: 0;
+      }
+      100% {
+        display: none;
+        opacity: 0;
+      }
+    }
+
+    // The hidden sync dialog
+    .sync-dialog__dialog {
+      // Hide the sync dialog
+      @include inline-animation($showHideDuration) {
+        0% {
+          transform: scale(1, 1);
+        }
+        100% {
+          transform: scale(#{$scaleFrom}, #{$scaleFrom});
+        }
+      }
+    }
+  }
+
+  // The visible sync dialog background
+  &.visible {
     opacity: 1;
-  }
-  99% {
     display: block;
-    opacity: 0;
-  }
-  100% {
-    display: none;
-    opacity: 0;
-  }
-}
+    // Show the sync dialog background
+    @include inline-animation($showHideDuration) {
+      0% {
+        display: none;
+        opacity: 0;
+      }
+      1% {
+        display: block;
+        opacity: 0;
+      }
+      100% {
+        display: block;
+        opacity: 1;
+      }
+    }
 
-// The hidden sync dialog background
-.sync-dialog-background.hidden {
-  animation: hide-sync-dialog-background #{$showHideDuration} ease-in-out;
-}
-
-// Show the sync dialog background
-@keyframes show-sync-dialog-background {
-  0% {
-    display: none;
-    opacity: 0;
+    // The visible sync dialog
+    .sync-dialog__dialog {
+      // Show the sync dialog
+      @include inline-animation($showHideDuration) {
+        0% {
+          transform: scale(#{$scaleFrom}, #{$scaleFrom});
+        }
+        100% {
+          transform: scale(1, 1);
+        }
+      }
+    }
   }
-  1% {
-    display: block;
-    opacity: 0;
-  }
-  100% {
-    display: block;
-    opacity: 1;
-  }
-}
-
-// The visible sync dialog background
-.sync-dialog-background.visible {
-  opacity: 1;
-  display: block;
-  animation: show-sync-dialog-background #{$showHideDuration} ease-in-out;
-}
-
-// Show the sync dialog
-@keyframes show-sync-dialog {
-  0% {
-    transform: scale(#{$scaleFrom}, #{$scaleFrom});
-  }
-  100% {
-    transform: scale(1, 1);
-  }
-}
-
-// The visible sync dialog
-.sync-dialog-background.visible .sync-dialog-dialog {
-  animation: show-sync-dialog #{$showHideDuration} ease-in-out;
-}
-
-// Hide the sync dialog
-@keyframes hide-sync-dialog {
-  0% {
-    transform: scale(1, 1);
-  }
-  100% {
-    transform: scale(#{$scaleFrom}, #{$scaleFrom});
-  }
-}
-
-// The hide sync dialog
-.sync-dialog-background.hidden .sync-dialog-dialog {
-  animation: hide-sync-dialog #{$showHideDuration} ease-in-out;
 }
 
 // The sync dialog
-.sync-dialog-dialog {
+.sync-dialog__dialog {
   background: white;
   width: $width;
   height: $height;
@@ -114,19 +111,86 @@ $showHideDuration: 0.125s;
   --mdc-theme-primary: blue;
   position: absolute;
   overflow: hidden;
+  display: grid;
+  grid-template-rows: min-content auto min-content;
 }
 
 // The sync dialog top bar
-.sync-dialog-dialog-top-bar {
+.sync-dialog__dialog-top-bar {
   width: 100%;
   height: 48px;
   background-color: #214456;
 }
 
 // The sync dialog actions
-.sync-dialog-actions {
+.sync-dialog__actions {
   display: grid;
   grid-template-columns: min-content min-content;
   width: max-content;
   margin-left: auto;
+  top: 100%;
+  column-gap: 10px;
+  margin-right: 30px;
+  margin-bottom: 20px;
+}
+
+.sync-dialog__title {
+  font-family: $font;
+  color: white;
+  margin: auto;
+  width: max-content;
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.sync-dialog__content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.sync-dialog__swipe-element {
+  $dialogContentPadding: 25px;
+  $animationDuration: 0.5s;
+  $swipeMargin: -110%;
+
+  font-family: $font;
+  font-weight: 300;
+  color: #4a4a4a;
+  margin-right: $swipeMargin;
+  width: calc(100% - #{$dialogContentPadding * 2});
+  padding: $dialogContentPadding;
+  position: absolute;
+  right: $swipeMargin;
+
+  &.centered {
+    right: 0;
+    left: 0;
+    @include inline-animation($animationDuration) {
+      0% {
+        left: abs($swipeMargin);
+      }
+      100% {
+        left: 0;
+      }
+    }
+  }
+
+  &.left {
+    left: $swipeMargin;
+    right: 0;
+    @include inline-animation($animationDuration) {
+      0% {
+        left: 0;
+      }
+      100% {
+        left: $swipeMargin;
+      }
+    }
+  }
+
+  &.start-page {
+    right: 0;
+    left: 0;
+  }
 }
