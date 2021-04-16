@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {MainComponent} from "./pages/StartScreen";
+import MainComponent from "./pages/MainComponent";
 import {ScanLoadingScreen} from "./elements/LoadingScreens";
 import constants from "./util/constants";
 import CloseListener from "./util/CloseListener";
@@ -61,7 +61,7 @@ class Main {
     }
 }
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', () => {
     logger.info("Start loading");
     try {
         Main.main();

@@ -75,6 +75,12 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     private dataTableElements: DataTableElement<any>[];
 
     /**
+     * The top app bar
+     * @private
+     */
+    private topAppBar: MainDataTableTopAppBar;
+
+    /**
      * Whether to show a progress bar on load
      * @private
      */
@@ -92,6 +98,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         this.dataTablePagination = null;
         this.searchBox = null;
         this.dataTableElements = [];
+        this.topAppBar = null;
         if (props.showProgress == undefined || typeof props.showProgress !== "boolean") {
             this.showProgress = false;
         } else {
@@ -202,6 +209,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     public setLoading(loading: boolean): void {
         constants.searchBox.startButtonEnabled = !loading
         this.dataTableElements = this.dataTableElements.filter(e => e != null);
+        this.topAppBar.buttonsEnabled = !loading;
 
         if (loading) {
             this.dataTable.dataTable.showProgress();
@@ -235,7 +243,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         };
 
         return (
-            <MainDataTableTopAppBar parent={this}>
+            <MainDataTableTopAppBar parent={this} ref={e => this.topAppBar = e}>
                 {this.databaseManager ?
                     <SearchBox databaseManager={this.databaseManager} searchStart={this.startSearch}
                                ref={e => this.searchBox = e}/> : null}
@@ -253,8 +261,10 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
 
     public componentDidMount(): void {
         if (this.showProgress) {
+            this.topAppBar.buttonsEnabled = false;
             this.dataTable.dataTable.showProgress();
         } else {
+            this.topAppBar.buttonsEnabled = true;
             this.dataTable.dataTable.hideProgress();
         }
 

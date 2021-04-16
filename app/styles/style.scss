@@ -59,35 +59,11 @@ $textFieldFocusedColor: #4a6eff;
     width: max-content;
 }
 
-.start-scan-screen {
-    --mdc-theme-primary: blue;
-    margin: auto;
-    border-radius: 5px;
-    border-color: #a5a5a5;
-    border-width: 1px;
-    border-style: solid;
-    display: grid;
-    max-width: 800px;
-}
-
-.start-scan-screen-grid-element {
-    border-bottom-color: #a5a5a5;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    padding: 0 20px 15px 20px;
-}
-
 .centered {
     margin-left: auto;
     margin-right: auto;
     width: fit-content;
     word-break: break-word;
-}
-
-.start-scan-path {
-    background-color: #dedede;
-    border-radius: 4px;
-    padding: 0 4px;
 }
 
 @media only screen and (max-width: 800px) {
@@ -98,12 +74,6 @@ $textFieldFocusedColor: #4a6eff;
 
     .start-screen-button-alignment {
         margin: 0 auto 0 auto;
-    }
-
-    .start-scan-screen {
-        border-style: hidden;
-        margin: 0 0 auto 0;
-        max-width: unset;
     }
 }
 

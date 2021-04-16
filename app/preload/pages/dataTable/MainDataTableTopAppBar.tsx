@@ -18,6 +18,17 @@ interface MainDataTableTopAppBarProps {
     parent: MainDataTable;
 }
 
+/**
+ * The main data table top app bar state
+ */
+interface MainDataTableTopAppBarState {
+    // Whether all buttons should be enabled
+    buttonsEnabled: boolean;
+}
+
+/**
+ * The top app bar menu options
+ */
 enum settings {
     SETTINGS = "Settings",
     SYNCHRONIZE = "Synchronize",
@@ -27,7 +38,7 @@ enum settings {
 /**
  * The main data table top app bar
  */
-export default class MainDataTableTopAppBar extends React.Component<MainDataTableTopAppBarProps> {
+export default class MainDataTableTopAppBar extends React.Component<MainDataTableTopAppBarProps, MainDataTableTopAppBarState> {
     /**
      * The top app bar menu
      * @private
@@ -48,9 +59,24 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
     public constructor(props: MainDataTableTopAppBarProps) {
         super(props);
 
+        this.state = {
+            buttonsEnabled: true
+        };
+
         this.openTopAppBarMenu = this.openTopAppBarMenu.bind(this);
         this.showHideSearch = this.showHideSearch.bind(this);
         this.topAppBarOptionClick = this.topAppBarOptionClick.bind(this);
+    }
+
+    /**
+     * Set whether all buttons should be enabled
+     *
+     * @param value true if all buttons should be enabled
+     */
+    public set buttonsEnabled(value: boolean) {
+        this.setState({
+            buttonsEnabled: value
+        });
     }
 
     /**
@@ -77,13 +103,16 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                 <topAppBar.Header style={topAppBarStyle} ref={e => this.topAppBar = e}>
                     <topAppBar.NavigationSection title="Browse">
                         <topAppBar.NavigationButton onClick={MainDataTableTopAppBar.backButtonClick} label="Back"
-                                                    iconName="arrow_back" describedby="main-top-app-bar-nav-tooltip"/>
+                                                    iconName="arrow_back" describedby="main-top-app-bar-nav-tooltip"
+                                                    enabled={this.state.buttonsEnabled}/>
                     </topAppBar.NavigationSection>
                     <topAppBar.ActionButtonsSection>
                         <topAppBar.ActionButton onClick={this.showHideSearch} label="Search" iconName="search"
-                                                describedby="main-top-app-bar-action-search-tooltip"/>
+                                                describedby="main-top-app-bar-action-search-tooltip"
+                                                enabled={this.state.buttonsEnabled}/>
                         <div className="mdc-menu-surface--anchor">
-                            <topAppBar.ActionButton onClick={this.openTopAppBarMenu} label="More" iconName="more_vert"/>
+                            <topAppBar.ActionButton onClick={this.openTopAppBarMenu} label="More" iconName="more_vert"
+                                                    enabled={this.state.buttonsEnabled}/>
                             <Menu options={menuOptions} onOptionClick={this.topAppBarOptionClick}
                                   ref={e => this.topAppBarMenu = e} style={{marginTop: '48px'}}/>
                         </div>

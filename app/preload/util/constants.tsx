@@ -6,7 +6,7 @@ import {database} from "../databaseWrapper";
 import {MainDataTable} from "../pages/dataTable/MainDataTable";
 import {SearchBox} from "../elements/SearchBox";
 import {ScanLoadingScreen} from "../elements/LoadingScreens";
-import {MainComponent} from "../pages/StartScreen";
+import MainComponent from "../pages/MainComponent";
 import {getLogger} from "log4js";
 import DatabaseManager = database.DatabaseManager;
 
@@ -16,6 +16,11 @@ const logger = getLogger();
  * Constants to be used everywhere
  */
 export default class constants {
+    /**
+     * Whether to show the generated sql commands
+     */
+    public static readonly SHOW_SQL: boolean = false;
+
     /**
      * The file editor
      */

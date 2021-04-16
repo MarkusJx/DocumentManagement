@@ -6,6 +6,7 @@ import {showErrorDialog} from "../elements/ErrorDialog";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "./DatabaseConfigurator";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {getLogger} from "log4js";
+import GoBackTopAppBar from "../elements/GoBackTopAppBar";
 
 const logger = getLogger();
 
@@ -21,11 +22,13 @@ export default class LoadRecentPage extends React.Component {
 
     public render(): React.ReactNode {
         return (
-            <DataTable ref={e => this.dataTable = e}>
-                <MDCDataTableContainer headers={["Database", "Load", "Remove"]}>
-                    {this.getRows()}
-                </MDCDataTableContainer>
-            </DataTable>
+            <GoBackTopAppBar id={'load-recent-database'} title={"Load recent"}>
+                <DataTable ref={e => this.dataTable = e} style={{width: '100%'}}>
+                    <MDCDataTableContainer headers={["Database", "Load", "Remove"]}>
+                        {this.getRows()}
+                    </MDCDataTableContainer>
+                </DataTable>
+            </GoBackTopAppBar>
         );
     }
 
