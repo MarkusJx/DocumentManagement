@@ -39,6 +39,7 @@ log4js.configure({
 const logger = log4js.getLogger();
 
 util.importCss("styles/style.css");
+util.importCss("styles/shared.css");
 
 /**
  * The main class

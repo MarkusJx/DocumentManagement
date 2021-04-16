@@ -10,13 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
 import javax.persistence.TransactionRequiredException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +31,13 @@ public class DatabaseManager {
      * The maximum amount of search results for fuzzy searches
      */
     private static final int FUZZY_SEARCH_MAX_RESULTS = 25;
+
+    /**
+     * The maximum input array length for sql operation.
+     * This is required as SQLite only allows 1000 up to
+     * parameters in one operation
+     */
+    private static final int MAX_INPUT_ARRAY_LENGTH = 1000;
 
     /**
      * The entity manager instance
@@ -108,9 +117,14 @@ public class DatabaseManager {
      */
     public synchronized List<Tag> getAllTagsIn(final List<Tag> tags) {
         try {
-            return manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
-                    .setParameter("tags", tags)
-                    .getResultList();
+            List<Tag> result = new ArrayList<>();
+            for (List<Tag> limited : ListUtils.partition(tags, MAX_INPUT_ARRAY_LENGTH)) {
+                result.addAll(manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
+                        .setParameter("tags", limited)
+                        .getResultList());
+            }
+
+            return result;
         } catch (Exception e) {
             logger.error("Could not get all tags in both in the database and a list", e);
             return null;
@@ -134,13 +148,15 @@ public class DatabaseManager {
 
         // Insert the tags manually into the database
         return DatabaseUtils.doSessionWork(manager, connection -> {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO Tag(name) values (?)");
-            for (Tag t : ts) {
-                statement.setString(1, t.name);
-                statement.addBatch();
-            }
+            for (List<Tag> limited : ListUtils.partition(ts, MAX_INPUT_ARRAY_LENGTH)) {
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO Tag(name) values (?)");
+                for (Tag t : limited) {
+                    statement.setString(1, t.name);
+                    statement.addBatch();
+                }
 
-            statement.executeBatch();
+                statement.executeBatch();
+            }
         });
     }
 
@@ -152,9 +168,14 @@ public class DatabaseManager {
      */
     public synchronized List<Property> getAllPropertiesIn(final List<Property> properties) {
         try {
-            return manager.createQuery("select p from Property as p where p in :props", Property.class)
-                    .setParameter("props", properties)
-                    .getResultList();
+            List<Property> result = new ArrayList<>();
+            for (List<Property> limited : ListUtils.partition(properties, MAX_INPUT_ARRAY_LENGTH)) {
+                result.addAll(manager.createQuery("select p from Property p where p in :props", Property.class)
+                        .setParameter("props", limited)
+                        .getResultList());
+            }
+
+            return result;
         } catch (Exception e) {
             logger.error("Could not get all properties both in a list and the database", e);
             return null;
@@ -192,9 +213,14 @@ public class DatabaseManager {
      */
     public synchronized List<PropertyValue> getAllPropertyValuesIn(final List<PropertyValue> propertyValues) {
         try {
-            return manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
-                    .setParameter("values", propertyValues)
-                    .getResultList();
+            List<PropertyValue> result = new ArrayList<>();
+            for (List<PropertyValue> limited : ListUtils.partition(propertyValues, MAX_INPUT_ARRAY_LENGTH)) {
+                result.addAll(manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
+                        .setParameter("values", limited)
+                        .getResultList());
+            }
+
+            return result;
         } catch (Exception e) {
             logger.error("Could not get all property values both in a list and the database", e);
             return null;
@@ -218,13 +244,15 @@ public class DatabaseManager {
 
         // Insert the values manually
         return DatabaseUtils.doSessionWork(manager, connection -> {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO PropertyValue(value) values (?)");
-            for (PropertyValue p : ps) {
-                statement.setString(1, p.value);
-                statement.addBatch();
-            }
+            for (List<PropertyValue> limited : ListUtils.partition(ps, MAX_INPUT_ARRAY_LENGTH)) {
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO PropertyValue(value) values (?)");
+                for (PropertyValue p : limited) {
+                    statement.setString(1, p.value);
+                    statement.addBatch();
+                }
 
-            statement.executeBatch();
+                statement.executeBatch();
+            }
         });
     }
 
@@ -264,10 +292,9 @@ public class DatabaseManager {
      */
     public synchronized List<Document> getAllDocumentsIn(final List<Document> documents) {
         try {
-            Collection<List<Document>> lists = ListUtils.partition(documents, 999);
             List<Document> result = new ArrayList<>();
 
-            for (final List<Document> list : lists) {
+            for (final List<Document> list : ListUtils.partition(documents, MAX_INPUT_ARRAY_LENGTH)) {
                 result.addAll(manager.createQuery("select d from Document as d where d in :docs", Document.class)
                         .setParameter("docs", list)
                         .getResultList());
@@ -324,15 +351,16 @@ public class DatabaseManager {
 
         // Start a transaction and persist all documents
         try {
-            manager.setFlushMode(FlushModeType.COMMIT);
             manager.getTransaction().begin();
             for (Document d : documents) manager.persist(d);
+            manager.flush();
             manager.getTransaction().commit();
         } catch (Exception e) {
             logger.error("Could not persist the documents", e);
             return false;
         }
 
+        logger.info("Successfully persisted {} documents", documents.size());
         return true;
     }
 
@@ -356,13 +384,31 @@ public class DatabaseManager {
      */
     @SuppressWarnings("unused")
     public synchronized boolean removeAllDocumentsNotIn(List<Document> documents) {
+        documents = getAllDocumentsIn(documents);
+        logger.info("Removing all documents from the database, but keeping {}", documents.size());
+        List<Document> documentsCopy = new ArrayList<>(documents.size());
+        for (Document document : documents) {
+            documentsCopy.add(new Document(document));
+        }
+
         try {
-            manager.createQuery("delete from Document as d where d not in :docs", Document.class)
-                    .setParameter("docs", documents);
-            return true;
+            manager.getTransaction().begin();
+            for (Document doc : documents) manager.remove(doc);
+            manager.flush();
+
+            manager.createQuery("delete from Document").executeUpdate();
+            manager.getTransaction().commit();
         } catch (Exception e) {
             logger.error("Could not remove all documents not in a list:", e);
             return false;
+        }
+
+        if (documents.isEmpty()) {
+            logger.info("There were no documents to keep, therefore, all documents were removed");
+            return true;
+        } else {
+            logger.info("Persisting all documents to keep");
+            return persistDocuments(documentsCopy);
         }
     }
 
@@ -374,9 +420,14 @@ public class DatabaseManager {
      */
     public synchronized List<Directory> getAllDirectoriesIn(final List<Directory> directories) {
         try {
-            return manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
-                    .setParameter("dirs", directories)
-                    .getResultList();
+            List<Directory> result = new ArrayList<>();
+            for (List<Directory> limited : ListUtils.partition(directories, MAX_INPUT_ARRAY_LENGTH)) {
+                result.addAll(manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
+                        .setParameter("dirs", limited)
+                        .getResultList());
+            }
+
+            return result;
         } catch (Exception e) {
             logger.error("Could not get all directories both in a list and the database:", e);
             return null;
@@ -398,11 +449,9 @@ public class DatabaseManager {
 
         // Begin a transaction and persist the directories
         try {
-            manager.setFlushMode(FlushModeType.COMMIT);
             manager.getTransaction().begin();
-            for (Directory d : directories) {
-                manager.persist(d);
-            }
+            for (Directory d : directories) manager.persist(d);
+            manager.flush();
             manager.getTransaction().commit();
         } catch (Exception e) {
             logger.error("Could not persist the documents", e);
@@ -420,13 +469,32 @@ public class DatabaseManager {
      */
     @SuppressWarnings("unused")
     public synchronized boolean removeAllDirectoriesNotIn(List<Directory> directories) {
+        directories = getAllDirectoriesIn(directories);
+        logger.info("Removing all directories from the database, but keeping {}", directories.size());
+
+        List<Directory> directoriesCopy = new ArrayList<>(directories.size());
+        for (Directory directory : directories) {
+            directoriesCopy.add(new Directory(directory));
+        }
+
         try {
-            manager.createQuery("delete from Directory as d where d not in :dirs", Directory.class)
-                    .setParameter("dirs", directories);
-            return true;
+            manager.getTransaction().begin();
+            for (Directory dir : directories) manager.remove(dir);
+            manager.flush();
+
+            manager.createQuery("delete from Directory").executeUpdate();
+            manager.getTransaction().commit();
         } catch (Exception e) {
             logger.error("Could not remove all directories not in a list:", e);
             return false;
+        }
+
+        if (directories.isEmpty()) {
+            logger.info("There are no directories to keep, not persisting anything");
+            return true;
+        } else {
+            logger.info("Persisting the directories to keep");
+            return persistDirectories(directoriesCopy);
         }
     }
 
@@ -486,9 +554,16 @@ public class DatabaseManager {
     public synchronized long getDocumentsNotIn(Directory directory) {
         try {
             final List<Document> documents = directory.getAllDocuments();
-            return manager.createQuery("select count(d) from Document as d where d not in :docs", Long.class)
-                    .setParameter("docs", documents)
-                    .getSingleResult();
+            long res = 0;
+
+            for (List<Document> docs : ListUtils.partition(documents, 1000)) {
+                res += manager.createQuery("select count(d) from Document d where d in :docs", Long.class)
+                        .setParameter("docs", docs)
+                        .getSingleResult();
+            }
+
+            return manager.createQuery("select count(d) from Document d", Long.class)
+                    .getSingleResult() - res;
         } catch (Exception e) {
             logger.error("Could not get the documents not in a directory:", e);
             return -1;
@@ -505,9 +580,16 @@ public class DatabaseManager {
     public synchronized long getDirectoriesNotIn(Directory directory) {
         try {
             final List<Directory> directories = directory.getAllDirectories();
-            return manager.createQuery("select count(d) from Directory as d where d not in :dirs", Long.class)
-                    .setParameter("dirs", directories)
-                    .getSingleResult();
+            long res = 0;
+
+            for (List<Directory> dirs : ListUtils.partition(directories, 1000)) {
+                res += manager.createQuery("select count(d) from Directory d where d in :dirs", Long.class)
+                        .setParameter("dirs", dirs)
+                        .getSingleResult();
+            }
+
+            return manager.createQuery("select count(d) from Directory d", Long.class)
+                    .getSingleResult() - res;
         } catch (Exception e) {
             logger.error("Could not get the directories not in a directory:", e);
             return -1;
@@ -524,9 +606,10 @@ public class DatabaseManager {
     public synchronized boolean synchronizeDirectory(Directory directory) {
         final List<Directory> directories = directory.getAllDirectories();
         final List<Document> documents = directory.getAllDocuments();
+        logger.info("Synchronizing {} documents and {} directories", documents.size(), directories.size());
 
-        return removeAllDirectoriesNotIn(directories) &&
-                removeAllDocumentsNotIn(documents) &&
+        return removeAllDocumentsNotIn(documents) &&
+                removeAllDirectoriesNotIn(directories) &&
                 persistDocuments(documents) &&
                 persistDirectories(directories);
     }

@@ -50,6 +50,26 @@ public class Directory implements Serializable, Comparable<Directory> {
     }
 
     /**
+     * Copy a directory
+     *
+     * @param toCopy the directory to copy the data from
+     */
+    public Directory(Directory toCopy) {
+        this.path = toCopy.path;
+        this.name = toCopy.name;
+        this.documents = new ArrayList<>(toCopy.documents.size());
+        this.directories = new ArrayList<>(toCopy.directories.size());
+
+        for (Directory dir : toCopy.directories) {
+            this.directories.add(new Directory(dir));
+        }
+
+        for (Document document : toCopy.documents) {
+            this.documents.add(new Document(document));
+        }
+    }
+
+    /**
      * Create a directory
      *
      * @param path the path to the directory

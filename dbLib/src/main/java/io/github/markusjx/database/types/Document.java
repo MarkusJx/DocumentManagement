@@ -68,6 +68,28 @@ public class Document implements Serializable, Comparable<Document> {
     }
 
     /**
+     * Copy constructor
+     *
+     * @param toCopy the document to copy the data from
+     */
+    public Document(Document toCopy) {
+        this.filename = toCopy.filename;
+        this.absolutePath = toCopy.absolutePath;
+        this.properties = new ArrayList<>(toCopy.properties.size());
+        this.creationDate = toCopy.creationDate;
+        this.tags = new ArrayList<>(toCopy.tags.size());
+        this.parentPath = toCopy.parentPath;
+
+        for (PropertyValueSet set : toCopy.properties) {
+            this.properties.add(new PropertyValueSet(set));
+        }
+
+        for (Tag tag : toCopy.tags) {
+            this.tags.add(new Tag(tag));
+        }
+    }
+
+    /**
      * Create a new document
      *
      * @param filename     the document file name

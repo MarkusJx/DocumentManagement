@@ -30,6 +30,16 @@ public class PropertyValueSet {
     }
 
     /**
+     * Copy constructor
+     *
+     * @param toCopy the object to copy from
+     */
+    public PropertyValueSet(PropertyValueSet toCopy) {
+        this.property = toCopy.property;
+        this.propertyValue = toCopy.propertyValue;
+    }
+
+    /**
      * Create a property value set
      *
      * @param property      the property

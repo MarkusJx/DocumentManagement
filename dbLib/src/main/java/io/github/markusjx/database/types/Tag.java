@@ -28,6 +28,15 @@ public class Tag implements Serializable, Comparable<Tag> {
     }
 
     /**
+     * Copy constructor
+     *
+     * @param toCopy the tag to copy from
+     */
+    public Tag(Tag toCopy) {
+        this.name = toCopy.name;
+    }
+
+    /**
      * Create a new tag instance
      *
      * @param name the name of the tag

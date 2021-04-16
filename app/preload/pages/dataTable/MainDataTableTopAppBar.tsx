@@ -5,6 +5,10 @@ import MDCCSSProperties from "../../util/MDCCSSProperties";
 import {MainDataTable} from "./MainDataTable";
 import SettingsDialog from "../../settings/SettingsDialog";
 import SyncDialog from "../../dialogs/SyncDialog";
+import {getLogger} from "log4js";
+import {showErrorDialog} from "../../elements/ErrorDialog";
+
+const logger = getLogger();
 
 /**
  * The main data table top app bar properties
@@ -16,7 +20,8 @@ interface MainDataTableTopAppBarProps {
 
 enum settings {
     SETTINGS = "Settings",
-    SYNCHRONIZE = "Synchronize"
+    SYNCHRONIZE = "Synchronize",
+    RELOAD = "Reload"
 }
 
 /**
@@ -45,6 +50,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
 
         this.openTopAppBarMenu = this.openTopAppBarMenu.bind(this);
         this.showHideSearch = this.showHideSearch.bind(this);
+        this.topAppBarOptionClick = this.topAppBarOptionClick.bind(this);
     }
 
     /**
@@ -55,26 +61,6 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
         constants.mainComponent.gotoStartPage();
     }
 
-    /**
-     * Called when a top app bar menu option is clicked
-     *
-     * @param option the selected option
-     * @private
-     */
-    private static topAppBarOptionClick(option: string): void {
-        switch (option) {
-            case settings.SETTINGS: {
-                SettingsDialog.open();
-                break;
-            }
-            case settings.SYNCHRONIZE: {
-                SyncDialog.open(constants.mainDataTable.databaseManager).then();
-                // TODO
-                break;
-            }
-        }
-    }
-
     public render(): React.ReactNode {
         const topAppBarStyle: MDCCSSProperties = {
             "--mdc-theme-primary": "#214456"
@@ -82,7 +68,8 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
 
         const menuOptions: string[] = [
             settings.SETTINGS,
-            settings.SYNCHRONIZE
+            settings.SYNCHRONIZE,
+            settings.RELOAD
         ];
 
         return (
@@ -97,7 +84,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                                                 describedby="main-top-app-bar-action-search-tooltip"/>
                         <div className="mdc-menu-surface--anchor">
                             <topAppBar.ActionButton onClick={this.openTopAppBarMenu} label="More" iconName="more_vert"/>
-                            <Menu options={menuOptions} onOptionClick={MainDataTableTopAppBar.topAppBarOptionClick}
+                            <Menu options={menuOptions} onOptionClick={this.topAppBarOptionClick}
                                   ref={e => this.topAppBarMenu = e} style={{marginTop: '48px'}}/>
                         </div>
                     </topAppBar.ActionButtonsSection>
@@ -107,6 +94,36 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                 </topAppBar.Main>
             </>
         );
+    }
+
+    /**
+     * Called when a top app bar menu option is clicked
+     *
+     * @param option the selected option
+     * @private
+     */
+    private topAppBarOptionClick(option: string): void {
+        switch (option) {
+            case settings.SETTINGS: {
+                SettingsDialog.open();
+                break;
+            }
+            case settings.SYNCHRONIZE: {
+                SyncDialog.open(constants.mainDataTable.databaseManager);
+                break;
+            }
+            case settings.RELOAD: {
+                logger.info("Reloading the database");
+                this.props.parent.loadDatabase(this.props.parent.databaseManager).then(() => {
+                    logger.info("Database reloaded");
+                }).catch(e => {
+                    showErrorDialog("Could not reload the database. Error:", e.stack);
+                    logger.error("Could not reload the database:", e);
+                    constants.mainComponent.gotoStartPage();
+                });
+                break;
+            }
+        }
     }
 
     /**

@@ -125,7 +125,7 @@ $font: 'Open Sans', sans-serif;
 // The sync dialog actions
 .sync-dialog__actions {
   display: grid;
-  grid-template-columns: min-content min-content;
+  grid-template-columns: min-content max-content;
   width: max-content;
   margin-left: auto;
   top: 100%;

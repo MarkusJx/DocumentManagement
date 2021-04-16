@@ -128,6 +128,16 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     }
 
     /**
+     * Load a database
+     *
+     * @param databaseManager the manager of the database to load
+     */
+    public loadDatabase(databaseManager: database.DatabaseManager): Promise<void> {
+        this.setLoading(true);
+        return this.loadFinished(databaseManager);
+    }
+
+    /**
      * Set the database manager and load the root directory from the database
      *
      * @param databaseManager the database manager to load from
