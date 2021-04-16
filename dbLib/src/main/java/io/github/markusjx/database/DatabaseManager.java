@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TransactionRequiredException;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.sql.PreparedStatement;
@@ -116,19 +116,14 @@ public class DatabaseManager {
      * @return the overlapping tags
      */
     public synchronized List<Tag> getAllTagsIn(final List<Tag> tags) {
-        try {
-            List<Tag> result = new ArrayList<>();
-            for (List<Tag> limited : ListUtils.partition(tags, MAX_INPUT_ARRAY_LENGTH)) {
-                result.addAll(manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
-                        .setParameter("tags", limited)
-                        .getResultList());
-            }
-
-            return result;
-        } catch (Exception e) {
-            logger.error("Could not get all tags in both in the database and a list", e);
-            return null;
+        List<Tag> result = new ArrayList<>();
+        for (List<Tag> limited : ListUtils.partition(tags, MAX_INPUT_ARRAY_LENGTH)) {
+            result.addAll(manager.createQuery("select t from Tag as t where t in :tags", Tag.class)
+                    .setParameter("tags", limited)
+                    .getResultList());
         }
+
+        return result;
     }
 
     /**
@@ -139,8 +134,13 @@ public class DatabaseManager {
      */
     public synchronized boolean persistTags(final List<Tag> tags) {
         // Get all tags already in the database
-        List<Tag> toRemove = getAllTagsIn(tags);
-        if (toRemove == null) return false;
+        List<Tag> toRemove;
+        try {
+            toRemove = getAllTagsIn(tags);
+        } catch (Exception e) {
+            logger.error("Could not get all tags in both in the database and a list", e);
+            return false;
+        }
 
         // Remove all tags already in the database
         final List<Tag> ts = ListUtils.removeAll(tags, toRemove, true, true);
@@ -167,19 +167,14 @@ public class DatabaseManager {
      * @return the overlapping properties
      */
     public synchronized List<Property> getAllPropertiesIn(final List<Property> properties) {
-        try {
-            List<Property> result = new ArrayList<>();
-            for (List<Property> limited : ListUtils.partition(properties, MAX_INPUT_ARRAY_LENGTH)) {
-                result.addAll(manager.createQuery("select p from Property p where p in :props", Property.class)
-                        .setParameter("props", limited)
-                        .getResultList());
-            }
-
-            return result;
-        } catch (Exception e) {
-            logger.error("Could not get all properties both in a list and the database", e);
-            return null;
+        List<Property> result = new ArrayList<>();
+        for (List<Property> limited : ListUtils.partition(properties, MAX_INPUT_ARRAY_LENGTH)) {
+            result.addAll(manager.createQuery("select p from Property p where p in :props", Property.class)
+                    .setParameter("props", limited)
+                    .getResultList());
         }
+
+        return result;
     }
 
     /**
@@ -190,8 +185,13 @@ public class DatabaseManager {
      */
     public synchronized boolean persistProperties(final List<Property> properties) {
         // Get all already inserted properties
-        List<Property> toRemove = getAllPropertiesIn(properties);
-        if (toRemove == null) return false;
+        List<Property> toRemove;
+        try {
+            toRemove = getAllPropertiesIn(properties);
+        } catch (Exception e) {
+            logger.error("Could not get all properties both in a list and the database", e);
+            return false;
+        }
 
         // Remove all already persisted properties
         final List<Property> ps = ListUtils.removeAll(properties, toRemove, true, true);
@@ -212,19 +212,14 @@ public class DatabaseManager {
      * @return the overlapping values
      */
     public synchronized List<PropertyValue> getAllPropertyValuesIn(final List<PropertyValue> propertyValues) {
-        try {
-            List<PropertyValue> result = new ArrayList<>();
-            for (List<PropertyValue> limited : ListUtils.partition(propertyValues, MAX_INPUT_ARRAY_LENGTH)) {
-                result.addAll(manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
-                        .setParameter("values", limited)
-                        .getResultList());
-            }
-
-            return result;
-        } catch (Exception e) {
-            logger.error("Could not get all property values both in a list and the database", e);
-            return null;
+        List<PropertyValue> result = new ArrayList<>();
+        for (List<PropertyValue> limited : ListUtils.partition(propertyValues, MAX_INPUT_ARRAY_LENGTH)) {
+            result.addAll(manager.createQuery("select pv from PropertyValue as pv where pv in :values", PropertyValue.class)
+                    .setParameter("values", limited)
+                    .getResultList());
         }
+
+        return result;
     }
 
     /**
@@ -235,8 +230,13 @@ public class DatabaseManager {
      */
     public synchronized boolean persistPropertyValues(final List<PropertyValue> propertyValues) {
         // Get all already existing property values
-        List<PropertyValue> toRemove = getAllPropertyValuesIn(propertyValues);
-        if (toRemove == null) return false;
+        List<PropertyValue> toRemove;
+        try {
+            toRemove = getAllPropertyValuesIn(propertyValues);
+        } catch (Exception e) {
+            logger.error("Could not get all property values both in a list and the database", e);
+            return false;
+        }
 
         // Remove all already existing property values
         final List<PropertyValue> ps = ListUtils.removeAll(propertyValues, toRemove, true, true);
@@ -291,20 +291,15 @@ public class DatabaseManager {
      * @return the overlapping documents
      */
     public synchronized List<Document> getAllDocumentsIn(final List<Document> documents) {
-        try {
-            List<Document> result = new ArrayList<>();
+        List<Document> result = new ArrayList<>();
 
-            for (final List<Document> list : ListUtils.partition(documents, MAX_INPUT_ARRAY_LENGTH)) {
-                result.addAll(manager.createQuery("select d from Document as d where d in :docs", Document.class)
-                        .setParameter("docs", list)
-                        .getResultList());
-            }
-
-            return result;
-        } catch (Exception e) {
-            logger.error("Could not get all documents both in a list and the database", e);
-            return null;
+        for (final List<Document> list : ListUtils.partition(documents, MAX_INPUT_ARRAY_LENGTH)) {
+            result.addAll(manager.createQuery("select d from Document as d where d in :docs", Document.class)
+                    .setParameter("docs", list)
+                    .getResultList());
         }
+
+        return result;
     }
 
     /**
@@ -339,8 +334,13 @@ public class DatabaseManager {
 
         // Get all documents already existing in the database
         // and also existing in the list of documents to persist
-        List<Document> toRemove = getAllDocumentsIn(documents);
-        if (toRemove == null) return false;
+        List<Document> toRemove;
+        try {
+            toRemove = getAllDocumentsIn(documents);
+        } catch (Exception e) {
+            logger.error("Could not get all documents both in a list and the database", e);
+            return false;
+        }
 
         // Remove all documents already existing in the database
         documents = ListUtils.removeAll(documents, toRemove, true, true);
@@ -372,44 +372,8 @@ public class DatabaseManager {
     @SuppressWarnings("unused")
     public synchronized void persistDocument(Document document) {
         manager.getTransaction().begin();
-        manager.persist(document);
+        manager.merge(document);
         manager.getTransaction().commit();
-    }
-
-    /**
-     * Remove all documents that are not in a list
-     *
-     * @param documents the document list to match
-     * @return true if the operation was successful
-     */
-    @SuppressWarnings("unused")
-    public synchronized boolean removeAllDocumentsNotIn(List<Document> documents) {
-        documents = getAllDocumentsIn(documents);
-        logger.info("Removing all documents from the database, but keeping {}", documents.size());
-        List<Document> documentsCopy = new ArrayList<>(documents.size());
-        for (Document document : documents) {
-            documentsCopy.add(new Document(document));
-        }
-
-        try {
-            manager.getTransaction().begin();
-            for (Document doc : documents) manager.remove(doc);
-            manager.flush();
-
-            manager.createQuery("delete from Document").executeUpdate();
-            manager.getTransaction().commit();
-        } catch (Exception e) {
-            logger.error("Could not remove all documents not in a list:", e);
-            return false;
-        }
-
-        if (documents.isEmpty()) {
-            logger.info("There were no documents to keep, therefore, all documents were removed");
-            return true;
-        } else {
-            logger.info("Persisting all documents to keep");
-            return persistDocuments(documentsCopy);
-        }
     }
 
     /**
@@ -419,19 +383,14 @@ public class DatabaseManager {
      * @return the overlapping directories
      */
     public synchronized List<Directory> getAllDirectoriesIn(final List<Directory> directories) {
-        try {
-            List<Directory> result = new ArrayList<>();
-            for (List<Directory> limited : ListUtils.partition(directories, MAX_INPUT_ARRAY_LENGTH)) {
-                result.addAll(manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
-                        .setParameter("dirs", limited)
-                        .getResultList());
-            }
-
-            return result;
-        } catch (Exception e) {
-            logger.error("Could not get all directories both in a list and the database:", e);
-            return null;
+        List<Directory> result = new ArrayList<>();
+        for (List<Directory> limited : ListUtils.partition(directories, MAX_INPUT_ARRAY_LENGTH)) {
+            result.addAll(manager.createQuery("select d from Directory as d where d in :dirs", Directory.class)
+                    .setParameter("dirs", limited)
+                    .getResultList());
         }
+
+        return result;
     }
 
     /**
@@ -441,8 +400,13 @@ public class DatabaseManager {
      * @return true, if the operation was successful
      */
     public synchronized boolean persistDirectories(List<Directory> directories) {
-        List<Directory> toRemove = getAllDirectoriesIn(directories);
-        if (toRemove == null) return false;
+        List<Directory> toRemove;
+        try {
+            toRemove = getAllDirectoriesIn(directories);
+        } catch (Exception e) {
+            logger.error("Could not get all directories both in a list and the database:", e);
+            return false;
+        }
 
         // Remove all already existing directories
         directories = ListUtils.removeAll(directories, toRemove, true, true);
@@ -459,43 +423,6 @@ public class DatabaseManager {
         }
 
         return true;
-    }
-
-    /**
-     * Remove all directories that are not in a list
-     *
-     * @param directories the directories list to match
-     * @return true if the operation was successful
-     */
-    @SuppressWarnings("unused")
-    public synchronized boolean removeAllDirectoriesNotIn(List<Directory> directories) {
-        directories = getAllDirectoriesIn(directories);
-        logger.info("Removing all directories from the database, but keeping {}", directories.size());
-
-        List<Directory> directoriesCopy = new ArrayList<>(directories.size());
-        for (Directory directory : directories) {
-            directoriesCopy.add(new Directory(directory));
-        }
-
-        try {
-            manager.getTransaction().begin();
-            for (Directory dir : directories) manager.remove(dir);
-            manager.flush();
-
-            manager.createQuery("delete from Directory").executeUpdate();
-            manager.getTransaction().commit();
-        } catch (Exception e) {
-            logger.error("Could not remove all directories not in a list:", e);
-            return false;
-        }
-
-        if (directories.isEmpty()) {
-            logger.info("There are no directories to keep, not persisting anything");
-            return true;
-        } else {
-            logger.info("Persisting the directories to keep");
-            return persistDirectories(directoriesCopy);
-        }
     }
 
     /**
@@ -597,6 +524,37 @@ public class DatabaseManager {
     }
 
     /**
+     * Copy all properties and tags from the documents in the database into {@code documents}
+     *
+     * @param documents the list of documents to copy to
+     * @return {@code documents}
+     */
+    private synchronized List<Document> copyPropertiesAndTags(List<Document> documents) {
+        for (Document document : documents) {
+            Document toCopy = manager.getReference(Document.class, document.absolutePath);
+
+            try {
+                if (toCopy.properties != null) {
+                    for (PropertyValueSet pvs : toCopy.properties) {
+                        document.properties.add(new PropertyValueSet(pvs));
+                    }
+                }
+
+                if (toCopy.tags != null) {
+                    for (Tag tag : toCopy.tags) {
+                        document.tags.add(new Tag(tag));
+                    }
+                }
+            } catch (EntityNotFoundException ignored) {
+                // The entity is not in the database,
+                // continue without updating the current document
+            }
+        }
+
+        return documents;
+    }
+
+    /**
      * Synchronize a directory
      *
      * @param directory the directory to sync with
@@ -604,14 +562,37 @@ public class DatabaseManager {
      */
     @SuppressWarnings("unused")
     public synchronized boolean synchronizeDirectory(Directory directory) {
-        final List<Directory> directories = directory.getAllDirectories();
-        final List<Document> documents = directory.getAllDocuments();
-        logger.info("Synchronizing {} documents and {} directories", documents.size(), directories.size());
+        try {
+            final List<Directory> directories = directory.getAllDirectories();
+            final List<Document> documents = copyPropertiesAndTags(directory.getAllDocuments());
+            logger.info("Synchronizing {} documents and {} directories", documents.size(), directories.size());
 
-        return removeAllDocumentsNotIn(documents) &&
-                removeAllDirectoriesNotIn(directories) &&
-                persistDocuments(documents) &&
-                persistDirectories(directories);
+            this.clear();
+
+            manager.getTransaction().begin();
+            logger.info("Removing all documents from the database");
+            manager.createQuery("delete from Document").executeUpdate();
+
+            logger.info("Removing all directories from the database");
+            manager.createQuery("delete from Directory").executeUpdate();
+            manager.getTransaction().commit();
+
+            logger.info("Successfully removed all directories from the database");
+            logger.info("Persisting all documents and directories");
+
+            if (persistDocuments(documents) && persistDirectories(directories)) {
+                logger.info("Done persisting all documents and directories");
+                this.clear();
+                logger.info("Done");
+                return true;
+            } else {
+                logger.error("Could not persist the documents or the directories");
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Could not synchronize the directory:", e);
+            return false;
+        }
     }
 
     /**
@@ -832,17 +813,19 @@ public class DatabaseManager {
     }
 
     /**
+     * Clear the entity manager
+     */
+    public synchronized void clear() {
+        logger.info("Clearing the entity manager");
+        this.manager.clear();
+    }
+
+    /**
      * Close the database connection
      */
     @SuppressWarnings("unused")
     public synchronized void close() {
         logger.info("Closing the database manager");
-        try {
-            this.manager.flush();
-        } catch (TransactionRequiredException ignored) {
-            logger.info("Could not flush the EntityManager as there is no transaction in progress");
-        }
-
         this.manager.clear();
         this.manager.close();
     }

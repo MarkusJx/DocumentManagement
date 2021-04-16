@@ -1,0 +1,118 @@
+// The done dialog width
+$width: 375px;
+// The done dialog height
+$height: 170px;
+// The done dialog max height
+$maxHeight: 90vh;
+// The done dialog max width
+$maxWidth: 90vw;
+// The duration it takes to show or hide the dialog
+$showHideDuration: 0.125s;
+// The scale to start increasing from when showing the dialog
+$scaleFrom: 0.8;
+
+@import "app/styles/shared";
+
+.done-dialog__background {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  background-color: #2d2d2d6e;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  opacity: 0;
+  display: none;
+
+  // The hidden done dialog background
+  &.hidden {
+    display: block;
+    // Hide the done dialog background
+    @include inline-animation($showHideDuration) {
+      0% {
+        display: block;
+        opacity: 1;
+      }
+      99% {
+        display: block;
+        opacity: 0;
+      }
+      100% {
+        display: none;
+        opacity: 0;
+      }
+    }
+
+    // The hidden sync dialog
+    .done-dialog__dialog {
+      // Hide the sync dialog
+      @include inline-animation($showHideDuration) {
+        0% {
+          transform: scale(1, 1);
+        }
+        100% {
+          transform: scale(#{$scaleFrom}, #{$scaleFrom});
+        }
+      }
+    }
+  }
+
+  // The visible sync dialog background
+  &.visible {
+    opacity: 1;
+    display: block;
+    // Show the sync dialog background
+    @include inline-animation($showHideDuration) {
+      0% {
+        display: none;
+        opacity: 0;
+      }
+      1% {
+        display: block;
+        opacity: 0;
+      }
+      100% {
+        display: block;
+        opacity: 1;
+      }
+    }
+
+    // The visible sync dialog
+    .done-dialog__dialog {
+      // Show the sync dialog
+      @include inline-animation($showHideDuration) {
+        0% {
+          transform: scale(#{$scaleFrom}, #{$scaleFrom});
+        }
+        100% {
+          transform: scale(1, 1);
+        }
+      }
+    }
+  }
+}
+
+.done-dialog__dialog {
+  background: white;
+  width: $width;
+  height: $height;
+  max-width: $maxWidth;
+  max-height: $maxHeight;
+  border-radius: 6px;
+  top: calc(50% - calc(min(#{$height}, #{$maxHeight}) / 2));
+  left: calc(50% - calc(min(#{$width}, #{$maxWidth}) / 2));
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  --mdc-theme-primary: blue;
+  position: absolute;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: min-content auto min-content;
+}
+
+.done-dialog__text {
+  font-family: $font;
+  font-weight: 300;
+  width: max-content;
+  margin: auto;
+  font-size: 24px;
+}

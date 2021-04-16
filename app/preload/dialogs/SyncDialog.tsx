@@ -7,6 +7,7 @@ import {ipcRenderer} from "electron";
 import {getLogger} from "log4js";
 import {showErrorDialog} from "../elements/ErrorDialog";
 import constants from "../util/constants";
+import DoneDialog from "./DoneDialog";
 
 // Import the css associated with this file
 util.importCss("styles/dialogs/SyncDialog.css");
@@ -525,6 +526,10 @@ class SyncDialogElement extends React.Component {
                     constants.mainComponent.gotoStartPage();
                 });
                 this.hide();
+                setTimeout(() => {
+                    DoneDialog.show("Database successfully updated");
+                    setTimeout(() => DoneDialog.hide(), 2000);
+                }, 250);
             } else {
                 logger.error("DatabaseManager.synchronizeDirectory returned false");
                 showErrorDialog("Could not commit the changes to the database.");

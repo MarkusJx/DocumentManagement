@@ -1420,6 +1420,13 @@ export namespace database {
         }
 
         /**
+         * Clear the entity manager
+         */
+        public async clear(): Promise<void> {
+            await java_callMethod(this.impl, "clear");
+        }
+
+        /**
          * Close the database connection
          */
         public async close(): Promise<void> {

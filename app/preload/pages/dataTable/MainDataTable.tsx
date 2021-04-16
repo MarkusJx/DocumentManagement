@@ -84,7 +84,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * Whether to show a progress bar on load
      * @private
      */
-    private readonly showProgress: boolean;
+    private showProgress: boolean;
 
     /**
      * Create the main data table
@@ -164,11 +164,11 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      */
     public async startSearch(): Promise<void> {
         try {
-            constants.mainDataTable.setLoading(true);
+            this.setLoading(true);
             const filter: database.DocumentFilter = await this.searchBox.getFilter();
             const documents: database.Document[] = await this.databaseManager.getDocumentsBy(filter, 0);
-            await constants.mainDataTable.setSearchResults(documents, filter);
-            constants.mainDataTable.setLoading(false);
+            await this.setSearchResults(documents, filter);
+            this.setLoading(false);
         } catch (e) {
             logger.error("An error occurred while searching for documents:", e);
             showErrorDialog("Could not start the search. Error:", e.message);
@@ -210,6 +210,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         constants.searchBox.startButtonEnabled = !loading
         this.dataTableElements = this.dataTableElements.filter(e => e != null);
         this.topAppBar.buttonsEnabled = !loading;
+        this.showProgress = loading;
 
         if (loading) {
             this.dataTable.dataTable.showProgress();
@@ -262,7 +263,19 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     public componentDidMount(): void {
         if (this.showProgress) {
             this.topAppBar.buttonsEnabled = false;
-            this.dataTable.dataTable.showProgress();
+
+            // Sleep for some time before showing
+            // the progress bar the first time.
+            // If there was no sleep before showing
+            // the progress bar, it would be in the
+            // wrong place, probably because this event
+            // seems to fire before everything
+            // is actually properly mounted.
+            setTimeout(() => {
+                if (this.showProgress) {
+                    this.dataTable.dataTable.showProgress();
+                }
+            }, 50);
         } else {
             this.topAppBar.buttonsEnabled = true;
             this.dataTable.dataTable.hideProgress();

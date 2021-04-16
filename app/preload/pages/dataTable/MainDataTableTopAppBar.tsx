@@ -143,13 +143,21 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
             }
             case settings.RELOAD: {
                 logger.info("Reloading the database");
-                this.props.parent.loadDatabase(this.props.parent.databaseManager).then(() => {
-                    logger.info("Database reloaded");
+                this.props.parent.setLoading(true);
+                this.props.parent.databaseManager.clear().then(() => {
+                    this.props.parent.loadDatabase(this.props.parent.databaseManager).then(() => {
+                        logger.info("Database reloaded");
+                    }).catch(e => {
+                        showErrorDialog("Could not reload the database. Error:", e.stack);
+                        logger.error("Could not reload the database:", e);
+                        constants.mainComponent.gotoStartPage();
+                    });
                 }).catch(e => {
                     showErrorDialog("Could not reload the database. Error:", e.stack);
-                    logger.error("Could not reload the database:", e);
+                    logger.error("Could not clear the entity manager:", e);
                     constants.mainComponent.gotoStartPage();
                 });
+
                 break;
             }
         }
