@@ -181,9 +181,10 @@ public class DatabaseManager {
      * Persist a list of properties
      *
      * @param properties the properties to persist
+     * @param merge      whether to merge rather than persist
      * @return true, if the operation was successful
      */
-    public synchronized boolean persistProperties(final List<Property> properties) {
+    public synchronized boolean persistProperties(final List<Property> properties, boolean merge) {
         // Get all already inserted properties
         List<Property> toRemove;
         try {
@@ -199,7 +200,13 @@ public class DatabaseManager {
 
         // Persist all properties
         manager.getTransaction().begin();
-        for (Property p : ps) manager.persist(p);
+        for (Property p : ps) {
+            if (merge) {
+                manager.merge(p);
+            } else {
+                manager.persist(p);
+            }
+        }
         manager.getTransaction().commit();
 
         return true;
@@ -281,7 +288,7 @@ public class DatabaseManager {
             properties.add(new Property(e.getKey(), e.getValue()));
         }
 
-        return persistPropertyValues(propertyValues) && persistProperties(properties);
+        return persistPropertyValues(propertyValues) && persistProperties(properties, false);
     }
 
     /**
@@ -309,27 +316,27 @@ public class DatabaseManager {
      * @return true, if the operation was successful
      */
     public synchronized boolean persistDocuments(List<Document> documents) {
+        return persistDocuments(documents, false);
+    }
+
+    /**
+     * Persist a list of documents
+     *
+     * @param documents the documents to persist
+     * @param merge     whether to merge rather than persist
+     * @return true, if the operation was successful
+     */
+    public synchronized boolean persistDocuments(List<Document> documents, boolean merge) {
         List<Tag> tags = new ArrayList<>();
         List<Property> properties = new ArrayList<>();
         List<PropertyValue> propertyValues = new ArrayList<>();
 
         // Get all tags, properties and property values from the documents
-        for (Document d : documents) {
-            if (d.properties != null) {
-                for (PropertyValueSet pvs : d.properties) {
-                    properties.add(pvs.property);
-                    propertyValues.add(pvs.propertyValue);
-                }
-            }
-
-            if (d.tags != null) {
-                tags.addAll(d.tags);
-            }
-        }
+        DatabaseUtils.copyPropsAndTags(documents, tags, properties, propertyValues);
 
         // Persist the tags, properties and property values
         if (!persistTags(tags)) return false;
-        if (!persistProperties(properties)) return false;
+        if (!persistProperties(properties, merge)) return false;
         if (!persistPropertyValues(propertyValues)) return false;
 
         // Get all documents already existing in the database
@@ -352,7 +359,13 @@ public class DatabaseManager {
         // Start a transaction and persist all documents
         try {
             manager.getTransaction().begin();
-            for (Document d : documents) manager.persist(d);
+            for (Document d : documents) {
+                if (merge) {
+                    manager.merge(d);
+                } else {
+                    manager.persist(d);
+                }
+            }
             manager.flush();
             manager.getTransaction().commit();
         } catch (Exception e) {
@@ -400,6 +413,17 @@ public class DatabaseManager {
      * @return true, if the operation was successful
      */
     public synchronized boolean persistDirectories(List<Directory> directories) {
+        return this.persistDirectories(directories, false);
+    }
+
+    /**
+     * Persist a list of Directories
+     *
+     * @param directories the directories to persist
+     * @param copy        whether to copy the directories before persisting
+     * @return true, if the operation was successful
+     */
+    public synchronized boolean persistDirectories(List<Directory> directories, boolean copy) {
         List<Directory> toRemove;
         try {
             toRemove = getAllDirectoriesIn(directories);
@@ -414,11 +438,17 @@ public class DatabaseManager {
         // Begin a transaction and persist the directories
         try {
             manager.getTransaction().begin();
-            for (Directory d : directories) manager.persist(d);
+            for (Directory d : directories) {
+                if (copy) {
+                    manager.persist(new Directory(d));
+                } else {
+                    manager.persist(d);
+                }
+            }
             manager.flush();
             manager.getTransaction().commit();
         } catch (Exception e) {
-            logger.error("Could not persist the documents", e);
+            logger.error("Could not persist the directories", e);
             return false;
         }
 
@@ -595,6 +625,44 @@ public class DatabaseManager {
             }
         } catch (Exception e) {
             logger.error("Could not synchronize the directory:", e);
+            return false;
+        }
+    }
+
+    /**
+     * Copy the database of this database manager to another database
+     *
+     * @param toCopyTo the database manager managing the database to copy to
+     * @return true if the operation was successful
+     */
+    @SuppressWarnings("unused")
+    public synchronized boolean copyDatabaseTo(final DatabaseManager toCopyTo) {
+        try {
+            logger.info("Copying the database to another database");
+            boolean ok = toCopyTo.persistDatabaseInfo(this.getDatabaseInfo());
+            if (!ok) {
+                logger.error("Could not persist the database info");
+                return false;
+            }
+
+            ok = toCopyTo.persistDocuments(manager.createQuery("select d from Document as d", Document.class)
+                    .getResultList(), true);
+            if (!ok) {
+                logger.error("Could not persist the documents");
+                return false;
+            }
+
+            ok = toCopyTo.persistDirectories(manager.createQuery("select d from Directory as d", Directory.class)
+                    .getResultList(), true);
+            if (!ok) {
+                logger.error("Could not persist the directories");
+                return false;
+            } else {
+                logger.info("Successfully copied the database");
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("Could not copy the database:", e);
             return false;
         }
     }

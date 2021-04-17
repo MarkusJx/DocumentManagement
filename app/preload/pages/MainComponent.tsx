@@ -62,15 +62,21 @@ export default class MainComponent extends React.Component<{}, MainComponentStat
         };
 
         // Load the most recently used database if requested (and possible)
-        if (Recents.settings.loadRecentOnStartup && Recents.mostRecentId) {
+        if (Recents.settings.loadRecentOnStartup && Recents.mostRecentId != null) {
             logger.info("Loading the most recently used database");
             this.startScreenButtonsEnabled = false;
             Recents.getMostRecent().then((setting: RecentDatabase) => {
-                this.onLoad(setting.setting).then().catch((e) => {
-                    logger.error("Could not load the most recent database", e);
-                    showErrorDialog("Could not load the most recent database", e.message);
+                if (setting == null) {
+                    logger.info("The setting was null, not loading the most recently used database");
+                    this.startScreenButtonsEnabled = true;
                     this.gotoStartPage();
-                });
+                } else {
+                    this.onLoad(setting.setting).then().catch((e) => {
+                        logger.error("Could not load the most recent database", e);
+                        showErrorDialog("Could not load the most recent database", e.message);
+                        this.gotoStartPage();
+                    });
+                }
             }).catch((e) => {
                 logger.error("Could not load the most recent database", e);
                 showErrorDialog("Could not load the most recent database", e.message);

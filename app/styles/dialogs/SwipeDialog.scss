@@ -1,14 +1,14 @@
-// The sync dialog width
+// The swipe dialog width
 $width: 500px;
-// The sync dialog height
+// The swipe dialog height
 $height: 600px;
-// The sync dialog max height
+// The swipe dialog max height
 $maxHeight: 90vh;
-// The sync dialog max width
+// The swipe dialog max width
 $maxWidth: 90vw;
-// The sync dialog title bar height
+// The swipe dialog title bar height
 $titleBarHeight: 46px;
-// The scale to start increasing from when showing the dialog
+// The swipe to start increasing from when showing the dialog
 $scaleFrom: 0.8;
 // The duration it takes to show or hide the dialog
 $showHideDuration: 0.125s;
@@ -16,14 +16,14 @@ $showHideDuration: 0.125s;
 @import "app/styles/shared";
 
 // The sync dialog background
-.sync-dialog__background {
+.swipe-dialog__background {
   width: 100vw;
   height: 100vh;
   position: fixed;
   background-color: #2d2d2d6e;
   top: 0;
   left: 0;
-  z-index: 999;
+  z-index: 6;
   opacity: 0;
   display: none;
 
@@ -47,7 +47,7 @@ $showHideDuration: 0.125s;
     }
 
     // The hidden sync dialog
-    .sync-dialog__dialog {
+    .swipe-dialog__dialog {
       // Hide the sync dialog
       @include inline-animation($showHideDuration) {
         0% {
@@ -60,7 +60,7 @@ $showHideDuration: 0.125s;
     }
   }
 
-  // The visible sync dialog background
+  // The visible swipe dialog background
   &.visible {
     opacity: 1;
     display: block;
@@ -81,7 +81,7 @@ $showHideDuration: 0.125s;
     }
 
     // The visible sync dialog
-    .sync-dialog__dialog {
+    .swipe-dialog__dialog {
       // Show the sync dialog
       @include inline-animation($showHideDuration) {
         0% {
@@ -95,8 +95,8 @@ $showHideDuration: 0.125s;
   }
 }
 
-// The sync dialog
-.sync-dialog__dialog {
+// The swipe dialog
+.swipe-dialog__dialog {
   background: white;
   width: $width;
   height: $height;
@@ -113,15 +113,15 @@ $showHideDuration: 0.125s;
   grid-template-rows: min-content auto min-content;
 }
 
-// The sync dialog top bar
-.sync-dialog__dialog-top-bar {
+// The swipe dialog top bar
+.swipe-dialog__dialog-top-bar {
   width: 100%;
   height: 48px;
   background-color: #214456;
 }
 
-// The sync dialog actions
-.sync-dialog__actions {
+// The swipe dialog actions
+.swipe-dialog__actions {
   display: grid;
   grid-template-columns: min-content max-content;
   width: max-content;
@@ -132,8 +132,8 @@ $showHideDuration: 0.125s;
   margin-bottom: 20px;
 }
 
-// The sync dialog title
-.sync-dialog__title {
+// The swipe dialog title
+.swipe-dialog__title {
   font-family: $font;
   color: white;
   margin: auto;
@@ -142,16 +142,16 @@ $showHideDuration: 0.125s;
   font-weight: 300;
 }
 
-// The sync dialog content container
-.sync-dialog__content {
+// The swipe dialog content container
+.swipe-dialog__content {
   width: 100%;
   height: 100%;
   position: relative;
 }
 
-// A sync dialog element that
+// A swipe dialog element that
 // can be swiped to the left
-.sync-dialog__swipe-element {
+.swipe-dialog__swipe-element {
   $dialogContentPadding: 25px;
   $animationDuration: 0.5s;
   $swipeMargin: -110%;

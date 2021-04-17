@@ -244,12 +244,15 @@ export class Recents {
      * Add a setting to the settings
      *
      * @param value the setting to add
+     * @param makeMostRecent whether to make this the most recent setting
      * @return the generated id
      */
-    public static async add(value: DatabaseSetting): Promise<string> {
+    public static async add(value: DatabaseSetting, makeMostRecent: boolean = true): Promise<string> {
         const retrievedSetting: string = await Recents.containsSetting(value);
         if (retrievedSetting) {
-            Recents.mostRecentId = retrievedSetting;
+            if (makeMostRecent) {
+                Recents.mostRecentId = retrievedSetting;
+            }
             return retrievedSetting;
         }
 
@@ -271,7 +274,10 @@ export class Recents {
             setting: value
         });
 
-        Recents.mostRecentId = id;
+        if (makeMostRecent) {
+            Recents.mostRecentId = id;
+        }
+
         Recents.recents = recents;
         return id;
     }

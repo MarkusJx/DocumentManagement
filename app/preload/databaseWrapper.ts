@@ -1418,6 +1418,16 @@ export namespace database {
         }
 
         /**
+         * Copy the database of this database manager to another database
+         *
+         * @param toCopyTo the database manager managing the database to copy to
+         * @return true if the operation was successful
+         */
+        public copyDatabaseTo(toCopyTo: DatabaseManager): Promise<boolean> {
+            return java_callMethod(this.impl, "copyDatabaseTo", toCopyTo.impl);
+        }
+
+        /**
          * Clear the entity manager
          */
         public async clear(): Promise<void> {
