@@ -43,9 +43,9 @@ $scaleFrom: 0.8;
       }
     }
 
-    // The hidden sync dialog
+    // The hidden done dialog
     .done-dialog__dialog {
-      // Hide the sync dialog
+      // Hide the done dialog
       @include inline-animation($showHideDuration) {
         0% {
           transform: scale(1, 1);
@@ -57,11 +57,11 @@ $scaleFrom: 0.8;
     }
   }
 
-  // The visible sync dialog background
+  // The visible done dialog background
   &.visible {
     opacity: 1;
     display: block;
-    // Show the sync dialog background
+    // Show the done dialog background
     @include inline-animation($showHideDuration) {
       0% {
         display: none;
@@ -77,9 +77,9 @@ $scaleFrom: 0.8;
       }
     }
 
-    // The visible sync dialog
+    // The visible done dialog
     .done-dialog__dialog {
-      // Show the sync dialog
+      // Show the done dialog
       @include inline-animation($showHideDuration) {
         0% {
           transform: scale(#{$scaleFrom}, #{$scaleFrom});
@@ -92,6 +92,7 @@ $scaleFrom: 0.8;
   }
 }
 
+// The actual done dialog content
 .done-dialog__dialog {
   background: white;
   width: $width;
@@ -109,6 +110,7 @@ $scaleFrom: 0.8;
   grid-template-rows: min-content auto min-content;
 }
 
+// The done dialog text
 .done-dialog__text {
   font-family: $font;
   font-weight: 300;

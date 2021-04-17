@@ -3,6 +3,7 @@ import {promisify} from "util";
 import * as fs from "fs";
 import path from "path";
 import {getLogger} from "log4js";
+import constants from "./util/constants";
 
 const JAR_NAME = 'dbLib-1.0-SNAPSHOT.jar';
 const logger = getLogger();
@@ -1211,22 +1212,6 @@ export namespace database {
         }
 
         /**
-         * Create a document
-         *
-         * @param filename the file name
-         * @param _path the document path
-         * @param properties the document properties
-         * @param creationDate the document creation date
-         * @param tagNames the tag names
-         */
-        public async createDocument(filename: string, _path: string, properties: PropertyMap, creationDate: Date, ...tagNames: string[]): Promise<void> {
-            await java_callMethod(this.impl, "createDocument", filename, _path,
-                (await properties.toJavaChainedHashMap()).impl,
-                await dateToJavaLocalDate(creationDate),
-                stringToJavaArray(tagNames));
-        }
-
-        /**
          * Get documents by a filter
          *
          * @param filter the document filter
@@ -1235,11 +1220,17 @@ export namespace database {
          */
         public async getDocumentsBy(filter: DocumentFilter, offset: number): Promise<Document[]> {
             const docList: any = await java_callMethod(this.impl, "getDocumentsBy", filter.impl, offset);
+            let sourcePath: string;
+            if (constants.activeSetting != null && constants.activeSetting.localPath != null) {
+                sourcePath = constants.activeSetting.localPath;
+            } else {
+                sourcePath = this.databaseInfo.sourcePath;
+            }
 
             const documents: Document[] = [];
             for (let i: number = 0; i < await getListSize(docList); i++) {
                 const listEl: any = await getListElementAt(docList, i);
-                documents.push(await Document.fromJavaDocument(listEl, this.databaseInfo.sourcePath, this));
+                documents.push(await Document.fromJavaDocument(listEl, sourcePath, this));
             }
 
             return documents;
@@ -1291,10 +1282,11 @@ export namespace database {
          * Synchronize a directory
          *
          * @param directory the directory to sync with
+         * @param sourcePath the path to the source directory
          * @return true if the operation was successful
          */
-        public async synchronizeDirectory(directory: DirectoryProxy): Promise<boolean> {
-            return await java_callMethod(this.impl, "synchronizeDirectory", directory.impl);
+        public async synchronizeDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean> {
+            return await java_callMethod(this.impl, "synchronizeDirectory", directory.impl, sourcePath);
         }
 
         /**
@@ -1305,9 +1297,15 @@ export namespace database {
          */
         public async getDirectory(_path: string): Promise<Directory> {
             const impl: any = await java_callMethod(this.impl, "getDirectory", _path);
+            let sourcePath: string;
+            if (constants.activeSetting != null && constants.activeSetting.localPath != null) {
+                sourcePath = constants.activeSetting.localPath;
+            } else {
+                sourcePath = (await this.getDatabaseInfo()).sourcePath;
+            }
 
             if (impl != null) {
-                return Directory.fromJavaDirectory(impl, (await this.getDatabaseInfo()).sourcePath, this);
+                return Directory.fromJavaDirectory(impl, sourcePath, this);
             } else {
                 return null;
             }

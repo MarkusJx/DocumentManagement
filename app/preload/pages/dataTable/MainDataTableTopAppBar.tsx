@@ -7,6 +7,8 @@ import SettingsDialog from "../../settings/SettingsDialog";
 import SyncDialog from "../../dialogs/SyncDialog";
 import {getLogger} from "log4js";
 import {showErrorDialog} from "../../elements/ErrorDialog";
+import Snackbars from "../../util/Snackbars";
+import RootDirSelector from "../../dialogs/RootDirSelector";
 
 const logger = getLogger();
 
@@ -32,7 +34,9 @@ interface MainDataTableTopAppBarState {
 enum settings {
     SETTINGS = "Settings",
     SYNCHRONIZE = "Synchronize",
-    RELOAD = "Reload"
+    RELOAD = "Reload",
+    SET_ROOT_DIR = "Set root directory",
+    EXIT = "Exit"
 }
 
 /**
@@ -95,7 +99,9 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
         const menuOptions: string[] = [
             settings.SETTINGS,
             settings.SYNCHRONIZE,
-            settings.RELOAD
+            settings.SET_ROOT_DIR,
+            settings.RELOAD,
+            settings.EXIT
         ];
 
         return (
@@ -138,15 +144,17 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                 break;
             }
             case settings.SYNCHRONIZE: {
-                SyncDialog.open(constants.mainDataTable.databaseManager);
+                SyncDialog.open();
                 break;
             }
             case settings.RELOAD: {
                 logger.info("Reloading the database");
                 this.props.parent.setLoading(true);
-                this.props.parent.databaseManager.clear().then(() => {
-                    this.props.parent.loadDatabase(this.props.parent.databaseManager).then(() => {
+                constants.databaseManager.clear().then(() => {
+                    this.props.parent.loadDatabase().then(() => {
                         logger.info("Database reloaded");
+                        Snackbars.genericSnackbar.snackbarText = "Database reloaded";
+                        Snackbars.genericSnackbar.open();
                     }).catch(e => {
                         showErrorDialog("Could not reload the database. Error:", e.stack);
                         logger.error("Could not reload the database:", e);
@@ -158,6 +166,14 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                     constants.mainComponent.gotoStartPage();
                 });
 
+                break;
+            }
+            case settings.EXIT: {
+                constants.mainComponent.gotoStartPage();
+                break;
+            }
+            case settings.SET_ROOT_DIR: {
+                RootDirSelector.open();
                 break;
             }
         }

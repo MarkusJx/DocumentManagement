@@ -514,6 +514,7 @@ export class Dialog extends React.Component<DialogProps> {
      * The mdc dialog
      */
     public dialog: MDCDialog;
+
     /**
      * The dialog element
      * @private

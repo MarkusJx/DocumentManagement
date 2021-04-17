@@ -8,6 +8,7 @@ import {getLogger} from "log4js";
 import {showErrorDialog} from "../elements/ErrorDialog";
 import constants from "../util/constants";
 import DoneDialog from "./DoneDialog";
+import DirectorySelector from "../elements/DirectorySelector";
 
 // Import the css associated with this file
 util.importCss("styles/dialogs/SyncDialog.css");
@@ -25,11 +26,9 @@ let instance: SyncDialogElement = null;
 export default class SyncDialog {
     /**
      * Open the sync dialog
-     *
-     * @param databaseManager the manager of the database to update
      */
-    public static open(databaseManager: database.DatabaseManager): void {
-        instance.show(databaseManager);
+    public static open(): void {
+        instance.show();
     }
 }
 
@@ -82,58 +81,6 @@ class SyncDialogTitle extends React.Component<SyncDialogTitleProps, SyncDialogTi
             <h1 className="sync-dialog__title">
                 {this.state.title}
             </h1>
-        );
-    }
-}
-
-/**
- * The sync dialog path element state
- */
-interface SyncDialogPathState {
-    // The path to display
-    path: string;
-}
-
-/**
- * The sync dialog path element
- */
-class SyncDialogPath extends React.Component<{}, SyncDialogPathState> {
-    /**
-     * Create a sync dialog path element
-     *
-     * @param props the properties
-     */
-    public constructor(props: {}) {
-        super(props);
-
-        this.state = {
-            path: null
-        };
-    }
-
-    /**
-     * Get the shown path
-     */
-    public get path(): string {
-        return this.state.path;
-    }
-
-    /**
-     * Set the path to display
-     *
-     * @param path the new path
-     */
-    public set path(path: string) {
-        this.setState({
-            path: path
-        });
-    }
-
-    public render(): React.ReactNode {
-        return (
-            <span className="start-scan-path">
-                {this.state.path == null ? "none" : this.state.path}
-            </span>
         );
     }
 }
@@ -248,12 +195,6 @@ class SyncDialogElement extends React.Component {
     private element: HTMLElement = null;
 
     /**
-     * The manager of the database to synchronize
-     * @private
-     */
-    private databaseManager: database.DatabaseManager = null;
-
-    /**
      * The current page number
      * @private
      */
@@ -293,7 +234,7 @@ class SyncDialogElement extends React.Component {
      * The selected directory to sync path
      * @private
      */
-    private selectedPath: SyncDialogPath = null;
+    private selectedPath: DirectorySelector = null;
 
     /**
      * The number of element to remove element
@@ -363,7 +304,7 @@ class SyncDialogElement extends React.Component {
                                 <span className="after-space">
                                     Selected directory:
                                 </span>
-                                <SyncDialogPath ref={e => this.selectedPath = e}/>
+                                <DirectorySelector ref={e => this.selectedPath = e}/>
                             </p>
 
                             <div className="centered">
@@ -412,11 +353,8 @@ class SyncDialogElement extends React.Component {
 
     /**
      * Show the sync dialog
-     *
-     * @param databaseManager the manager of the database to update
      */
-    public show(databaseManager: database.DatabaseManager): void {
-        this.databaseManager = databaseManager;
+    public show(): void {
         this.contentPages.forEach(e => e.classList.remove("centered", "left"));
         this.contentPages[0].classList.add("start-page");
         this.currentPage = 0;
@@ -478,7 +416,13 @@ class SyncDialogElement extends React.Component {
                 break;
             }
             case 4: {
-                this.synchronize();
+                this.synchronize().then(() => {
+                    logger.info("The sync operation was successful");
+                }).catch(e => {
+                    logger.error("Could not synchronize the database:", e);
+                    showErrorDialog("Could not commit the changes to the database. Error:", e.stack);
+                    this.hide();
+                });
                 break;
             }
         }
@@ -495,8 +439,8 @@ class SyncDialogElement extends React.Component {
         const scanner: FileScanner = new FileScanner(this.selectedPath.path);
         scanner.scan().then(async (directory: database.DirectoryProxy) => {
             this.updatedDirectory = directory;
-            this.elementsToRemove.directories = Number(await this.databaseManager.getDirectoriesNotIn(directory));
-            this.elementsToRemove.documents = Number(await this.databaseManager.getDocumentsNotIn(directory));
+            this.elementsToRemove.directories = Number(await constants.databaseManager.getDirectoriesNotIn(directory));
+            this.elementsToRemove.documents = Number(await constants.databaseManager.getDocumentsNotIn(directory));
             this.continueButton.enabled = true;
             this.cancelButton.enabled = true;
             this.progressBar.progressBar.determinate = true;
@@ -512,34 +456,24 @@ class SyncDialogElement extends React.Component {
      * Synchronize the database with the selected directory
      * @private
      */
-    private synchronize(): void {
+    private async synchronize(): Promise<void> {
         this.continueButton.enabled = false;
         this.cancelButton.enabled = false;
         this.progressBar.progressBar.determinate = false;
-        this.databaseManager.synchronizeDirectory(this.updatedDirectory).then((result: boolean) => {
-            if (result) {
-                constants.mainDataTable.loadDatabase(this.databaseManager).then(() => {
-                    logger.debug("Main data table loaded");
-                }).catch(e => {
-                    logger.error("Could not load the database:", e);
-                    showErrorDialog("Could not load the database. Error:", e.stack);
-                    constants.mainComponent.gotoStartPage();
-                });
-                this.hide();
-                setTimeout(() => {
-                    DoneDialog.show("Database successfully updated");
-                    setTimeout(() => DoneDialog.hide(), 2000);
-                }, 250);
-            } else {
-                logger.error("DatabaseManager.synchronizeDirectory returned false");
-                showErrorDialog("Could not commit the changes to the database.");
-                this.hide();
-            }
-        }).catch(e => {
-            logger.error("Could not synchronize the database:", e);
-            showErrorDialog("Could not commit the changes to the database. Error:", e.stack);
+        const couldSync = await constants.databaseManager.synchronizeDirectory(this.updatedDirectory, this.selectedPath.path);
+        if (couldSync) {
+            await constants.mainDataTable.loadDatabase();
+            logger.debug("Main data table loaded");
             this.hide();
-        });
+
+            await util.sleep(250);
+            DoneDialog.show("Database successfully updated");
+
+            await util.sleep(2000);
+            DoneDialog.hide();
+        } else {
+            throw new Error("DatabaseManager.synchronizeDirectory returned false");
+        }
     }
 
     /**

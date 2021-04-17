@@ -139,4 +139,30 @@ export default class util {
             document.head.appendChild(element);
         });
     }
+
+    /**
+     * Sleep for some time
+     *
+     * @param ms the number of milliseconds to sleep
+     */
+    public static sleep(ms: number): Promise<void> {
+        return new Promise<void>((resolve) => {
+            setTimeout(resolve, ms);
+        });
+    }
+
+    /**
+     * Generate a unique id.
+     * Source: https://learnersbucket.com/examples/javascript/unique-id-generator-in-javascript/
+     *
+     * @returns the uid in the format 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+     */
+    public static generateUid(): string {
+        const s4 = () => {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    }
 }

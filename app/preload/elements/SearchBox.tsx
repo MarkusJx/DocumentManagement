@@ -14,8 +14,6 @@ const logger = getLogger();
  * The search box properties
  */
 export interface SearchBoxProps {
-    // The database manager
-    databaseManager: database.DatabaseManager;
     // The function to be called when the search is started
     searchStart: () => void;
 }
@@ -73,12 +71,6 @@ export class SearchBox extends React.Component<SearchBoxProps> {
     private dateRangeTextField: DateRangeTextField;
 
     /**
-     * The database manager
-     * @private
-     */
-    private readonly databaseManager: database.DatabaseManager;
-
-    /**
      * The search start button
      * @private
      */
@@ -98,7 +90,6 @@ export class SearchBox extends React.Component<SearchBoxProps> {
     public constructor(props: SearchBoxProps) {
         super(props);
 
-        this.databaseManager = props.databaseManager;
         this.searchStart = props.searchStart.bind(this);
 
         this.filenameTextArea = null;
@@ -111,8 +102,6 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         this.startButton = null;
         this.container = null;
 
-        this.tagExists = this.tagExists.bind(this);
-        this.getTagOptions = this.getTagOptions.bind(this);
         this.showHideMainContent = this.showHideMainContent.bind(this);
     }
 
@@ -157,6 +146,77 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         }
 
         return await database.DocumentFilter.create(...filters);
+    }
+
+    /**
+     * Check if a tag exists
+     *
+     * @param value the tag to check
+     * @return true if the tag exists
+     * @private
+     */
+    private static tagExists(value: string): boolean {
+        try {
+            return constants.databaseManager.tagExists(value);
+        } catch (e) {
+            logger.error("An error occurred while checking if a tag exists:", e);
+            return false;
+        }
+    }
+
+    public componentDidMount(): void {
+        constants.searchBox = this;
+    }
+
+    public componentWillUnmount(): void {
+        constants.searchBox = null;
+    }
+
+    /**
+     * Show or hide the main content
+     */
+    public showHideMainContent(): void {
+        this.mainContentShown = !this.mainContentShown;
+        if (this.mainContentShown) {
+            this.mainContentElement.style.height = "unset";
+            this.mainContentElement.style.marginTop = "20px";
+            this.mainContentElement.style.display = "grid";
+            this.container.style.padding = '0 20px 20px 20px';
+        } else {
+            this.mainContentElement.style.height = "0";
+            this.mainContentElement.style.marginTop = "0";
+            this.mainContentElement.style.display = "none";
+            this.container.style.padding = '0';
+            this.clear();
+        }
+    }
+
+    /**
+     * Clear all fields
+     * @private
+     */
+    private clear(): void {
+        this.filenameTextArea.clear();
+        this.exact_match_checkbox.checked = false;
+        this.propertySetter.clear();
+        this.chipTextArea.clear();
+        this.dateRangeTextField.value = null;
+    }
+
+    /**
+     * Get the tag auto complete options
+     *
+     * @param value the current value
+     * @return the tag auto complete options
+     * @private
+     */
+    private static getTagOptions(value: string): string[] {
+        try {
+            return constants.databaseManager.getTagsLike(value).map(t => t.name);
+        } catch (e) {
+            logger.error("An error occurred while getting all tags like a value:", e);
+            return [];
+        }
     }
 
     public render(): React.ReactNode {
@@ -213,9 +273,9 @@ export class SearchBox extends React.Component<SearchBoxProps> {
                         </div>
                         <Checkbox ref={e => this.exact_match_checkbox = e}/>
                     </div>
-                    <PropertySetter databaseManager={this.databaseManager} ref={e => this.propertySetter = e}/>
-                    <ChipTextAreaWithAutoComplete getAutoCompleteOptions={this.getTagOptions} title={"Select tags"}
-                                                  chipValueExists={this.tagExists}
+                    <PropertySetter ref={e => this.propertySetter = e}/>
+                    <ChipTextAreaWithAutoComplete getAutoCompleteOptions={SearchBox.getTagOptions} title={"Select tags"}
+                                                  chipValueExists={SearchBox.tagExists}
                                                   chipTooltipText={"This tag does not exist. No documents will be found."}
                                                   ref={e => this.chipTextArea = e}/>
                     <div style={date_range_container_style}>
@@ -229,76 +289,5 @@ export class SearchBox extends React.Component<SearchBoxProps> {
                 </div>
             </div>
         );
-    }
-
-    public componentDidMount(): void {
-        constants.searchBox = this;
-    }
-
-    public componentWillUnmount(): void {
-        constants.searchBox = null;
-    }
-
-    /**
-     * Show or hide the main content
-     */
-    public showHideMainContent(): void {
-        this.mainContentShown = !this.mainContentShown;
-        if (this.mainContentShown) {
-            this.mainContentElement.style.height = "unset";
-            this.mainContentElement.style.marginTop = "20px";
-            this.mainContentElement.style.display = "grid";
-            this.container.style.padding = '0 20px 20px 20px';
-        } else {
-            this.mainContentElement.style.height = "0";
-            this.mainContentElement.style.marginTop = "0";
-            this.mainContentElement.style.display = "none";
-            this.container.style.padding = '0';
-            this.clear();
-        }
-    }
-
-    /**
-     * Clear all fields
-     * @private
-     */
-    private clear(): void {
-        this.filenameTextArea.clear();
-        this.exact_match_checkbox.checked = false;
-        this.propertySetter.clear();
-        this.chipTextArea.clear();
-        this.dateRangeTextField.value = null;
-    }
-
-    /**
-     * Check if a tag exists
-     *
-     * @param value the tag to check
-     * @return true if the tag exists
-     * @private
-     */
-    private tagExists(value: string): boolean {
-        try {
-            return this.databaseManager.tagExists(value);
-        } catch (e) {
-            logger.error("An error occurred while checking if a tag exists:", e);
-            return false;
-        }
-    }
-
-    /**
-     * Get the tag auto complete options
-     *
-     * @param value the current value
-     * @return the tag auto complete options
-     * @private
-     */
-    private getTagOptions(value: string): string[] {
-        try {
-            return this.databaseManager.getTagsLike(value).map(t => t.name);
-        } catch (e) {
-            logger.error("An error occurred while getting all tags like a value:", e);
-            return [];
-        }
     }
 }

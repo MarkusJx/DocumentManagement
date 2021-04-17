@@ -5,6 +5,7 @@ import {database} from "../databaseWrapper";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {OutlinedTextFieldWithAutoComplete} from "./MDCWrapper";
 import {getLogger} from "log4js";
+import constants from "../util/constants";
 
 const logger = getLogger();
 
@@ -12,12 +13,8 @@ const logger = getLogger();
  * The properties for the {@link PropertyField}
  */
 export interface PropertyFieldProps {
-    // The database manager
-    databaseManager: database.DatabaseManager;
-
     // The property name to write to the field
     propertyName?: string;
-
     // The property value to write to the field
     propertyValue?: string;
 }
@@ -26,12 +23,6 @@ export interface PropertyFieldProps {
  * An element containing a text field for a property name and a text field for a property value
  */
 export class PropertyField extends React.Component<PropertyFieldProps> {
-    /**
-     * The current database manager
-     * @private
-     */
-    private readonly _databaseManager: database.DatabaseManager;
-
     /**
      * The pre-set property name
      * @private
@@ -64,15 +55,11 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
     public constructor(props: PropertyFieldProps) {
         super(props);
 
-        this._databaseManager = props.databaseManager;
         this._propertyName = props.propertyName;
         this._propertyValue = props.propertyValue;
 
         this._propertyNameTextArea = null;
         this._propertyValueTextArea = null;
-
-        this.getPropertyAutoCompleteOptions = this.getPropertyAutoCompleteOptions.bind(this);
-        this.getPropertyValueAutoCompleteOptions = this.getPropertyValueAutoCompleteOptions.bind(this);
     }
 
     /**
@@ -89,29 +76,15 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
         return this._propertyValueTextArea.value;
     }
 
-    public render(): React.ReactNode {
-        return (
-            <div>
-                <OutlinedTextFieldWithAutoComplete getAutoCompleteOptions={this.getPropertyAutoCompleteOptions}
-                                                   title="Property name" value={this._propertyName}
-                                                   ref={e => this._propertyNameTextArea = e} labelId={"property-name"}/>
-                <OutlinedTextFieldWithAutoComplete getAutoCompleteOptions={this.getPropertyValueAutoCompleteOptions}
-                                                   title="Property value" value={this._propertyValue}
-                                                   ref={e => this._propertyValueTextArea = e}
-                                                   labelId={"property-value"}/>
-            </div>
-        );
-    }
-
     /**
      * Get the property name auto complete options
      *
      * @param input the current input value
      * @private
      */
-    private getPropertyAutoCompleteOptions(input: string): string[] {
+    private static getPropertyAutoCompleteOptions(input: string): string[] {
         try {
-            return this._databaseManager.getPropertiesLike(input).map(p => p.name);
+            return constants.databaseManager.getPropertiesLike(input).map(p => p.name);
         } catch (e) {
             logger.error("An error occurred while getting all properties like a value:", e);
             return [];
@@ -124,13 +97,28 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      * @param input the current input value
      * @private
      */
-    private getPropertyValueAutoCompleteOptions(input: string): string[] {
+    private static getPropertyValueAutoCompleteOptions(input: string): string[] {
         try {
-            return this._databaseManager.getPropertyValuesLike(input).map(p => p.value);
+            return constants.databaseManager.getPropertyValuesLike(input).map(p => p.value);
         } catch (e) {
             logger.error("An error occurred while getting all property values like a value:", e);
             return [];
         }
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <div>
+                <OutlinedTextFieldWithAutoComplete getAutoCompleteOptions={PropertyField.getPropertyAutoCompleteOptions}
+                                                   title="Property name" value={this._propertyName}
+                                                   ref={e => this._propertyNameTextArea = e} labelId={"property-name"}/>
+                <OutlinedTextFieldWithAutoComplete
+                    getAutoCompleteOptions={PropertyField.getPropertyValueAutoCompleteOptions}
+                    title="Property value" value={this._propertyValue}
+                    ref={e => this._propertyValueTextArea = e}
+                    labelId={"property-value"}/>
+            </div>
+        );
     }
 }
 
@@ -194,20 +182,12 @@ class PropertyValueSet {
  * The property setter properties
  */
 export interface PropertySetterProps {
-    // The database manager
-    databaseManager: database.DatabaseManager;
 }
 
 /**
  * A property setter
  */
 export class PropertySetter extends React.Component<PropertySetterProps> {
-    /**
-     * The database manager
-     * @private
-     */
-    private readonly _databaseManager: database.DatabaseManager;
-
     /**
      * The current property text fields
      * @private
@@ -228,7 +208,6 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
     public constructor(props: PropertySetterProps) {
         super(props);
 
-        this._databaseManager = props.databaseManager;
         this._propertyValues = [];
         this._propertyFields = [];
         this._nextId = 0;
@@ -319,8 +298,8 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
         return (
             this._propertyValues.map((pv: PropertyValueSet) => (
                 <div key={pv.name + '-' + pv.value + '-' + this._nextId++} style={style}>
-                    <PropertyField databaseManager={this._databaseManager} propertyName={pv.name}
-                                   propertyValue={pv.value} ref={e => this._propertyFields.push(e)}/>
+                    <PropertyField propertyName={pv.name} propertyValue={pv.value}
+                                   ref={e => this._propertyFields.push(e)}/>
                     <button className="mdc-button" onClick={this.removeElement.bind(this, pv)}>
                         <span className="mdc-button__ripple"/>
                         <span className="mdc-button__label">remove</span>

@@ -3,6 +3,7 @@ import Store from "electron-store";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
 import {decryptPassword, encryptPassword} from "./passwordEncryption";
 import {getLogger} from "log4js";
+import util from "../util/util";
 
 const logger = getLogger();
 
@@ -49,21 +50,6 @@ interface StoreType {
     mostRecent: string;
     // The settings element
     settings: Settings;
-}
-
-/**
- * Generate a unique id.
- * Source: https://learnersbucket.com/examples/javascript/unique-id-generator-in-javascript/
- *
- * @returns the uid in the format 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
- */
-function generateUid(): string {
-    const s4 = () => {
-        return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
 export class Recents {
@@ -220,7 +206,7 @@ export class Recents {
      * Check if the database settings contain a setting
      *
      * @param setting the setting to search for
-     * @return the id of the setting if the setting is contained in the settings
+     * @return the id of the setting's id if the setting is contained in the settings
      */
     public static async containsSetting(setting: DatabaseSetting): Promise<string | null> {
         if (setting.provider == DatabaseProvider.SQLite) {
@@ -268,9 +254,9 @@ export class Recents {
         }
 
         const recents: RecentDatabase[] = Recents.recents;
-        let id: string = generateUid();
+        let id: string = util.generateUid();
         while (Recents.containsId(id)) {
-            id = generateUid();
+            id = util.generateUid();
         }
 
         if (value.provider != DatabaseProvider.SQLite) {

@@ -132,6 +132,7 @@ $showHideDuration: 0.125s;
   margin-bottom: 20px;
 }
 
+// The sync dialog title
 .sync-dialog__title {
   font-family: $font;
   color: white;
@@ -141,12 +142,15 @@ $showHideDuration: 0.125s;
   font-weight: 300;
 }
 
+// The sync dialog content container
 .sync-dialog__content {
   width: 100%;
   height: 100%;
   position: relative;
 }
 
+// A sync dialog element that
+// can be swiped to the left
 .sync-dialog__swipe-element {
   $dialogContentPadding: 25px;
   $animationDuration: 0.5s;
@@ -161,6 +165,7 @@ $showHideDuration: 0.125s;
   position: absolute;
   right: $swipeMargin;
 
+  // When the element is in the center (visible)
   &.centered {
     right: 0;
     left: 0;
@@ -174,6 +179,7 @@ $showHideDuration: 0.125s;
     }
   }
 
+  // When the element is swiped out of frame
   &.left {
     left: $swipeMargin;
     right: 0;
@@ -187,6 +193,7 @@ $showHideDuration: 0.125s;
     }
   }
 
+  // The element to start with
   &.start-page {
     right: 0;
     left: 0;

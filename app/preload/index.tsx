@@ -73,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 CloseListener.listen(async () => {
-    if (constants.mainComponent && constants.mainComponent.databaseManager) {
-        await constants.mainComponent.databaseManager.close();
+    if (constants.databaseManager) {
+        await constants.databaseManager.close();
     }
 });

@@ -7,6 +7,7 @@ import {database} from "../../databaseWrapper";
 import {MDCTooltip} from "@material/tooltip";
 import {getLogger} from "log4js";
 import {showErrorDialog} from "../../elements/ErrorDialog";
+import FileEditor from "../../elements/FileEditor";
 
 const logger = getLogger();
 
@@ -34,6 +35,13 @@ export abstract class DataTableElement<T> extends React.Component<T> {
      * @param enabled whether the buttons should be enabled
      */
     public abstract set enabled(enabled: boolean);
+
+    /**
+     * Check if the file or directory exists
+     *
+     * @return true if the file or directory exists
+     */
+    public abstract exists(): boolean;
 
     public abstract render(): React.ReactNode;
 }
@@ -100,7 +108,7 @@ export class EditDocumentButton extends DataTableButton<EditDocumentButtonProps>
      */
     private onEditButtonClick(): void {
         try {
-            constants.fileEditor.open(this.document);
+            FileEditor.open(this.document);
         } catch (e) {
             logger.error("An error occurred while trying to open the file editor:", e);
             showErrorDialog("Could not open the file editor", e.message);
@@ -171,7 +179,7 @@ class OpenDocumentButton extends DataTableButton<OpenDocumentButtonProps> {
     private async openDocument(): Promise<void> {
         try {
             if (this.documentPath) {
-                util.openFileUsingDefaultProgram(constants.mainDataTable.databaseManager.databaseInfo.sourcePath
+                util.openFileUsingDefaultProgram(constants.databaseManager.databaseInfo.sourcePath
                     + '/' + this.documentPath);
             }
         } catch (e) {
@@ -315,6 +323,10 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
         this.document = props.document;
     }
 
+    public exists(): boolean {
+        return this.document.exists;
+    }
+
     public set enabled(enabled: boolean) {
         this.editButton.enabled = enabled;
         this.openButton.enabled = enabled;
@@ -451,6 +463,10 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
     public constructor(props: DataTableDirectoryElementProps) {
         super(props);
         this.directory = props.directory;
+    }
+
+    public exists(): boolean {
+        return this.directory.exists;
     }
 
     public set enabled(enabled: boolean) {

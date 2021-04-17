@@ -9,24 +9,30 @@ import {DateTextField} from "./DateTextField";
 import {Dialog} from "./MDCWrapper";
 import {showErrorDialog} from "./ErrorDialog";
 import {getLogger} from "log4js";
+import ReactDOM from "react-dom";
 
 const logger = getLogger();
 
+let instance: FileEditorElement = null;
+
 /**
- * Properties for the file editor
+ * The file editor
  */
-export type FileEditorProps = {
-    // The database manager
-    databaseManager: database.DatabaseManager
+export default class FileEditor {
+    /**
+     * Open the file editor
+     *
+     * @param document the document to edit
+     */
+    public static open(document: database.Document): void {
+        instance.open(document);
+    }
 }
 
-export class FileEditor extends React.Component<FileEditorProps> {
-    /**
-     * The database manager
-     * @private
-     */
-    private readonly databaseManager: database.DatabaseManager;
-
+/**
+ * The file editor element
+ */
+class FileEditorElement extends React.Component {
     /**
      * The chip text area for entering the tags
      * @private
@@ -62,54 +68,29 @@ export class FileEditor extends React.Component<FileEditorProps> {
      *
      * @param props the props
      */
-    public constructor(props: FileEditorProps) {
+    public constructor(props: {}) {
         super(props);
         this.dialog = null;
         this.currentDocument = null;
         this.propertySetter = null;
-        this.databaseManager = props.databaseManager;
         this.chipTextArea = null;
-
-        this.getAutoCompleteOptions = this.getAutoCompleteOptions.bind(this);
-        this.chipValueExists = this.chipValueExists.bind(this);
     }
 
-    public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": '#0033ff'
-        };
-
-        const contentStyle: React.CSSProperties = {
-            overflow: 'visible'
+    /**
+     * Get the auto complete options for the tag text field
+     *
+     * @param val the value of the text field
+     * @return the auto complete options
+     * @private
+     */
+    private static getAutoCompleteOptions(val: string): string[] {
+        try {
+            const tags: database.Tag[] = constants.databaseManager.getTagsLike(val);
+            return tags.map(t => t.name);
+        } catch (e) {
+            logger.error("An error occurred while trying to get the tag auto complete options:", e);
+            return [];
         }
-
-        const creation_date_container_style: React.CSSProperties = {
-            display: "grid",
-            gridTemplateColumns: "max-content auto",
-            columnGap: "10px",
-            margin: "20px auto",
-            width: "fit-content",
-            fontFamily: "sans-serif"
-        }
-
-        return (
-            <Dialog titleId={"file-editor-dialog-title"} contentId={"file-editor-dialog-content"}
-                    title={"Edit file properties"} style={style} contentStyle={contentStyle} ref={e => this.dialog = e}>
-                <ChipTextAreaWithAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions}
-                                              ref={e => this.chipTextArea = e}
-                                              chipValueExists={this.chipValueExists}
-                                              chipTooltipText="This tag does not exist. It will be created on committing."
-                                              title={"Select tags"}/>
-
-                <PropertySetter databaseManager={this.databaseManager} ref={e => this.propertySetter = e}/>
-                <div style={creation_date_container_style}>
-                    <div>
-                        Creation date:
-                    </div>
-                    <DateTextField ref={e => this.dateTextField = e}/>
-                </div>
-            </Dialog>
-        );
     }
 
     public componentDidMount(): void {
@@ -162,35 +143,68 @@ export class FileEditor extends React.Component<FileEditorProps> {
     }
 
     /**
-     * Get the auto complete options for the tag text field
-     *
-     * @param val the value of the text field
-     * @return the auto complete options
-     * @private
-     */
-    private getAutoCompleteOptions(val: string): string[] {
-        try {
-            const tags: database.Tag[] = this.databaseManager.getTagsLike(val);
-            return tags.map(t => t.name);
-        } catch (e) {
-            logger.error("An error occurred while trying to get the tag auto complete options:", e);
-            return [];
-        }
-    }
-
-    /**
      * Check if a tag chip value exists
      *
      * @param value the value to search for
      * @return true if the tag exists
      * @private
      */
-    private chipValueExists(value: string): boolean {
+    private static chipValueExists(value: string): boolean {
         try {
-            return this.databaseManager.tagExists(value);
+            return constants.databaseManager.tagExists(value);
         } catch (e) {
             logger.error("An error occurred while checking if a chip value exists:", e);
             return false;
         }
     }
+
+    public render(): React.ReactNode {
+        const style: MDCCSSProperties = {
+            "--mdc-theme-primary": '#0033ff'
+        };
+
+        const contentStyle: React.CSSProperties = {
+            overflow: 'visible'
+        }
+
+        const creation_date_container_style: React.CSSProperties = {
+            display: "grid",
+            gridTemplateColumns: "max-content auto",
+            columnGap: "10px",
+            margin: "20px auto",
+            width: "fit-content",
+            fontFamily: "sans-serif"
+        }
+
+        return (
+            <Dialog titleId={"file-editor-dialog-title"} contentId={"file-editor-dialog-content"}
+                    title={"Edit file properties"} style={style} contentStyle={contentStyle} ref={e => this.dialog = e}>
+                <ChipTextAreaWithAutoComplete getAutoCompleteOptions={FileEditorElement.getAutoCompleteOptions}
+                                              ref={e => this.chipTextArea = e}
+                                              chipValueExists={FileEditorElement.chipValueExists}
+                                              chipTooltipText="This tag does not exist. It will be created on committing."
+                                              title={"Select tags"}/>
+
+                <PropertySetter ref={e => this.propertySetter = e}/>
+                <div style={creation_date_container_style}>
+                    <div>
+                        Creation date:
+                    </div>
+                    <DateTextField ref={e => this.dateTextField = e}/>
+                </div>
+            </Dialog>
+        );
+    }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+    logger.info("Initializing file editor");
+    try {
+        ReactDOM.render(
+            <FileEditorElement ref={e => instance = e}/>,
+            document.getElementById('file-editor-dialog-container')
+        );
+    } catch (e) {
+        logger.error("Error while initializing the file editor:", e);
+    }
+});

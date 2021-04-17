@@ -1,4 +1,4 @@
-import {Action, database} from "../databaseWrapper";
+import {Action} from "../databaseWrapper";
 import React from "react";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
@@ -17,7 +17,7 @@ util.importCss("styles/pages/StartScanScreen.css");
 /**
  * The start scan callback function
  */
-type startScanClick_t = (manager: database.DatabaseManager, file: string) => Promise<void>;
+type startScanClick_t = (file: string) => Promise<void>;
 
 /**
  * The start scan screen properties
@@ -210,10 +210,10 @@ export default class StartScanScreen extends React.Component<StartScanScreenProp
         this.disableAllButtons();
         constants.scanLoadingScreen.visible = true;
         const settings = this.configurator.settings;
-        let databaseManager: database.DatabaseManager;
 
         try {
-            databaseManager = await util.getDatabaseManagerFromSettings(settings, Action.CREATE_DROP, constants.SHOW_SQL, true);
+            constants.databaseManager = await util.getDatabaseManagerFromSettings(settings,
+                Action.CREATE_DROP, constants.SHOW_SQL, true);
         } catch (e) {
             logger.error("Could not create a database", e);
             showErrorDialog("The database could not be created. If you are trying to connect to a remote database, " +
@@ -225,12 +225,17 @@ export default class StartScanScreen extends React.Component<StartScanScreenProp
         }
 
         try {
-            await Recents.add(settings);
+            let id: string = await Recents.containsSetting(settings);
+            if (id != null) {
+                Recents.delete(id);
+            }
+
+            id = await Recents.add(settings);
+            constants.activeSetting = await Recents.get(id);
         } catch (e) {
             logger.error("Could not add the database setting to the store:", e);
         }
 
-        constants.init(databaseManager);
-        await this.onStartClickImpl(databaseManager, this.state.directory);
+        await this.onStartClickImpl(this.state.directory);
     }
 }

@@ -557,11 +557,12 @@ public class DatabaseManager {
     /**
      * Synchronize a directory
      *
-     * @param directory the directory to sync with
+     * @param directory  the directory to sync with
+     * @param sourcePath the path od the source directory
      * @return true if the operation was successful
      */
     @SuppressWarnings("unused")
-    public synchronized boolean synchronizeDirectory(Directory directory) {
+    public synchronized boolean synchronizeDirectory(Directory directory, String sourcePath) {
         try {
             final List<Directory> directories = directory.getAllDirectories();
             final List<Document> documents = copyPropertiesAndTags(directory.getAllDocuments());
@@ -575,6 +576,9 @@ public class DatabaseManager {
 
             logger.info("Removing all directories from the database");
             manager.createQuery("delete from Directory").executeUpdate();
+
+            logger.info("Updating the database info");
+            manager.merge(new DatabaseInfo(sourcePath));
             manager.getTransaction().commit();
 
             logger.info("Successfully removed all directories from the database");

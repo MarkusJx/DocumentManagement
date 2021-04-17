@@ -41,7 +41,6 @@ interface DoneDialogState {
 
 /**
  * The done dialog element.
- * Source: https://jsfiddle.net/Hybrid8287/gtb1avet/1/
  */
 class DoneDialogElement extends React.Component<{}, DoneDialogState> {
     /**
