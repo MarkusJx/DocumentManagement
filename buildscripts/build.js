@@ -193,7 +193,9 @@ async function run() {
                 "app/styles:out/styles",
                 `--load-path=${path.join(__dirname, '..', 'node_modules')}`,
                 `--load-path=${path.join(__dirname, '..')}`,
-                "--update"
+                "--update",
+                "--style",
+                "compressed"
             ]);
         } catch (e) {
             scssCache.buildFailed();

@@ -2,10 +2,27 @@
 @use "node_modules/@material/menu-surface/mdc-menu-surface";
 @use "node_modules/@material/menu/mdc-menu";
 @use "node_modules/@material/menu-surface";
+@use "node_modules/@material/list" as list;
 
-@mixin theme($backgroundColor, $textColor) {
+@mixin theme($backgroundColor, $textColor, $hoverColor, $activeColor) {
   .themed-menu-surface {
     @include menu-surface.fill-color($backgroundColor);
     @include menu-surface.ink-color($textColor);
+
+    .mdc-list {
+      @include list.item-primary-text-ink-color($textColor);
+
+      .mdc-list-item {
+        transition: background-color 0.125s ease-in-out;
+
+        &:hover {
+          background-color: $hoverColor;
+        }
+
+        &:active {
+          background-color: $activeColor;
+        }
+      }
+    }
   }
 }

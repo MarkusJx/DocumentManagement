@@ -7,8 +7,33 @@ import {ipcRenderer} from "electron";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {MDCRipple} from "@material/ripple";
 import {getLogger} from "log4js";
+import Theming from "./Theming";
 
 const logger = getLogger();
+
+/**
+ * A setting container
+ */
+class SettingContainer extends React.Component {
+    /**
+     * The actual html element
+     * @private
+     */
+    private element: HTMLElement = null;
+
+    public render(): React.ReactNode {
+        return (
+            <div className="mdc-ripple-surface settings-dialog__setting-container themed-ripple"
+                 ref={e => this.element = e}>
+                {this.props.children}
+            </div>
+        );
+    }
+
+    public componentDidMount() {
+        MDCRipple.attachTo(this.element);
+    }
+}
 
 /**
  * The settings dialog element
@@ -33,16 +58,16 @@ class SettingsDialogElement extends React.Component {
     private loadRecentOnStartupSwitch: Switch = null;
 
     /**
+     * The dark theme switch
+     * @private
+     */
+    private darkThemeSwitch: Switch = null;
+
+    /**
      * A function to be called when the dialog closes
      * @private
      */
     private onClose: () => void = null;
-
-    /**
-     * The containers to attach a {@link MDCRipple} to
-     * @private
-     */
-    private readonly containers: HTMLElement[] = [];
 
     public render(): React.ReactNode {
         const dialogContentStyle: MDCCSSProperties = {
@@ -50,29 +75,22 @@ class SettingsDialogElement extends React.Component {
             paddingRight: 0
         };
 
-        const settingContainerStyle: MDCCSSProperties = {
-            display: 'grid',
-            gridTemplateColumns: 'auto min-content',
-            columnGap: '20px',
-            borderBottom: '0.5px solid #b7b7b7',
-            fontFamily: '"Open Sans", sans-serif',
-            padding: '0 30px'
-        };
-
         const switchStyle: MDCCSSProperties = {
             margin: 'auto'
         };
 
-        this.containers.length = 0;
-
         return (
             <Dialog titleId={"settings-dialog-title"} contentId={"settings-dialog-content"} title={"Settings"}
                     ref={e => this.dialog = e} contentStyle={dialogContentStyle}>
-                <div style={settingContainerStyle} ref={e => this.containers.push(e)} className="mdc-ripple-surface">
+                <SettingContainer>
                     <p>Load the most recent database on startup</p>
                     <Switch id={"load-recent-database-on-start-switch"} ref={e => this.loadRecentOnStartupSwitch = e}
                             style={switchStyle}/>
-                </div>
+                </SettingContainer>
+                <SettingContainer>
+                    <p>Dark theme</p>
+                    <Switch id={"dark-theme-switch"} ref={e => this.darkThemeSwitch = e} style={switchStyle}/>
+                </SettingContainer>
             </Dialog>
         );
     }
@@ -88,6 +106,7 @@ class SettingsDialogElement extends React.Component {
                     if (event.detail.action == 'accept') {
                         // Save the settings
                         Recents.settings = this.currentSettings;
+                        Theming.updateTheme();
                         Snackbars.settingsSnackbar.snackbarText = "Settings saved";
                         Snackbars.settingsSnackbar.open();
                     } else {
@@ -102,9 +121,6 @@ class SettingsDialogElement extends React.Component {
                 logger.error("An error occurred while closing the settings dialog:", e);
             }
         });
-
-        // Attach the mdc ripples
-        this.containers.forEach(e => MDCRipple.attachTo(e));
     }
 
     /**
@@ -130,6 +146,7 @@ class SettingsDialogElement extends React.Component {
      */
     private storeSettings(): void {
         this.currentSettings.loadRecentOnStartup = this.loadRecentOnStartupSwitch.checked;
+        this.currentSettings.darkTheme = this.darkThemeSwitch.checked;
     }
 
     /**
@@ -138,6 +155,7 @@ class SettingsDialogElement extends React.Component {
      */
     private loadSettings(): void {
         this.loadRecentOnStartupSwitch.checked = this.currentSettings.loadRecentOnStartup;
+        this.darkThemeSwitch.checked = this.currentSettings.darkTheme;
     }
 }
 

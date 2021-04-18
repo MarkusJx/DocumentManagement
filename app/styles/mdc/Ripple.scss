@@ -1,3 +1,9 @@
 @use "node_modules/@material/ripple";
 
 @include ripple.core-styles;
+
+@mixin theme($color) {
+  .themed-ripple {
+    --mdc-ripple-color: #{$color};
+  }
+}

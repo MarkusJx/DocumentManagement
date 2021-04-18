@@ -53,7 +53,9 @@
     "appId": "io.github.markusjx",
     "files": [
       "app/ui/**",
-      "out/**",
+      "out/preload/**",
+      "out/styles/style.css",
+      "out/main.js",
       "!node_modules/java/build/jvm_dll_path.jsons"
     ],
     "extraResources": [

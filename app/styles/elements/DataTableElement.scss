@@ -1,0 +1,17 @@
+@mixin theme($iconColor, $okIconColor, $errorIconColor) {
+  .data-table-element__folder-icon {
+    color: $iconColor;
+  }
+
+  .data-table-element__document-icon {
+    color: $iconColor;
+  }
+
+  .data-table-element__ok-icon {
+    color: $okIconColor;
+  }
+
+  .data-table-element__error-icon {
+    color: $errorIconColor;
+  }
+}

@@ -5,12 +5,14 @@
 
 @include textfield.core-styles;
 
-@mixin theme($focusColor, $outlineColor, $textColor) {
+@mixin theme($focusColor, $outlineColor, $textColor, $hoverOutlineColor) {
   .themed-text-field {
     @include textfield.ink-color($textColor);
     @include textfield.focused-outline-color($focusColor);
     @include textfield.outline-color($outlineColor);
     @include textfield.label-color($outlineColor);
+    @include textfield.hover-outline-color($hoverOutlineColor);
+    @include textfield.caret-color($textColor);;
 
     &.mdc-text-field--focused:not(.mdc-text-field--disabled) {
       .mdc-floating-label.text-area-label {

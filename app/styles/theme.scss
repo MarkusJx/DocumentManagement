@@ -21,24 +21,55 @@
 @use "pages/LoadScreen";
 @use "pages/StartScanScreen";
 @use "pages/StartScreen";
+@use "elements/DataTableElement";
+@use "dialogs/SettingsDialog";
 
-@mixin theme($background, $themeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor, $codeBackgroundColor) {
-  @include SwipeDialog.theme($background);
+/// Set the theme colors
+///
+/// @param {color} $background            the background color for all elements
+/// @param {color} $themeColor            the main theme color for mdc components (buttons, progress bars, ...)
+/// @param {color} $lightThemeColor       a lighter theme color for mdc components (used for text field outlines)
+/// @param {color} $textColor             the main text color for almost all text elements
+/// @param {color} $borderColor           the main color for borders (outlines, other borders, ...)
+/// @param {color} $darkTextColor         the color for darker text elements
+/// @param {color} $buttonOutlineColor    the color of the button outlines
+/// @param {color} $codeBackgroundColor   the background color of the selected directory text elements
+/// @param {color} $hoverColor            the color for data table rows when the user hovers over one ot those
+/// @param {color} $hoverOutlineColor     the outline color of a text field on mouse hover
+/// @param {color} $activeColor           the color of a selected menu element (mouse click+hold or just click)
+/// @param {color} $topAppBarColor        the color of all top app bars
+/// @param {color} topAppBarTextColor     the color of all top app bar titles and icons
+/// @param {color} $hideBackgroundColor   the color of elements hiding the main content (used with dialogs)
+/// @param {color} $codeTextColor         the color of the selected directory texts
+/// @param {color} $disabledButtonColor   the color of disabled buttons and their outlines
+/// @param {color} $iconColor             the color of the folder or document icons in the main data table
+/// @param {color} $okIconColor           the color of the ok icon in the main data table
+/// @param {color} $errorIconColor        the color of the error icon in the main data table
+/// @param {color} $dataTableLoadingColor the color of the main data table when loading
+/// @param {color} $iconButtonRippleColor the color of the ripple of an icon button in the main data table
+@mixin theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor,
+              $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor, $topAppBarColor,
+              $topAppBarTextColor, $hideBackgroundColor, $codeTextColor, $disabledButtonColor, $iconColor,
+              $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor) {
+  @include SwipeDialog.theme($background, $textColor, $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor);
   @include DoneDialog.theme($background);
-  @include DataTable.theme($background);
-  @include TopAppBar.theme(#214456);
-  @include TextField.theme($buttonOutlineColor, $borderColor, $darkTextColor);
+  @include DataTable.theme($background, $borderColor, $textColor, $hoverColor);
+  @include TopAppBar.theme($topAppBarColor, $topAppBarTextColor);
+  @include TextField.theme($lightThemeColor, $borderColor, $darkTextColor, $hoverOutlineColor);
   @include Dialog.theme($themeColor, $background, $darkTextColor, $darkTextColor);
-  @include Button.theme($themeColor);
-  @include LoadingScreen.theme($background, $themeColor, $darkTextColor);
-  @include SearchBox.theme($buttonOutlineColor);
+  @include Button.theme($themeColor, $buttonOutlineColor, $disabledButtonColor, $iconButtonRippleColor);
+  @include LoadingScreen.theme($background, $themeColor, $darkTextColor, $hideBackgroundColor);
+  @include SearchBox.theme($lightThemeColor);
   @include DatabaseConfigurator.theme($textColor);
   @include LoadRecentPage.theme($textColor, $borderColor, $darkTextColor);
   @include LoadScreen.theme($textColor);
-  @include StartScanScreen.theme($textColor, $codeBackgroundColor, $borderColor, $themeColor);
+  @include StartScanScreen.theme($textColor, $codeBackgroundColor, $borderColor, $themeColor, $codeTextColor);
   @include StartScreen.theme($textColor, $borderColor);
-  @include ProgressIndicator.theme($themeColor);
-  @include Menu.theme($background, $darkTextColor);
+  @include ProgressIndicator.theme($themeColor, $dataTableLoadingColor);
+  @include Menu.theme($background, $darkTextColor, $hoverColor, $activeColor);
+  @include DataTableElement.theme($iconColor, $okIconColor, $errorIconColor);
+  @include SettingsDialog.theme($borderColor);
+  @include Ripple.theme($iconButtonRippleColor);
 }
 
 body {
@@ -57,18 +88,53 @@ body {
   $textColor: #464646;
   $borderColor: #b7b7b7;
   $darkTextColor: #000000de;
-  $buttonOutlineColor: #4a6eff;
+  $buttonOutlineColor: #0000001f;
+  $lightThemeColor: #4a6eff;
   $codeBackgroundColor: #dedede;
+  $hoverColor: rgba(0, 0, 0, 0.04);
+  $hoverOutlineColor: black;
+  $activeColor: #c5c5c5;
+  $topAppBarColor: #214456;
+  $topAppBarTextColor: white;
+  $hideBackgroundColor: #2d2d2d6e;
+  $disabledButtonColor: #00000061;
+  $iconColor: black;
+  $okIconColor: green;
+  $errorIconColor: red;
+  $dataTableLoadingColor: #ffffff;
+  $iconButtonRippleColor: black;
 
-  @include theme($background, $themeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor,
-          $codeBackgroundColor);
+  @include theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor,
+          $buttonOutlineColor, $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor,
+          $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor, $textColor, $disabledButtonColor,
+          $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor);
 
   background: $background;
 
   &.dark-theme {
-    $background: black;
-    $topAppBarBackground: white;
-    //@include theme($background);
+    $background: #1d1d1d;
+    $themeColor: #4a6eff;
+    $textColor: #efefef;
+    $borderColor: #757575;
+    $darkTextColor: #ffffff;
+    $buttonOutlineColor: #7C7C7C;
+    $codeBackgroundColor: #dedede;
+    $hoverColor: rgba(195, 195, 195, 0.04);
+    $hoverOutlineColor: #a9a9a9;
+    $activeColor: #333333;
+    $hideBackgroundColor: #00000085;
+    $codeTextColor: black;
+    $disabledButtonColor: #c3c3c361;
+    $iconColor: #b7b7b7;
+    $okIconColor: #32fd42;
+    $errorIconColor: #de4a4a;
+    $dataTableLoadingColor: #484848;
+    $iconButtonRippleColor: #b9b9b9;
+
+    @include theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor,
+            $buttonOutlineColor, $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor,
+            $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor, $codeTextColor, $disabledButtonColor,
+            $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor);
 
     background: $background;
   }

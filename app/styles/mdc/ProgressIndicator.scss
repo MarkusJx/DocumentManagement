@@ -1,8 +1,12 @@
 @use "node_modules/@material/linear-progress/mdc-linear-progress";
 @use "node_modules/@material/linear-progress";
 
-@mixin theme($progressBarColor) {
+@mixin theme($progressBarColor, $loadingColor) {
   .themed-linear-progress {
     @include linear-progress.bar-color($progressBarColor);
+
+    .mdc-data-table__scrim {
+      background-color: $loadingColor;
+    }
   }
 }

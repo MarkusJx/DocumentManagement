@@ -1,9 +1,21 @@
 @use "node_modules/@material/button/button";
+@use "node_modules/@material/button" as mdc-button;
 
 @include button.core-styles;
 
-@mixin theme($buttonColor) {
+@mixin theme($buttonColor, $outlineColor, $disabledColor, $iconButtonRippleColor) {
   .themed-button {
     --mdc-theme-primary: #{$buttonColor};
+    @include mdc-button.outline-color($outlineColor);
+    @include mdc-button.disabled-ink-color($disabledColor);
+    @include mdc-button.disabled-outline-color($disabledColor);
+  }
+
+  .main-data-table__action-button:disabled {
+    color: $disabledColor;
+  }
+
+  .main-data-table__action-button:before, .main-data-table__action-button:after {
+    background-color: $iconButtonRippleColor;
   }
 }

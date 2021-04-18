@@ -1,0 +1,13 @@
+.settings-dialog__setting-container {
+  display: grid;
+  grid-template-columns: auto min-content;
+  column-gap: 20px;
+  font-family: "Open Sans", sans-serif;
+  padding: 0 30px;
+}
+
+@mixin theme($borderBottomColor) {
+  .settings-dialog__setting-container {
+    border-bottom: 0.5px solid $borderBottomColor;
+  }
+}

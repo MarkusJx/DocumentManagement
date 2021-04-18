@@ -20,7 +20,7 @@
 
 .start-scan-path {
   border-radius: 4px;
-  padding: 0 4px;
+  padding: 2.5px 4px;
 }
 
 .start-scan-screen-heading {
@@ -57,7 +57,7 @@
   }
 }
 
-@mixin theme($textColor, $codeBackgroundColor, $borderColor, $themeColor) {
+@mixin theme($textColor, $codeBackgroundColor, $borderColor, $themeColor, $codeTextColor) {
   .start-scan-screen {
     --mdc-theme-primary: #{$themeColor};
     border-color: $borderColor;
@@ -68,6 +68,7 @@
   }
 
   .start-scan-path {
+    color: $codeTextColor;
     background-color: $codeBackgroundColor;
   }
 

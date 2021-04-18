@@ -95,8 +95,8 @@ export class EditDocumentButton extends DataTableButton<EditDocumentButtonProps>
 
     public render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons" onClick={this.onEditButtonClick}
-                    ref={e => this.button = e}>
+            <button className="mdc-icon-button material-icons main-data-table__action-button"
+                    onClick={this.onEditButtonClick} ref={e => this.button = e}>
                 <div className="mdc-button__icon">create</div>
             </button>
         );
@@ -165,8 +165,8 @@ class OpenDocumentButton extends DataTableButton<OpenDocumentButtonProps> {
 
     public render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons" onClick={this.openDocument}
-                    disabled={this.documentPath == null} ref={e => this.button = e}>
+            <button className="mdc-icon-button material-icons main-data-table__action-button"
+                    onClick={this.openDocument} disabled={this.documentPath == null} ref={e => this.button = e}>
                 <div className="mdc-button__icon">open_in_new</div>
             </button>
         );
@@ -268,18 +268,16 @@ class TableCellOkErrorIcon extends React.Component<TableCellOkErrorIconProps> {
     }
 
     public render(): React.ReactNode {
-        const style: React.CSSProperties = {
-            color: this.ok ? "green" : "red"
-        };
-
-        const tooltip_id: string = getId();
+        const iconClass: string = "material-icons " +
+            (this.ok ? "data-table-element__ok-icon" : "data-table-element__error-icon");
+        const tooltipId: string = getId();
 
         return (
-            <td className="mdc-data-table__cell" style={style}>
-                <span className="material-icons" aria-describedby={tooltip_id}>
+            <td className="mdc-data-table__cell">
+                <span className={iconClass} aria-describedby={tooltipId}>
                     {this.ok ? "check_circle" : "error"}
                 </span>
-                <Tooltip id={tooltip_id} title={this.ok ? "The file exists" : "The file does not exist"}/>
+                <Tooltip id={tooltipId} title={this.ok ? "The file exists" : "The file does not exist"}/>
             </td>
         );
     }
@@ -323,13 +321,13 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
         this.document = props.document;
     }
 
-    public exists(): boolean {
-        return this.document.exists;
-    }
-
     public set enabled(enabled: boolean) {
         this.editButton.enabled = enabled;
         this.openButton.enabled = enabled;
+    }
+
+    public exists(): boolean {
+        return this.document.exists;
     }
 
     public render(): JSX.Element {

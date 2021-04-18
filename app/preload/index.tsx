@@ -7,6 +7,7 @@ import CloseListener from "./util/CloseListener";
 import TitleBar from "./util/TitleBar";
 import log4js from "log4js";
 import util from "./util/util";
+import Theming from "./settings/Theming";
 
 log4js.configure({
     appenders: {
@@ -54,7 +55,7 @@ class Main {
         ReactDOM.render(
             <ScanLoadingScreen ref={e => constants.scanLoadingScreen = e}/>,
             document.getElementById('loading-screen-container')
-        )
+        );
     }
 }
 
@@ -63,6 +64,8 @@ window.addEventListener('DOMContentLoaded', () => {
     try {
         Main.main();
         TitleBar.create();
+
+        Theming.updateTheme();
     } catch (e) {
         logger.error("Error while loading the main elements:", e);
         util.showNativeErrorDialog("Error", "An error occurred while loading the main elements");

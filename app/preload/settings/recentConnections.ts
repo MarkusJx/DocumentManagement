@@ -30,10 +30,13 @@ export interface RecentDatabase {
 export interface Settings {
     // Whether to load the most recent database on startup
     loadRecentOnStartup: boolean;
+    // Whether to use the dark theme
+    darkTheme: boolean;
 }
 
 const defaultSettings: Settings = {
-    loadRecentOnStartup: false
+    loadRecentOnStartup: false,
+    darkTheme: false
 };
 
 /**

@@ -450,7 +450,7 @@ export class DropdownMenu extends React.Component<DropdownMenuProps, DropdownMen
     public render(): React.ReactNode {
         return (
             <div className="mdc-menu-surface--anchor">
-                <button className="mdc-button mdc-button--outlined" ref={e => this.openButton = e}
+                <button className="mdc-button mdc-button--outlined themed-button" ref={e => this.openButton = e}
                         onClick={this.openButtonClick}>
                     <span className="mdc-button__ripple"/>
                     <span className="mdc-button__label">

@@ -4,8 +4,9 @@
 
 @include icon-button.core-styles;
 
-@mixin theme($background) {
+@mixin theme($background, $textColor) {
   .themed-top-app-bar {
     @include top-app-bar.fill-color($background);
+    @include top-app-bar.ink-color($textColor);
   }
 }

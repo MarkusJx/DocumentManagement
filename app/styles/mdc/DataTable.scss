@@ -1,12 +1,18 @@
 @use "node_modules/@material/data-table/data-table";
-@use "node_modules/@material/data-table/data-table-theme";
+@use "node_modules/@material/data-table" as data-table-theme;
+@use "node_modules/@material/data-table/data-table" as table;
 
 @include data-table.core-styles;
 @include data-table.theme-baseline;
 
-@mixin theme($background) {
+@mixin theme($background, $dividerColor, $textColor, $hoverColor) {
   .themed-data-table {
     @include data-table-theme.fill-color($background);
+    @include data-table-theme.divider-color($dividerColor);
+    @include data-table-theme.header-row-fill-color($background);
+    @include data-table-theme.header-row-text-color($textColor);
+    @include data-table-theme.row-text-color($textColor);
+    @include data-table-theme.row-hover-fill-color($hoverColor);
   }
 }
 
