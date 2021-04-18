@@ -507,6 +507,8 @@ interface DialogProps {
     title: string;
     // The accept button text
     acceptButtonText?: string;
+    // An optional class name
+    className?: string;
 }
 
 /**
@@ -554,8 +556,14 @@ export class Dialog extends React.Component<DialogProps> {
     }
 
     public render(): React.ReactNode {
+        let className: string = "mdc-dialog themed-dialog";
+        if (this.props.className) {
+            className += ' ';
+            className += this.props.className;
+        }
+
         return (
-            <div className="mdc-dialog themed-dialog" style={this.props.style} ref={e => this.element = e}>
+            <div className={className} style={this.props.style} ref={e => this.element = e}>
                 <div className="mdc-dialog__container">
                     <div className="mdc-dialog__surface" role="alertdialog" aria-modal="true"
                          aria-labelledby={this.props.titleId} aria-describedby={this.props.contentId}

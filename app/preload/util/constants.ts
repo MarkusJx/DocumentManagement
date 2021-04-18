@@ -4,8 +4,9 @@ import {SearchBox} from "../elements/SearchBox";
 import {ScanLoadingScreen} from "../elements/LoadingScreens";
 import MainComponent from "../pages/MainComponent";
 import {getLogger} from "log4js";
-import {RecentDatabase, Recents} from "../settings/recentConnections";
+import {Recents} from "../settings/recentConnections";
 import Snackbars from "./Snackbars";
+import {RecentDatabase} from "../../shared/Settings";
 
 const logger = getLogger();
 
@@ -17,6 +18,11 @@ export default class constants {
      * Whether to show the generated sql commands
      */
     public static readonly SHOW_SQL: boolean = false;
+
+    /**
+     * Whether to log to the console
+     */
+    public static readonly LOG_TO_CONSOLE: boolean = false;
 
     /**
      * The current main data table element

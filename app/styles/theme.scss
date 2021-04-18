@@ -23,6 +23,8 @@
 @use "pages/StartScreen";
 @use "elements/DataTableElement";
 @use "dialogs/SettingsDialog";
+@use "dialogs/FileEditor";
+@use "dialogs/ErrorDialog";
 
 /// Set the theme colors
 ///
@@ -47,19 +49,20 @@
 /// @param {color} $errorIconColor        the color of the error icon in the main data table
 /// @param {color} $dataTableLoadingColor the color of the main data table when loading
 /// @param {color} $iconButtonRippleColor the color of the ripple of an icon button in the main data table
+/// @param {color} $errorDialogButtonColor the error dialog button color (should be some kind of red)
 @mixin theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor,
               $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor, $topAppBarColor,
               $topAppBarTextColor, $hideBackgroundColor, $codeTextColor, $disabledButtonColor, $iconColor,
-              $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor) {
+              $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor, $errorDialogButtonColor) {
   @include SwipeDialog.theme($background, $textColor, $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor);
-  @include DoneDialog.theme($background);
+  @include DoneDialog.theme($background, $hideBackgroundColor, $themeColor, $textColor);
   @include DataTable.theme($background, $borderColor, $textColor, $hoverColor);
   @include TopAppBar.theme($topAppBarColor, $topAppBarTextColor);
   @include TextField.theme($lightThemeColor, $borderColor, $darkTextColor, $hoverOutlineColor);
   @include Dialog.theme($themeColor, $background, $darkTextColor, $darkTextColor);
   @include Button.theme($themeColor, $buttonOutlineColor, $disabledButtonColor, $iconButtonRippleColor);
   @include LoadingScreen.theme($background, $themeColor, $darkTextColor, $hideBackgroundColor);
-  @include SearchBox.theme($lightThemeColor);
+  @include SearchBox.theme($lightThemeColor, $textColor);
   @include DatabaseConfigurator.theme($textColor);
   @include LoadRecentPage.theme($textColor, $borderColor, $darkTextColor);
   @include LoadScreen.theme($textColor);
@@ -70,6 +73,8 @@
   @include DataTableElement.theme($iconColor, $okIconColor, $errorIconColor);
   @include SettingsDialog.theme($borderColor);
   @include Ripple.theme($iconButtonRippleColor);
+  @include FileEditor.theme($textColor);
+  @include ErrorDialog.theme($textColor, $errorDialogButtonColor, $codeBackgroundColor, $codeTextColor);
 }
 
 body {
@@ -103,11 +108,13 @@ body {
   $errorIconColor: red;
   $dataTableLoadingColor: #ffffff;
   $iconButtonRippleColor: black;
+  $errorDialogButtonColor: #ff0000;
 
   @include theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor,
           $buttonOutlineColor, $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor,
           $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor, $textColor, $disabledButtonColor,
-          $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor);
+          $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor,
+          $errorDialogButtonColor);
 
   background: $background;
 
@@ -119,22 +126,24 @@ body {
     $darkTextColor: #ffffff;
     $buttonOutlineColor: #7C7C7C;
     $codeBackgroundColor: #dedede;
-    $hoverColor: rgba(195, 195, 195, 0.04);
+    $hoverColor: #C3C3C30A;
     $hoverOutlineColor: #a9a9a9;
     $activeColor: #333333;
     $hideBackgroundColor: #00000085;
     $codeTextColor: black;
     $disabledButtonColor: #c3c3c361;
-    $iconColor: #b7b7b7;
+    $iconColor: #bfbfbf;
     $okIconColor: #32fd42;
     $errorIconColor: #de4a4a;
     $dataTableLoadingColor: #484848;
     $iconButtonRippleColor: #b9b9b9;
+    $errorDialogButtonColor: #ff4242;
 
     @include theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor,
             $buttonOutlineColor, $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor,
             $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor, $codeTextColor, $disabledButtonColor,
-            $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor);
+            $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor,
+            $errorDialogButtonColor);
 
     background: $background;
   }

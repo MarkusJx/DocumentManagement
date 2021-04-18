@@ -9,34 +9,6 @@ import log4js from "log4js";
 import util from "./util/util";
 import Theming from "./settings/Theming";
 
-log4js.configure({
-    appenders: {
-        out: {
-            type: 'stdout',
-            layout: {
-                type: 'pattern',
-                pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
-            }
-        },
-        app: {
-            type: 'file',
-            filename: 'preload.log',
-            layout: {
-                type: 'pattern',
-                pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
-            },
-            maxLogSize: 50000000
-        }
-    },
-    categories: {
-        default: {
-            appenders: ['out', 'app'],
-            level: 'info',
-            enableCallStack: true
-        }
-    }
-});
-
 const logger = log4js.getLogger();
 
 /**
@@ -60,6 +32,7 @@ class Main {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    util.updateLogging();
     logger.info("Start loading");
     try {
         Main.main();

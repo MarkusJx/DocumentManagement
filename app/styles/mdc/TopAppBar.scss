@@ -4,6 +4,10 @@
 
 @include icon-button.core-styles;
 
+/// Set the top app bar theme
+///
+/// @param {color} $background the top app bar background color
+/// @param {color} $textColor the top app bar title and icon color
 @mixin theme($background, $textColor) {
   .themed-top-app-bar {
     @include top-app-bar.fill-color($background);

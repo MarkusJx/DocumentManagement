@@ -4,6 +4,12 @@
 @use "node_modules/@material/menu-surface";
 @use "node_modules/@material/list" as list;
 
+/// Set the menu theme
+///
+/// @param {color} $backgroundColor the background color of the menu
+/// @param {color} $textColor the text color of the menu
+/// @param {color} $hoverColor the color of menu items on hover
+/// @param {color} $activeColor the color of menu items on mouse click
 @mixin theme($backgroundColor, $textColor, $hoverColor, $activeColor) {
   .themed-menu-surface {
     @include menu-surface.fill-color($backgroundColor);

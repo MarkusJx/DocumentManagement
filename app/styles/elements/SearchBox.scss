@@ -31,8 +31,35 @@
   margin: auto;
 }
 
-@mixin theme($highlightColor) {
+/// Set the search box theme
+///
+/// @param {color} $highlightColor the border color of text fields
+/// @param {color} $textColor the text color
+@mixin theme($highlightColor, $textColor) {
   .search-box__container {
     --mdc-theme-primary: #{$highlightColor};
+  }
+
+  .search-box__exact-match-container {
+    color: $textColor;
+    --mdc-checkbox-unchecked-color: #{$textColor};
+  }
+
+  .search-box__date-range-container {
+    color: $textColor;
+
+    .react-daterange-picker__inputGroup__input {
+      color: $textColor;
+    }
+
+    .react-daterange-picker__button__icon {
+      stroke: $textColor;
+    }
+  }
+}
+
+.search-box__date-range-container {
+  .react-calendar__month-view__weekdays__weekday {
+    color: #464646;
   }
 }

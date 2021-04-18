@@ -1,0 +1,31 @@
+.error-dialog__dialog {
+  margin-top: 30px;
+  height: calc(100vh - 30px);
+}
+
+.error-dialog__error-container {
+  border-radius: 4px;
+  padding: 6px;
+  word-wrap: break-word;
+}
+
+/// Set the color theme
+///
+/// @param {color} $textColor the text color
+/// @param {color} $buttonColor the ok button color
+/// @param {color} $codeBackgroundColor the error stack background color
+/// @param {color} $codeTextColor the error stack color
+@mixin theme($textColor, $buttonColor, $codeBackgroundColor, $codeTextColor) {
+  .error-dialog__text {
+    color: $textColor;
+  }
+
+  .error-dialog__dialog .themed-dialog-button {
+    --mdc-theme-primary: #{$buttonColor};
+  }
+
+  .error-dialog__error-container {
+    background-color: $codeBackgroundColor;
+    color: $codeTextColor;
+  }
+}

@@ -1,6 +1,10 @@
 @use "node_modules/@material/linear-progress/mdc-linear-progress";
 @use "node_modules/@material/linear-progress";
 
+/// Set the progress indicator theme
+///
+/// @param {color} $progressBarColor the color of the progress bar
+/// @param {color} $loadingColor the color of the data table if the data table has a progress bar
 @mixin theme($progressBarColor, $loadingColor) {
   .themed-linear-progress {
     @include linear-progress.bar-color($progressBarColor);

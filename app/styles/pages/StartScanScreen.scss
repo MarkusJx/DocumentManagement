@@ -57,6 +57,13 @@
   }
 }
 
+/// Set the start scan screen theme
+///
+/// @param {color} $textColor the color of any text
+/// @param {color} $codeBackgroundColor the color of the background of the document path element
+/// @param {color} $borderColor the color of any borders
+/// @param {color} $themeColor the mdc primary theme color
+/// @param {color} $codeTextColor the color of the document path text
 @mixin theme($textColor, $codeBackgroundColor, $borderColor, $themeColor, $codeTextColor) {
   .start-scan-screen {
     --mdc-theme-primary: #{$themeColor};

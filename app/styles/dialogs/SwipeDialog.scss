@@ -194,6 +194,13 @@ $showHideDuration: 0.125s;
   }
 }
 
+/// Set the swipe dialog theme
+///
+/// @param {color} $background the background color
+/// @param {color} $textColor the text color
+/// @param {color} $topBarColor the top bar color
+/// @param {color} $topBarTextColor the top bar text color
+/// @param {color} $hideBackgroundColor the hide background element color
 @mixin theme($background, $textColor, $topBarColor, $topBarTextColor, $hideBackgroundColor) {
   .swipe-dialog__dialog {
     background: $background;

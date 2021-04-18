@@ -1,8 +1,8 @@
-import {DatabaseSetting} from "../settings/recentConnections";
 import React from "react";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import GoBackTopAppBar from "../elements/GoBackTopAppBar";
+import {DatabaseSetting} from "../../shared/Settings";
 
 /**
  * The on load listener function

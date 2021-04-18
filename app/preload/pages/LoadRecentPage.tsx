@@ -1,11 +1,11 @@
 import React from "react";
 import {DataTable, MDCDataTableContainer, OutlinedButton} from "../elements/MDCWrapper";
-import {RecentDatabase, Recents} from "../settings/recentConnections";
+import {Recents} from "../settings/recentConnections";
 import constants from "../util/constants";
 import {showErrorDialog} from "../elements/ErrorDialog";
-import {AnySettings, DatabaseProvider, SQLiteSettings} from "./DatabaseConfigurator";
 import {getLogger} from "log4js";
 import GoBackTopAppBar from "../elements/GoBackTopAppBar";
+import {AnySettings, DatabaseProvider, RecentDatabase, SQLiteSettings} from "../../shared/Settings";
 
 const logger = getLogger();
 

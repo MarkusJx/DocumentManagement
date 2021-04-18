@@ -17,6 +17,9 @@
   font-weight: 300;
 }
 
+/// Set the database configurator theme
+///
+/// @param {color} $textColor the color of any text
 @mixin theme($textColor) {
   .database-configurator__subheading {
     color: $textColor;

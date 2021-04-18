@@ -1,3 +1,8 @@
+/// Set the data table element theme
+///
+/// @param {color} $iconColor the color of data table element icons
+/// @param {color} $okIconColor the color of ok icons (should be some kind of green)
+/// @param {color} $errorIconColor the color of error icons (should be some kind of red)
 @mixin theme($iconColor, $okIconColor, $errorIconColor) {
   .data-table-element__folder-icon {
     color: $iconColor;

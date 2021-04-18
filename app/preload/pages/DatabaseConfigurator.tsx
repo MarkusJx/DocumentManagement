@@ -3,45 +3,9 @@ import React from "react";
 import {ipcRenderer} from "electron";
 import ReactDOM from "react-dom";
 import {getLogger} from "log4js";
+import {AnySettings, DatabaseProvider, SQLiteSettings} from "../../shared/Settings";
 
 const logger = getLogger();
-
-/**
- * A database provider
- */
-export enum DatabaseProvider {
-    SQLite = "SQLite",
-    MariaDB = "MariaDB",
-    MySQL = "MySQL"
-}
-
-/**
- * General database settings
- */
-export interface DatabaseSettings {
-    // The selected provider
-    provider: DatabaseProvider;
-}
-
-/**
- * SQLite database settings
- */
-export interface SQLiteSettings extends DatabaseSettings {
-    // The selected file
-    file: string;
-}
-
-/**
- * Settings for any database (not SQLite)
- */
-export interface AnySettings extends DatabaseSettings {
-    // The connection url
-    url: string;
-    // The username to use
-    user: string;
-    // The password to use
-    password: string;
-}
 
 /**
  * The database configurator props

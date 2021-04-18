@@ -3,6 +3,12 @@
 
 @include button.core-styles;
 
+/// Set the button theme
+///
+/// @param {color} $buttonColor the color of the button
+/// @param {color} $outlineColor the color of the button's outline
+/// @param {color} $disabledColor the color of the button when it is disabled
+/// @param {color} $iconButtonRippleColor the color of the ripple of an icon button
 @mixin theme($buttonColor, $outlineColor, $disabledColor, $iconButtonRippleColor) {
   .themed-button {
     --mdc-theme-primary: #{$buttonColor};

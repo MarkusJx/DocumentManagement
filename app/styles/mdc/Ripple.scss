@@ -2,6 +2,9 @@
 
 @include ripple.core-styles;
 
+/// Set the ripple theme
+///
+/// @param {color} $color the ripple color
 @mixin theme($color) {
   .themed-ripple {
     --mdc-ripple-color: #{$color};

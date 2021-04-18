@@ -15,6 +15,9 @@
   display: grid;
 }
 
+/// Set the load screen theme
+///
+/// @param {color} $textColor the color of any text
 @mixin theme($textColor) {
   .load-screen-heading {
     color: $textColor;

@@ -6,6 +6,9 @@
   padding: 0 30px;
 }
 
+/// Set the settings dialog theme
+///
+/// @param {color} $borderBottomColor the border bottom color for settings elements
 @mixin theme($borderBottomColor) {
   .settings-dialog__setting-container {
     border-bottom: 0.5px solid $borderBottomColor;

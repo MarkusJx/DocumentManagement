@@ -1,3 +1,6 @@
+/// Create an inline animation
+///
+/// @param $animation the animation properties (except the name)
 @mixin custom-inline-animation($animation) {
   $name: inline-#{unique-id()};
 
@@ -8,6 +11,9 @@
   animation: $name $animation;
 }
 
+/// Create an inline animation
+///
+/// @param {number] $duration the duration of the animation
 @mixin inline-animation($duration) {
   $name: inline-#{unique-id()};
 
@@ -20,6 +26,7 @@
   animation-timing-function: ease-in-out;
 }
 
+// Adds a space after the element
 .after-space:after {
   content: " ";
 }

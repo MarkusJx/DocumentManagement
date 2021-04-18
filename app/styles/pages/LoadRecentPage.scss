@@ -24,6 +24,11 @@
   font-weight: 300;
 }
 
+/// Set the load recent page theme
+///
+/// @param {color} $textColor the color of any text
+/// @param {color} $borderColor the color of the borders on that page
+/// @param {color} $paragraphColor the color of any paragraph texts
 @mixin theme($textColor, $borderColor, $paragraphColor) {
   .load-recent-page__heading {
     color: $textColor;

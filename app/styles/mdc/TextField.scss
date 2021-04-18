@@ -5,6 +5,12 @@
 
 @include textfield.core-styles;
 
+/// Set the text field theme
+///
+/// @param {color} $focusColor the color of the text fields outline on focussed
+/// @param {color} $outlineColor the color of the text fields outline
+/// @param {color} $textColor the color of the text in the text field
+/// @param {color} $hoverOutlineColor the color of the outline on hover
 @mixin theme($focusColor, $outlineColor, $textColor, $hoverOutlineColor) {
   .themed-text-field {
     @include textfield.ink-color($textColor);

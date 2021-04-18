@@ -404,8 +404,8 @@ class OpenDirectoryButton extends DataTableButton<OpenDirectoryButtonProps> {
 
     public render(): JSX.Element {
         return (
-            <button className="mdc-icon-button material-icons" onClick={this.onDirectoryOpen}
-                    disabled={this.dirPath == null} ref={e => this.button = e}>
+            <button className="mdc-icon-button material-icons main-data-table__action-button"
+                    onClick={this.onDirectoryOpen} disabled={this.dirPath == null} ref={e => this.button = e}>
                 <div className="mdc-button__icon">
                     keyboard_arrow_right
                 </div>

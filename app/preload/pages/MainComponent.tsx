@@ -1,6 +1,6 @@
 import React from "react";
 import {Action, FileScanner} from "../databaseWrapper";
-import {DatabaseSetting, RecentDatabase, Recents} from "../settings/recentConnections";
+import {Recents} from "../settings/recentConnections";
 import {showErrorDialog} from "../elements/ErrorDialog";
 import {ipcRenderer} from "electron";
 import {MainDataTable} from "./dataTable/MainDataTable";
@@ -11,6 +11,7 @@ import StartScanScreen from "./StartScanScreen";
 import LoadScreen from "./LoadScreen";
 import {getLogger} from "log4js";
 import StartScreen from "./StartScreen";
+import {DatabaseSetting, RecentDatabase} from "../../shared/Settings";
 
 const logger = getLogger();
 

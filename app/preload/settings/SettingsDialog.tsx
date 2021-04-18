@@ -1,13 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {Dialog, Switch} from "../elements/MDCWrapper";
-import {Recents, Settings} from "./recentConnections";
+import {Recents} from "./recentConnections";
 import Snackbars from "../util/Snackbars";
 import {ipcRenderer} from "electron";
 import MDCCSSProperties from "../util/MDCCSSProperties";
 import {MDCRipple} from "@material/ripple";
 import {getLogger} from "log4js";
 import Theming from "./Theming";
+import {Settings} from "../../shared/Settings";
+import util from "../util/util";
 
 const logger = getLogger();
 
@@ -64,6 +66,12 @@ class SettingsDialogElement extends React.Component {
     private darkThemeSwitch: Switch = null;
 
     /**
+     * The switch to enable/disable logging
+     * @private
+     */
+    private enableLoggingSwitch: Switch = null;
+
+    /**
      * A function to be called when the dialog closes
      * @private
      */
@@ -91,6 +99,10 @@ class SettingsDialogElement extends React.Component {
                     <p>Dark theme</p>
                     <Switch id={"dark-theme-switch"} ref={e => this.darkThemeSwitch = e} style={switchStyle}/>
                 </SettingContainer>
+                <SettingContainer>
+                    <p>Enable logging</p>
+                    <Switch id={"enable-logging-switch"} ref={e => this.enableLoggingSwitch = e} style={switchStyle}/>
+                </SettingContainer>
             </Dialog>
         );
     }
@@ -107,6 +119,8 @@ class SettingsDialogElement extends React.Component {
                         // Save the settings
                         Recents.settings = this.currentSettings;
                         Theming.updateTheme();
+                        util.updateLogging();
+
                         Snackbars.settingsSnackbar.snackbarText = "Settings saved";
                         Snackbars.settingsSnackbar.open();
                     } else {
@@ -147,6 +161,7 @@ class SettingsDialogElement extends React.Component {
     private storeSettings(): void {
         this.currentSettings.loadRecentOnStartup = this.loadRecentOnStartupSwitch.checked;
         this.currentSettings.darkTheme = this.darkThemeSwitch.checked;
+        this.currentSettings.logToFile = this.enableLoggingSwitch.checked;
     }
 
     /**
@@ -156,6 +171,7 @@ class SettingsDialogElement extends React.Component {
     private loadSettings(): void {
         this.loadRecentOnStartupSwitch.checked = this.currentSettings.loadRecentOnStartup;
         this.darkThemeSwitch.checked = this.currentSettings.darkTheme;
+        this.enableLoggingSwitch.checked = this.currentSettings.logToFile;
     }
 }
 

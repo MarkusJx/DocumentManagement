@@ -1,3 +1,20 @@
+/// Set the file editor theme
+///
+/// @param {color} $textColor the text color
+@mixin theme($textColor) {
+  .file-editor-creation-date-container {
+    color: $textColor;
+
+    .react-date-picker__inputGroup__input {
+      color: $textColor;
+    }
+
+    .react-date-picker__button__icon {
+      stroke: $textColor;
+    }
+  }
+}
+
 .file-editor-creation-date-container {
   display: grid;
   grid-template-columns: max-content auto;
@@ -5,4 +22,8 @@
   margin: 20px auto;
   width: fit-content;
   font-family: sans-serif;
+
+  .react-calendar__month-view__weekdays__weekday {
+    color: #464646;
+  }
 }

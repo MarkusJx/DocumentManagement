@@ -257,7 +257,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             // seems to fire before everything
             // is actually properly mounted.
             setTimeout(() => {
-                if (this.showProgress) {
+                if (this.showProgress && this.dataTable != null) {
                     this.dataTable.dataTable.showProgress();
                 }
             }, 50);

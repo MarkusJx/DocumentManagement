@@ -5,6 +5,12 @@
 @include data-table.core-styles;
 @include data-table.theme-baseline;
 
+/// Set the data table style
+///
+/// @param {color} $background the data table background color
+/// @param {color} $dividerColor the color of the row dividers
+/// @param {color} $textColor the color of any texts
+/// @param {color} $hoverColor the color of the rows on hover
 @mixin theme($background, $dividerColor, $textColor, $hoverColor) {
   .themed-data-table {
     @include data-table-theme.fill-color($background);
@@ -13,6 +19,8 @@
     @include data-table-theme.header-row-text-color($textColor);
     @include data-table-theme.row-text-color($textColor);
     @include data-table-theme.row-hover-fill-color($hoverColor);
+
+    border-color: $dividerColor;
   }
 }
 

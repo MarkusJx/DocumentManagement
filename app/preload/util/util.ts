@@ -1,18 +1,20 @@
 import {exec} from "child_process";
-import {DatabaseSetting} from "../settings/recentConnections";
 import {
     Action,
     CustomPersistence,
     database,
+    Logger,
     MariaDBProvider,
     MySQLProvider,
     PersistenceProvider
 } from "../databaseWrapper";
-import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
-import {getLogger} from "log4js";
+import log4js, {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
 import fs from "fs";
 import path from "path";
+import {AnySettings, DatabaseProvider, DatabaseSetting, SQLiteSettings} from "../../shared/Settings";
+import {Recents} from "../settings/recentConnections";
+import constants from "./constants";
 
 const logger = getLogger();
 
@@ -164,5 +166,71 @@ export default class util {
                 .substring(1);
         }
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    }
+
+    /**
+     * Update the logging configuration
+     */
+    public static updateLogging(): void {
+        const shouldLog: boolean = Recents.settings.logToFile;
+
+        const appenders: string[] = [];
+        if (shouldLog) {
+            appenders.push("app");
+        }
+
+        if (constants.LOG_TO_CONSOLE) {
+            appenders.push("out");
+        }
+
+        if (appenders.length > 0) {
+            log4js.configure({
+                appenders: {
+                    out: {
+                        type: 'stdout',
+                        layout: {
+                            type: 'pattern',
+                            pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
+                        }
+                    },
+                    app: {
+                        type: 'file',
+                        filename: 'preload.log',
+                        layout: {
+                            type: 'pattern',
+                            pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
+                        },
+                        maxLogSize: 50000000
+                    }
+                },
+                categories: {
+                    default: {
+                        appenders: appenders,
+                        level: 'info',
+                        enableCallStack: true
+                    }
+                }
+            });
+        } else {
+            log4js.configure({
+                appenders: {
+                    out: {
+                        type: 'stdout'
+                    }
+                },
+                categories: {
+                    default: {
+                        appenders: ['out'],
+                        level: 'off'
+                    }
+                }
+            });
+        }
+
+        Logger.configureLogger(constants.LOG_TO_CONSOLE, shouldLog).then(() => {
+            logger.info("Java logger configured");
+        }).catch(e => {
+            logger.error("Could not configure the java logger:", e);
+        });
     }
 }

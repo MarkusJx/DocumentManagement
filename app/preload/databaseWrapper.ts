@@ -151,6 +151,22 @@ async function javaDateToDate(date: any): Promise<Date> {
 }
 
 /**
+ * The java logger
+ */
+export class Logger {
+    /**
+     * Configure the logger
+     *
+     * @param logToConsole whether to log to the console
+     * @param logToFile whether to log to a file
+     */
+    public static configureLogger(logToConsole: boolean, logToFile: boolean): Promise<void> {
+        return java_callStaticMethod("io.github.markusjx.util.Logging", "configureLogger",
+            logToConsole, logToFile);
+    }
+}
+
+/**
  * A persistence provider
  */
 export class PersistenceProvider {

@@ -1,74 +1,26 @@
-import crypto from "crypto";
 import Store from "electron-store";
-import {AnySettings, DatabaseProvider, SQLiteSettings} from "../pages/DatabaseConfigurator";
 import {decryptPassword, encryptPassword} from "./passwordEncryption";
 import {getLogger} from "log4js";
 import util from "../util/util";
+import {
+    AnySettings,
+    createStore,
+    DatabaseProvider,
+    DatabaseSetting,
+    RecentDatabase,
+    Settings,
+    SQLiteSettings,
+    StoreType
+} from "../../shared/Settings";
 
 const logger = getLogger();
-
-/**
- * A database setting
- */
-export type DatabaseSetting = SQLiteSettings | AnySettings;
-
-/**
- * A recent database setting
- */
-export interface RecentDatabase {
-    // The id of the setting
-    id: string;
-    // The local path to the files in the database
-    localPath: string;
-    // The database setting
-    setting: DatabaseSetting;
-}
-
-/**
- * The settings interface
- */
-export interface Settings {
-    // Whether to load the most recent database on startup
-    loadRecentOnStartup: boolean;
-    // Whether to use the dark theme
-    darkTheme: boolean;
-}
-
-const defaultSettings: Settings = {
-    loadRecentOnStartup: false,
-    darkTheme: false
-};
-
-/**
- * The store type
- */
-interface StoreType {
-    // The encryption key to use to encrypt passwords
-    encryptionKey: string;
-    // The initialization vector to use
-    iv: string;
-    // The recently used databases
-    recents: RecentDatabase[];
-    // The id of the last used database
-    mostRecent: string;
-    // The settings element
-    settings: Settings;
-}
 
 export class Recents {
     /**
      * The store used to store all data
      * @private
      */
-    private static readonly store = new Store<StoreType>({
-        defaults: {
-            encryptionKey: crypto.randomBytes(256).toString('hex'),
-            iv: crypto.randomBytes(16).toString('hex'),
-            recents: [],
-            mostRecent: null,
-            settings: defaultSettings
-        }
-    });
+    private static readonly store: Store<StoreType> = createStore();
 
     /**
      * Get the encryption key

@@ -2,6 +2,12 @@
 
 @include dialog.core-styles;
 
+/// Set the dialog theme
+///
+/// @param {color} $buttonColor the color of the dialog's buttons
+/// @param {color} $fillColor the color of the dialog's content
+/// @param {color} $titleColor the color of the dialog's title
+/// @param {color} $textColor the color of any text inside the dialog
 @mixin theme($buttonColor, $fillColor, $titleColor, $textColor) {
   .themed-dialog {
     @include dialog.container-fill-color($fillColor);

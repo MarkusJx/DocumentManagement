@@ -40,6 +40,12 @@
   margin-right: 30px;
 }
 
+/// Set the loading screen theme
+///
+/// @param {color} $backgroundColor the loading screen background color
+/// @param {color} $themeColor the mdc theme color
+/// @param {color} $textColor the color of any text
+/// @param {color} $hideBackgroundColor the color of the element hiding the background
 @mixin theme($backgroundColor, $themeColor, $textColor, $hideBackgroundColor) {
   .scan-loading-screen__dialog {
     background-color: $backgroundColor;

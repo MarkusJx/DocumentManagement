@@ -17,7 +17,6 @@ $scaleFrom: 0.8;
   width: 100vw;
   height: 100vh;
   position: fixed;
-  background-color: #2d2d2d6e;
   top: 0;
   left: 0;
   z-index: 999;
@@ -92,12 +91,6 @@ $scaleFrom: 0.8;
   }
 }
 
-@mixin theme($background) {
-  .done-dialog__dialog {
-    background: $background;
-  }
-}
-
 // The actual done dialog content
 .done-dialog__dialog {
   width: $width;
@@ -122,4 +115,28 @@ $scaleFrom: 0.8;
   width: max-content;
   margin: auto;
   font-size: 24px;
+}
+
+/// Apply a theme to the done dialog
+///
+/// @param {color} $background the background color
+/// @param {color} $hideBackgroundColor the color of the element hiding the background
+/// @param {color} $themeColor the main theme color
+/// @param {color} $textColor any text elements
+@mixin theme($background, $hideBackgroundColor, $themeColor, $textColor) {
+  .done-dialog__dialog {
+    background: $background;
+  }
+
+  .done-dialog__background {
+    background-color: $hideBackgroundColor;
+  }
+
+  .done-dialog__dialog {
+    --mdc-theme-primary: #{$themeColor};
+  }
+
+  .done-dialog__text {
+    color: $textColor;
+  }
 }

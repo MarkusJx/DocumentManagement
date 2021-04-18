@@ -54,6 +54,7 @@
     "files": [
       "app/ui/**",
       "out/preload/**",
+      "out/shared/**",
       "out/styles/style.css",
       "out/main.js",
       "!node_modules/java/build/jvm_dll_path.jsons"

@@ -27,6 +27,10 @@
   font-weight: 300;
 }
 
+/// Set the start screen theme
+///
+/// @param {color} $textColor the color of any text
+/// @param {color} $borderColor the color of any border
 @mixin theme($textColor, $borderColor) {
   // A start screen heading container
   .start-screen-heading-container {

@@ -4,38 +4,70 @@ import windowStateKeeper from "electron-window-state";
 import Store from "electron-store";
 import path from 'path';
 import log4js from "log4js";
+import {createStore, StoreType} from "./shared/Settings";
+
+const logger = log4js.getLogger();
+const LOG_TO_CONSOLE: boolean = false;
 
 app.allowRendererProcessReuse = false;
 
-log4js.configure({
-    appenders: {
-        out: {
-            type: 'stdout',
-            layout: {
-                type: 'pattern',
-                pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
-            }
-        },
-        app: {
-            type: 'file',
-            filename: 'main.log',
-            layout: {
-                type: 'pattern',
-                pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
-            },
-            maxLogSize: 100000
-        }
-    },
-    categories: {
-        default: {
-            appenders: ['out', 'app'],
-            level: 'info',
-            enableCallStack: true
-        }
-    }
-});
+function configureLogger(): void {
+    const store: Store<StoreType> = createStore();
+    const shouldLog = store.get('settings').logToFile;
 
-const logger = log4js.getLogger();
+    const appenders: string[] = [];
+    if (shouldLog) {
+        appenders.push("app");
+    }
+
+    if (LOG_TO_CONSOLE) {
+        appenders.push("out");
+    }
+
+    if (appenders.length > 0) {
+        log4js.configure({
+            appenders: {
+                out: {
+                    type: 'stdout',
+                    layout: {
+                        type: 'pattern',
+                        pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
+                    }
+                },
+                app: {
+                    type: 'file',
+                    filename: 'main.log',
+                    layout: {
+                        type: 'pattern',
+                        pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
+                    },
+                    maxLogSize: 100000
+                }
+            },
+            categories: {
+                default: {
+                    appenders: appenders,
+                    level: 'info',
+                    enableCallStack: true
+                }
+            }
+        });
+    } else {
+        log4js.configure({
+            appenders: {
+                out: {
+                    type: 'stdout'
+                }
+            },
+            categories: {
+                default: {
+                    appenders: ['out'],
+                    level: 'off'
+                }
+            }
+        });
+    }
+}
 
 ipcMain.handle('select-directory', async (_event, ...args) => {
     const result = await dialog.showOpenDialog({
@@ -90,8 +122,6 @@ function printSystemInfo() {
     logger.info("System version:", process.getSystemVersion());
     logger.info("Total memory:", process.getSystemMemoryInfo().total);
 }
-
-printSystemInfo();
 
 /**
  * Create the main window
@@ -231,6 +261,8 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+    configureLogger();
+    printSystemInfo();
     createWindow();
 
     app.on('activate', function (): void {
