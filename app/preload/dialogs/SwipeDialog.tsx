@@ -1,9 +1,6 @@
 // Import the css associated with this file
-import util from "../util/util";
 import React from "react";
 import {Button, ProgressBar} from "../elements/MDCWrapper";
-
-util.importCss("styles/dialogs/SwipeDialog.css");
 
 /**
  * The sync dialog title properties

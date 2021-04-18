@@ -1,7 +1,6 @@
 import React from "react";
 import {Menu, topAppBar} from "../../elements/MDCWrapper";
 import constants from "../../util/constants";
-import MDCCSSProperties from "../../util/MDCCSSProperties";
 import {MainDataTable} from "./MainDataTable";
 import SettingsDialog from "../../settings/SettingsDialog";
 import SyncDialog from "../../dialogs/SyncDialog";
@@ -94,10 +93,6 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
     }
 
     public render(): React.ReactNode {
-        const topAppBarStyle: MDCCSSProperties = {
-            "--mdc-theme-primary": "#214456"
-        };
-
         const menuOptions: string[] = [
             settings.SETTINGS,
             settings.SYNCHRONIZE,
@@ -109,7 +104,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
 
         return (
             <>
-                <topAppBar.Header style={topAppBarStyle} ref={e => this.topAppBar = e}>
+                <topAppBar.Header ref={e => this.topAppBar = e}>
                     <topAppBar.NavigationSection title="Browse">
                         <topAppBar.NavigationButton onClick={MainDataTableTopAppBar.backButtonClick} label="Back"
                                                     iconName="arrow_back" describedby="main-top-app-bar-nav-tooltip"

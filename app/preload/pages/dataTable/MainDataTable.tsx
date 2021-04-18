@@ -1,6 +1,5 @@
 import React from "react";
 import {database} from "../../databaseWrapper";
-import MDCCSSProperties from "../../util/MDCCSSProperties";
 import constants from "../../util/constants";
 import {DataTable, MDCDataTableContainer, MDCDataTableProgressIndicator,} from "../../elements/MDCWrapper";
 import {getLogger} from "log4js";
@@ -225,8 +224,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     }
 
     public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": "#0056ff",
+        const style: React.CSSProperties = {
             width: "100%"
         };
 

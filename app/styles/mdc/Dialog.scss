@@ -1,0 +1,15 @@
+@use "node_modules/@material/dialog";
+
+@include dialog.core-styles;
+
+@mixin theme($buttonColor, $fillColor, $titleColor, $textColor) {
+  .themed-dialog {
+    @include dialog.container-fill-color($fillColor);
+    @include dialog.title-ink-color($titleColor);
+    @include dialog.content-ink-color($textColor);
+  }
+
+  .themed-dialog-button {
+    --mdc-theme-primary: #{$buttonColor};
+  }
+}

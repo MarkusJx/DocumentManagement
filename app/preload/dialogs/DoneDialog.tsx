@@ -1,9 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Checkmark from "../elements/Checkmark";
-import util from "../util/util";
-
-util.importCss("styles/dialogs/DoneDialog.css");
 
 /**
  * A static done dialog instance

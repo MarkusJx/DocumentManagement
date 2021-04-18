@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {MDCRipple} from '@material/ripple';
 import {database} from "../databaseWrapper";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import {OutlinedTextFieldWithAutoComplete} from "./MDCWrapper";
 import {getLogger} from "log4js";
 import constants from "../util/constants";
@@ -258,7 +257,7 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
         return (
             <div>
                 {this.getFields()}
-                <button className="mdc-button" onClick={this.addElement}>
+                <button className="mdc-button themed-button" onClick={this.addElement}>
                     <span className="mdc-button__ripple"/>
                     <span className="mdc-button__label">Create new</span>
                 </button>
@@ -281,14 +280,6 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      */
     private getFields(): React.ReactNode {
         this._propertyFields.length = 0;
-        const style: MDCCSSProperties = {
-            borderRadius: "5px",
-            borderWidth: "1px",
-            borderColor: "grey",
-            borderStyle: "solid",
-            padding: "0 20px",
-            margin: "20px auto"
-        }
 
         // If propertyValues is empty, create one empty property value set
         if (this._propertyValues.length <= 0) {
@@ -297,10 +288,10 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
 
         return (
             this._propertyValues.map((pv: PropertyValueSet) => (
-                <div key={pv.name + '-' + pv.value + '-' + this._nextId++} style={style}>
+                <div key={pv.name + '-' + pv.value + '-' + this._nextId++} className="property-field__container">
                     <PropertyField propertyName={pv.name} propertyValue={pv.value}
                                    ref={e => this._propertyFields.push(e)}/>
-                    <button className="mdc-button" onClick={this.removeElement.bind(this, pv)}>
+                    <button className="mdc-button themed-button" onClick={this.removeElement.bind(this, pv)}>
                         <span className="mdc-button__ripple"/>
                         <span className="mdc-button__label">remove</span>
                     </button>

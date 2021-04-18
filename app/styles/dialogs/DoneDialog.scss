@@ -92,9 +92,14 @@ $scaleFrom: 0.8;
   }
 }
 
+@mixin theme($background) {
+  .done-dialog__dialog {
+    background: $background;
+  }
+}
+
 // The actual done dialog content
 .done-dialog__dialog {
-  background: white;
   width: $width;
   height: $height;
   max-width: $maxWidth;

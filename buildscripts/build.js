@@ -187,9 +187,14 @@ async function run() {
     }
 
     if (buildCache_build || scssCache_build) {
-        console.log("The scss cache is out of date, running node-sass");
+        console.log("The scss cache is out of date, running sass");
         try {
-            await spawnAsync("node-sass", ["app/styles", "-o", "out/styles"]);
+            await spawnAsync("sass", [
+                "app/styles:out/styles",
+                `--load-path=${path.join(__dirname, '..', 'node_modules')}`,
+                `--load-path=${path.join(__dirname, '..')}`,
+                "--update"
+            ]);
         } catch (e) {
             scssCache.buildFailed();
             throw e;

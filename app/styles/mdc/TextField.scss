@@ -1,0 +1,25 @@
+@use "node_modules/@material/floating-label/mdc-floating-label";
+@use "node_modules/@material/line-ripple/mdc-line-ripple";
+@use "node_modules/@material/notched-outline/mdc-notched-outline";
+@use "node_modules/@material/textfield";
+
+@include textfield.core-styles;
+
+@mixin theme($focusColor, $outlineColor, $textColor) {
+  .themed-text-field {
+    @include textfield.ink-color($textColor);
+    @include textfield.focused-outline-color($focusColor);
+    @include textfield.outline-color($outlineColor);
+    @include textfield.label-color($outlineColor);
+
+    &.mdc-text-field--focused:not(.mdc-text-field--disabled) {
+      .mdc-floating-label.text-area-label {
+        color: $focusColor;
+      }
+
+      .mdc-floating-label {
+        color: $focusColor;
+      }
+    }
+  }
+}

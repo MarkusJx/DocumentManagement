@@ -95,9 +95,14 @@ $showHideDuration: 0.125s;
   }
 }
 
+@mixin theme($background) {
+  .swipe-dialog__dialog {
+    background: $background;
+  }
+}
+
 // The swipe dialog
 .swipe-dialog__dialog {
-  background: white;
   width: $width;
   height: $height;
   max-width: $maxWidth;

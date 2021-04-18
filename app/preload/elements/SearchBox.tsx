@@ -4,7 +4,6 @@ import {Button, Checkbox, OutlinedButton, OutlinedTextField} from "./MDCWrapper"
 import {database, PropertyMap} from "../databaseWrapper";
 import {PropertySetter} from "./PropertyField";
 import {DateRangeTextField} from "./DateTextField";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import constants from "../util/constants";
 import {getLogger} from "log4js";
 
@@ -220,55 +219,21 @@ export class SearchBox extends React.Component<SearchBoxProps> {
     }
 
     public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": "#4a6eff",
-            padding: "0 20px"
-        };
-
-        const main_content_style: MDCCSSProperties = {
-            marginTop: "0",
-            display: "none",
-            height: "0"
-        };
-
-        const exact_match_container_style: React.CSSProperties = {
-            display: "grid",
-            gridTemplateColumns: "max-content auto"
-        };
-
-        const exact_match_text_style: React.CSSProperties = {
-            fontFamily: "sans-serif",
-            margin: "auto"
-        };
-
         const search_button_style: React.CSSProperties = {
             margin: "20px auto 0 auto"
         };
-
-        const date_range_container_style: React.CSSProperties = {
-            display: "grid",
-            gridTemplateColumns: "max-content auto",
-            columnGap: "10px",
-            width: "fit-content",
-            margin: "20px auto 0 auto"
-        };
-
-        const date_range_text_style: React.CSSProperties = {
-            fontFamily: "sans-serif",
-            margin: "auto"
-        }
 
         const date_range_style: React.CSSProperties = {
             margin: "auto 0"
         };
 
         return (
-            <div style={style} ref={e => this.container = e}>
-                <div style={main_content_style} ref={e => this.mainContentElement = e}>
+            <div ref={e => this.container = e} className="search-box__container">
+                <div ref={e => this.mainContentElement = e} className="search-box__main-content">
                     <OutlinedTextField title={"File name"} ref={e => this.filenameTextArea = e}
                                        labelId={"search-file-name"}/>
-                    <div style={exact_match_container_style}>
-                        <div style={exact_match_text_style}>
+                    <div className="search-box__exact-match-container">
+                        <div className="search-box__exact-match-text">
                             Exact match
                         </div>
                         <Checkbox ref={e => this.exact_match_checkbox = e}/>
@@ -278,8 +243,8 @@ export class SearchBox extends React.Component<SearchBoxProps> {
                                                   chipValueExists={SearchBox.tagExists}
                                                   chipTooltipText={"This tag does not exist. No documents will be found."}
                                                   ref={e => this.chipTextArea = e}/>
-                    <div style={date_range_container_style}>
-                        <div style={date_range_text_style}>
+                    <div className="search-box__date-range-container">
+                        <div className="search-box__date-range-text">
                             Created between
                         </div>
                         <DateRangeTextField style={date_range_style} ref={e => this.dateRangeTextField = e}/>

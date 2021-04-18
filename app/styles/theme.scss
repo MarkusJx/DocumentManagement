@@ -1,0 +1,75 @@
+@use "dialogs/SwipeDialog";
+@use "dialogs/DoneDialog";
+@use "mdc/DataTable";
+@use "mdc/Button";
+@use "mdc/TopAppBar";
+@use "mdc/Tooltip";
+@use "mdc/switch";
+@use "mdc/Snackbar";
+@use "mdc/ProgressIndicator";
+@use "mdc/Menu";
+@use "mdc/Dialog";
+@use "mdc/TextField";
+@use "mdc/Checkbox";
+@use "mdc/Ripple";
+@use "mdc/Chip";
+
+@use "pages/LoadingScreen";
+@use "elements/SearchBox";
+@use "pages/DatabaseConfigurator";
+@use "pages/LoadRecentPage";
+@use "pages/LoadScreen";
+@use "pages/StartScanScreen";
+@use "pages/StartScreen";
+
+@mixin theme($background, $themeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor, $codeBackgroundColor) {
+  @include SwipeDialog.theme($background);
+  @include DoneDialog.theme($background);
+  @include DataTable.theme($background);
+  @include TopAppBar.theme(#214456);
+  @include TextField.theme($buttonOutlineColor, $borderColor, $darkTextColor);
+  @include Dialog.theme($themeColor, $background, $darkTextColor, $darkTextColor);
+  @include Button.theme($themeColor);
+  @include LoadingScreen.theme($background, $themeColor, $darkTextColor);
+  @include SearchBox.theme($buttonOutlineColor);
+  @include DatabaseConfigurator.theme($textColor);
+  @include LoadRecentPage.theme($textColor, $borderColor, $darkTextColor);
+  @include LoadScreen.theme($textColor);
+  @include StartScanScreen.theme($textColor, $codeBackgroundColor, $borderColor, $themeColor);
+  @include StartScreen.theme($textColor, $borderColor);
+  @include ProgressIndicator.theme($themeColor);
+  @include Menu.theme($background, $darkTextColor);
+}
+
+body {
+  -ms-overflow-style: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  transition: all 0.25s ease-in-out;
+  transition-property: color, background-color;
+
+  $background: white;
+  $themeColor: blue;
+  $textColor: #464646;
+  $borderColor: #b7b7b7;
+  $darkTextColor: #000000de;
+  $buttonOutlineColor: #4a6eff;
+  $codeBackgroundColor: #dedede;
+
+  @include theme($background, $themeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor,
+          $codeBackgroundColor);
+
+  background: $background;
+
+  &.dark-theme {
+    $background: black;
+    $topAppBarBackground: white;
+    //@include theme($background);
+
+    background: $background;
+  }
+}

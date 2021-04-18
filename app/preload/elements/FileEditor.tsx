@@ -3,7 +3,6 @@ import React from "react";
 import {database} from "../databaseWrapper";
 import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
 import {PropertySetter} from "./PropertyField";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import constants from "../util/constants";
 import {DateTextField} from "./DateTextField";
 import {Dialog} from "./MDCWrapper";
@@ -159,26 +158,13 @@ class FileEditorElement extends React.Component {
     }
 
     public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": '#0033ff'
-        };
-
         const contentStyle: React.CSSProperties = {
             overflow: 'visible'
         }
 
-        const creation_date_container_style: React.CSSProperties = {
-            display: "grid",
-            gridTemplateColumns: "max-content auto",
-            columnGap: "10px",
-            margin: "20px auto",
-            width: "fit-content",
-            fontFamily: "sans-serif"
-        }
-
         return (
             <Dialog titleId={"file-editor-dialog-title"} contentId={"file-editor-dialog-content"}
-                    title={"Edit file properties"} style={style} contentStyle={contentStyle} ref={e => this.dialog = e}>
+                    title={"Edit file properties"} contentStyle={contentStyle} ref={e => this.dialog = e}>
                 <ChipTextAreaWithAutoComplete getAutoCompleteOptions={FileEditorElement.getAutoCompleteOptions}
                                               ref={e => this.chipTextArea = e}
                                               chipValueExists={FileEditorElement.chipValueExists}
@@ -186,7 +172,7 @@ class FileEditorElement extends React.Component {
                                               title={"Select tags"}/>
 
                 <PropertySetter ref={e => this.propertySetter = e}/>
-                <div style={creation_date_container_style}>
+                <div className="file-editor-creation-date-container">
                     <div>
                         Creation date:
                     </div>

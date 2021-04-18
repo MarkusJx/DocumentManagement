@@ -12,8 +12,6 @@ import GoBackTopAppBar from "../elements/GoBackTopAppBar";
 
 const logger = getLogger();
 
-util.importCss("styles/pages/StartScanScreen.css");
-
 /**
  * The start scan callback function
  */

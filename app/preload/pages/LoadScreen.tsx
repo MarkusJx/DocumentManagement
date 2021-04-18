@@ -3,9 +3,6 @@ import React from "react";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import GoBackTopAppBar from "../elements/GoBackTopAppBar";
-import util from "../util/util";
-
-util.importCss("styles/pages/LoadScreen.css");
 
 /**
  * The on load listener function

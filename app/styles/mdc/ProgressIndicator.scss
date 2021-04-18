@@ -1,0 +1,8 @@
+@use "node_modules/@material/linear-progress/mdc-linear-progress";
+@use "node_modules/@material/linear-progress";
+
+@mixin theme($progressBarColor) {
+  .themed-linear-progress {
+    @include linear-progress.bar-color($progressBarColor);
+  }
+}

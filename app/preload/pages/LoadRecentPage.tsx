@@ -4,7 +4,6 @@ import {RecentDatabase, Recents} from "../settings/recentConnections";
 import constants from "../util/constants";
 import {showErrorDialog} from "../elements/ErrorDialog";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "./DatabaseConfigurator";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import {getLogger} from "log4js";
 import GoBackTopAppBar from "../elements/GoBackTopAppBar";
 
@@ -70,25 +69,6 @@ interface RecentDatabaseElementProps {
  */
 class RecentDatabaseElement extends React.Component<RecentDatabaseElementProps> {
     /**
-     * The info paragraph style
-     * @private
-     */
-    private static paragraphStyle: React.CSSProperties = {
-        margin: 0,
-        fontFamily: '"Open Sans", sans-serif',
-        color: '#000000',
-        fontSize: '15.2px'
-    };
-
-    /**
-     * The info parameter style
-     * @private
-     */
-    private static infoParamStyle: React.CSSProperties = {
-        fontWeight: 300
-    };
-
-    /**
      * Create a recent database element
      *
      * @param props the properties
@@ -101,38 +81,18 @@ class RecentDatabaseElement extends React.Component<RecentDatabaseElementProps> 
     }
 
     public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": 'blue'
-        };
-
-        const mainCellStyle: React.CSSProperties = {
-            padding: '12px'
-        };
-
-        const headingStyle: React.CSSProperties = {
-            fontFamily: '"Open Sans", sans-serif',
-            color: '#464646',
-            margin: '0 0 6px 0',
-            width: 'max-content',
-            fontSize: '26px'
-        };
-
-        const headingContainerStyle: React.CSSProperties = {
-            width: 'max-content',
-            borderBottom: '1px solid #b7b7b7',
-            marginBottom: '10px'
-        };
-
         return (
-            <tr className="mdc-data-table__row" style={style}>
-                <th className="mdc-data-table__cell" scope="row" style={mainCellStyle}>
-                    <div style={headingContainerStyle}>
-                        <h1 style={headingStyle}>{this.props.database.setting.provider}</h1>
+            <tr className="mdc-data-table__row">
+                <th className="mdc-data-table__cell load-recent-page__main-cell" scope="row">
+                    <div className="load-recent-page__heading-container">
+                        <h1 className="load-recent-page__heading">
+                            {this.props.database.setting.provider}
+                        </h1>
                     </div>
 
-                    <p style={RecentDatabaseElement.paragraphStyle}>
+                    <p className="load-recent-page__paragraph">
                         <span>{"ID: "}</span>
-                        <span style={RecentDatabaseElement.infoParamStyle}>
+                        <span className="load-recent-page__info-param">
                             {this.props.database.id}
                         </span>
                     </p>
@@ -158,11 +118,11 @@ class RecentDatabaseElement extends React.Component<RecentDatabaseElementProps> 
     private getInfoParagraphs(): React.ReactNode[] {
         const res: React.ReactNode[] = [];
         res.push((
-            <p style={RecentDatabaseElement.paragraphStyle} key={0}>
+            <p className="load-recent-page__paragraph" key={0}>
                 <span>
                     {this.props.database.setting.provider == DatabaseProvider.SQLite ? "File: " : "URL: "}
                 </span>
-                <span style={RecentDatabaseElement.infoParamStyle}>
+                <span className="load-recent-page__info-param">
                     {
                         this.props.database.setting.provider == DatabaseProvider.SQLite ?
                             (this.props.database.setting as SQLiteSettings).file :
@@ -174,9 +134,9 @@ class RecentDatabaseElement extends React.Component<RecentDatabaseElementProps> 
 
         if (this.props.database.setting.provider != DatabaseProvider.SQLite) {
             res.push((
-                <p style={RecentDatabaseElement.paragraphStyle} key={1}>
+                <p className="load-recent-page__paragraph" key={1}>
                     <span>{"Username: "}</span>
-                    <span style={RecentDatabaseElement.infoParamStyle}>
+                    <span className="load-recent-page__info-param">
                         {(this.props.database.setting as AnySettings).user}
                     </span>
                 </p>

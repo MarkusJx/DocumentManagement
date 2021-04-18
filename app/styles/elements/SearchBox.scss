@@ -1,0 +1,38 @@
+.search-box__container {
+  padding: 0 20px;
+}
+
+.search-box__main-content {
+  margin-top: 0;
+  display: none;
+  height: 0;
+}
+
+.search-box__exact-match-container {
+  display: grid;
+  grid-template-columns: max-content auto;
+}
+
+.search-box__exact-match-text {
+  font-family: sans-serif;
+  margin: auto;
+}
+
+.search-box__date-range-container {
+  display: grid;
+  grid-template-columns: max-content auto;
+  column-gap: 10px;
+  width: fit-content;
+  margin: 20px auto 0 auto;
+}
+
+.search-box__date-range-text {
+  font-family: sans-serif;
+  margin: auto;
+}
+
+@mixin theme($highlightColor) {
+  .search-box__container {
+    --mdc-theme-primary: #{$highlightColor};
+  }
+}

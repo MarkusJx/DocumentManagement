@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {Dialog, OutlinedButton} from "../elements/MDCWrapper";
 import {getLogger} from "log4js";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import DirectorySelector from "../elements/DirectorySelector";
 import {ipcRenderer} from "electron";
 import constants from "../util/constants";
@@ -38,13 +37,9 @@ class RootDirSelectorElement extends React.Component {
     }
 
     public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": 'blue'
-        };
-
         return (
             <Dialog titleId={"root-dir-selector-title"} contentId={"root-dir-selector-content"}
-                    title={"Select a root directory"} ref={e => this.dialog = e} style={style} hasCancelButton={true}>
+                    title={"Select a root directory"} ref={e => this.dialog = e} hasCancelButton={true}>
                 <p>
                     Select the database root directory on your local machine.<br/>
                     This step may be required if the database was created on a different machine or the root directory

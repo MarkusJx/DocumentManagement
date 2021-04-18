@@ -1,0 +1,39 @@
+.load-recent-page__main-cell {
+  padding: 12px;
+}
+
+.load-recent-page__heading {
+  font-family: "Open Sans", sans-serif;
+  margin: 0 0 6px 0;
+  width: max-content;
+  font-size: 26px;
+}
+
+.load-recent-page__heading-container {
+  width: max-content;
+  margin-bottom: 10px;
+}
+
+.load-recent-page__paragraph {
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  font-size: 15.2px;
+}
+
+.load-recent-page__info-param {
+  font-weight: 300;
+}
+
+@mixin theme($textColor, $borderColor, $paragraphColor) {
+  .load-recent-page__heading {
+    color: $textColor;
+  }
+
+  .load-recent-page__heading-container {
+    border-bottom: 1px solid $borderColor;
+  }
+
+  .load-recent-page__paragraph {
+    color: $paragraphColor;
+  }
+}

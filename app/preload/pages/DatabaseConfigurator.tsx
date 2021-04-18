@@ -1,7 +1,6 @@
 import {Button, Dialog, DropdownMenu, OutlinedButton, OutlinedTextField} from "../elements/MDCWrapper";
 import React from "react";
 import {ipcRenderer} from "electron";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import ReactDOM from "react-dom";
 import {getLogger} from "log4js";
 
@@ -131,35 +130,19 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
     }
 
     public render(): React.ReactNode {
-        const subheadingStyle: React.CSSProperties = {
-            fontFamily: '"Open Sans", sans-serif',
-            fontWeight: 400,
-            color: '#464646'
-        };
-
         const dbProviderOptions: string[] = [
             DatabaseProvider.SQLite, DatabaseProvider.MySQL, DatabaseProvider.MariaDB
         ];
 
-        const setupStyle: React.CSSProperties = {
-            marginTop: '15px'
-        };
-
-        const infoTextStyle: React.CSSProperties = {
-            fontFamily: '"Open Sans", sans-serif',
-            fontWeight: 300,
-            color: '#464646'
-        };
-
         return (
             <div>
-                <h2 style={subheadingStyle} className="centered">Select a database provider</h2>
+                <h2 className="centered database-configurator__subheading">Select a database provider</h2>
                 <div className="centered">
                     <DropdownMenu initialLabel={dbProviderOptions[0]} options={dbProviderOptions}
                                   ref={e => this.dropdownMenu = e} onChange={this.onChange}/>
                 </div>
 
-                <div className="centered" style={infoTextStyle}>
+                <div className="centered database-configurator__info-text">
                     <p style={{marginBottom: '5px'}}>
                         Select a database provider. Once selected, you must set up the provider:
                     </p>
@@ -173,7 +156,7 @@ export class DatabaseConfigurator extends React.Component<DatabaseConfiguratorPr
                     </ul>
                 </div>
 
-                <div className="centered" style={setupStyle}>
+                <div className="centered database-configurator__setup">
                     <OutlinedButton text={"Set up"} onClick={this.setUpDatabaseManager}
                                     ref={e => this.setUpDBButton = e}/>
                 </div>
@@ -313,20 +296,10 @@ class DatabaseConfigDialog extends React.Component {
     }
 
     public render() {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": '#0033ff'
-        };
-
-        const textStyle: React.CSSProperties = {
-            fontFamily: '"Open Sans", sans-serif',
-            fontWeight: 300,
-            color: '#464646'
-        }
-
         return (
             <Dialog titleId={"database-config-dialog-title"} contentId={"database-config-dialog-content"}
-                    title={"Edit database configuration"} style={style} ref={e => this.dialog = e}>
-                <p style={textStyle}>
+                    title={"Edit database configuration"} ref={e => this.dialog = e}>
+                <p className="database-config-dialog__text">
                     In order to connect to the database, you need to enter the following connection details:
                 </p>
                 <OutlinedTextField title={"URL"} ref={e => this.urlTextField = e} labelId={"database-config-url"}/>

@@ -4,7 +4,6 @@
 .start-screen-container {
   border-radius: 5px;
   border-width: 1px;
-  border-color: #b7b7b7;
   margin: 20px;
   border-style: solid;
   padding: 0 20px 20px 20px;
@@ -16,21 +15,33 @@
 .start-screen-heading {
   font-family: $font;
   font-weight: 400;
-  color: #4a4a4a;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 0;
   width: max-content;
 }
 
-// A start screen heading container
-.start-screen-heading-container {
-  border-bottom: 1px solid #b7b7b7;
-}
-
 // A start screen list
 .start-screen-list {
   font-family: $font;
   font-weight: 300;
-  color: #4a4a4a;
+}
+
+@mixin theme($textColor, $borderColor) {
+  // A start screen heading container
+  .start-screen-heading-container {
+    border-bottom: 1px solid $borderColor;
+  }
+
+  .start-screen-list {
+    color: $textColor;
+  }
+
+  .start-screen-heading {
+    color: $textColor;
+  }
+
+  .start-screen-container {
+    border-color: $borderColor;
+  }
 }

@@ -165,7 +165,7 @@ export class Button<P extends ButtonProps = ButtonProps> extends React.Component
     }
 
     public render(): React.ReactNode {
-        const className = this.className ? `mdc-button ${this.className}` : 'mdc-button';
+        const className = this.className ? `mdc-button themed-button ${this.className}` : 'mdc-button themed-button';
         return (
             <button className={className} onClick={this.onClick} style={this.props.style}
                     disabled={!this.state.enabled}>
@@ -197,7 +197,9 @@ export class OutlinedButton extends Button {
     }
 
     public render(): React.ReactNode {
-        const className = this.className ? `mdc-button mdc-button--outlined ${this.className}` : 'mdc-button mdc-button--outlined';
+        const className = this.className ?
+            `mdc-button mdc-button--outlined themed-button ${this.className}` :
+            'mdc-button mdc-button--outlined themed-button';
         return (
             <button className={className} onClick={this.onClick} style={this.props.style}
                     disabled={!this.state.enabled}>
@@ -245,8 +247,8 @@ export class ProgressBar extends React.Component<ProgressBarProps> {
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-linear-progress mdc-linear-progress--indeterminate" role="progressbar"
-                 style={this.props.style} ref={e => this.element = e}>
+            <div className="mdc-linear-progress mdc-linear-progress--indeterminate themed-linear-progress"
+                 role="progressbar" style={this.props.style} ref={e => this.element = e}>
                 <div className="mdc-linear-progress__buffer">
                     <div className="mdc-linear-progress__buffer-bar"/>
                     <div className="mdc-linear-progress__buffer-dots"/>
@@ -309,7 +311,8 @@ export class Menu extends React.Component<MenuProps> {
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-menu mdc-menu-surface" ref={e => this.menuItem = e} style={this.props.style}>
+            <div className="mdc-menu mdc-menu-surface themed-menu-surface" ref={e => this.menuItem = e}
+                 style={this.props.style}>
                 <ul className="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabIndex={-1}>
                     {this.generateMenuItems()}
                 </ul>
@@ -552,7 +555,7 @@ export class Dialog extends React.Component<DialogProps> {
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-dialog" style={this.props.style} ref={e => this.element = e}>
+            <div className="mdc-dialog themed-dialog" style={this.props.style} ref={e => this.element = e}>
                 <div className="mdc-dialog__container">
                     <div className="mdc-dialog__surface" role="alertdialog" aria-modal="true"
                          aria-labelledby={this.props.titleId} aria-describedby={this.props.contentId}
@@ -566,14 +569,14 @@ export class Dialog extends React.Component<DialogProps> {
                         <div className="mdc-dialog__actions">
                             {
                                 this.props.hasCancelButton !== false ? (
-                                    <button type="button" className="mdc-button mdc-dialog__button"
+                                    <button type="button" className="mdc-button mdc-dialog__button themed-dialog-button"
                                             data-mdc-dialog-action="cancel">
                                         <div className="mdc-button__ripple"/>
                                         <span className="mdc-button__label">Cancel</span>
                                     </button>
                                 ) : null
                             }
-                            <button type="button" className="mdc-button mdc-dialog__button"
+                            <button type="button" className="mdc-button mdc-dialog__button themed-dialog-button"
                                     data-mdc-dialog-action="accept">
                                 <div className="mdc-button__ripple"/>
                                 <span className="mdc-button__label">
@@ -614,7 +617,8 @@ export class OutlinedTextField extends TextArea<OutlinedTextFieldProps> {
         };
 
         return (
-            <label className="mdc-text-field mdc-text-field--outlined" style={style} ref={e => this.$this = e}>
+            <label className="mdc-text-field mdc-text-field--outlined themed-text-field" style={style}
+                   ref={e => this.$this = e}>
                 <span className="mdc-notched-outline">
                     <span className="mdc-notched-outline__leading"/>
                     <span className="mdc-notched-outline__notch">
@@ -781,7 +785,7 @@ export class MDCDataTableContainer extends React.Component<MDCDataTableContainer
 export class MDCDataTableProgressIndicator extends React.Component {
     public render(): React.ReactNode {
         return (
-            <div className="mdc-data-table__progress-indicator">
+            <div className="mdc-data-table__progress-indicator themed-linear-progress">
                 <div className="mdc-data-table__scrim"/>
                 <div
                     className="mdc-linear-progress mdc-linear-progress--indeterminate mdc-data-table__linear-progress"
@@ -826,7 +830,7 @@ export class DataTable extends React.Component<DataTableProps> {
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-data-table" style={this.props.style} ref={e => this.element = e}>
+            <div className="mdc-data-table themed-data-table" style={this.props.style} ref={e => this.element = e}>
                 {this.props.children}
             </div>
         );
@@ -1019,7 +1023,8 @@ export namespace topAppBar {
 
         public render(): React.ReactNode {
             return (
-                <header className="mdc-top-app-bar mdc-top-app-bar--dense" ref={e => this.element = e}
+                <header className="mdc-top-app-bar mdc-top-app-bar--dense themed-top-app-bar"
+                        ref={e => this.element = e}
                         style={this.props.style}>
                     <div className="mdc-top-app-bar__row">
                         {this.props.children}

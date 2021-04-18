@@ -1,0 +1,12 @@
+@use "node_modules/@material/data-table/data-table";
+@use "node_modules/@material/data-table/data-table-theme";
+
+@include data-table.core-styles;
+@include data-table.theme-baseline;
+
+@mixin theme($background) {
+  .themed-data-table {
+    @include data-table-theme.fill-color($background);
+  }
+}
+

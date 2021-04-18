@@ -3,7 +3,6 @@
   font-weight: 400;
   margin: 0 auto;
   width: max-content;
-  color: #464646;
 }
 
 .load-screen-load-button {
@@ -14,4 +13,10 @@
 .load-screen-container {
   height: 100%;
   display: grid;
+}
+
+@mixin theme($textColor) {
+  .load-screen-heading {
+    color: $textColor;
+  }
 }

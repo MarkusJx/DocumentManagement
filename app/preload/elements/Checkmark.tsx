@@ -1,7 +1,4 @@
 import React from "react";
-import util from "../util/util";
-
-util.importCss("styles/elements/Checkmark.css");
 
 /**
  * An animated checkmark.

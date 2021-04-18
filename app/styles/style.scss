@@ -1,14 +1,8 @@
-body {
-    -ms-overflow-style: none;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-
-    background: white;
-}
+@use "theme";
+@use "dialogs/FileEditor";
+@use "elements/PropertyField";
+@use "shared";
+@use "elements/Checkmark";
 
 ::-webkit-scrollbar {
     width: 10px;
@@ -25,16 +19,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
-}
-
-$textFieldFocusedColor: #4a6eff;
-
-.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label.text-area-label {
-  color: $textFieldFocusedColor;
-}
-
-.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
-  color: $textFieldFocusedColor;
 }
 
 .mdc-snackbar__action:not(:disabled) {

@@ -1,0 +1,32 @@
+.database-configurator__subheading {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 400;
+}
+
+.database-configurator__setup {
+  margin-top: 15px;
+}
+
+.database-configurator__info-text {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 300;
+}
+
+.database-config-dialog__text {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 300;
+}
+
+@mixin theme($textColor) {
+  .database-configurator__subheading {
+    color: $textColor;
+  }
+
+  .database-configurator__info-text {
+    color: $textColor;
+  }
+
+  .database-config-dialog__text {
+    color: $textColor;
+  }
+}

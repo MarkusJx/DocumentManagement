@@ -1,8 +1,6 @@
 .start-scan-screen {
-  --mdc-theme-primary: blue;
   margin: auto;
   border-radius: 5px;
-  border-color: #a5a5a5;
   border-width: 1px;
   border-style: solid;
   display: grid;
@@ -15,14 +13,12 @@
 }
 
 .start-scan-screen-grid-element {
-  border-bottom-color: #a5a5a5;
   border-bottom-style: solid;
   border-bottom-width: 1px;
   padding: 0 20px 15px 20px;
 }
 
 .start-scan-path {
-  background-color: #dedede;
   border-radius: 4px;
   padding: 0 4px;
 }
@@ -32,19 +28,16 @@
   font-weight: 400;
   margin: 0 auto;
   width: max-content;
-  color: #464646;
 }
 
 .start-scan-screen-subheading {
   font-family: 'Open Sans', sans-serif;
   font-weight: 400;
-  color: #464646;
 }
 
 .start-scan-screen-text {
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;
-  color: #464646;
 }
 
 .start-scan-screen-explanation {
@@ -61,5 +54,32 @@
     border-style: hidden;
     margin: 0 0 auto 0;
     max-width: unset;
+  }
+}
+
+@mixin theme($textColor, $codeBackgroundColor, $borderColor, $themeColor) {
+  .start-scan-screen {
+    --mdc-theme-primary: #{$themeColor};
+    border-color: $borderColor;
+  }
+
+  .start-scan-screen-grid-element {
+    border-bottom-color: $borderColor;
+  }
+
+  .start-scan-path {
+    background-color: $codeBackgroundColor;
+  }
+
+  .start-scan-screen-heading {
+    color: $textColor;
+  }
+
+  .start-scan-screen-subheading {
+    color: $textColor;
+  }
+
+  .start-scan-screen-text {
+    color: $textColor;
   }
 }

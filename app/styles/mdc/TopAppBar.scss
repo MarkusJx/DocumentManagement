@@ -1,0 +1,11 @@
+@use "node_modules/@material/icon-button";
+@use "node_modules/@material/top-app-bar/mdc-top-app-bar";
+@use "node_modules/@material/top-app-bar" as top-app-bar;
+
+@include icon-button.core-styles;
+
+@mixin theme($background) {
+  .themed-top-app-bar {
+    @include top-app-bar.fill-color($background);
+  }
+}

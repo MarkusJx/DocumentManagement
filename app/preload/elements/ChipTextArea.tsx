@@ -6,7 +6,6 @@ import {MDCTextField} from "@material/textfield";
 import {MDCRipple} from "@material/ripple";
 import {MDCList} from '@material/list';
 import Tooltip from "./Tooltip";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 
 /**
  * A function to check if a chip value exists
@@ -506,15 +505,14 @@ export class TextArea<P extends TextAreaProps = TextAreaProps> extends React.Com
 
     public render(): React.ReactNode {
         // The style for the main element
-        const style: MDCCSSProperties = {
+        const style: React.CSSProperties = {
             marginTop: "20px",
-            "--mdc-theme-primary": "#4a6eff",
             width: "100%"
         };
 
         return (
-            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea" style={style}
-                   ref={e => this.$this = e}>
+            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea themed-text-field"
+                   style={style} ref={e => this.$this = e}>
                 <span className="mdc-notched-outline">
                     <span className="mdc-notched-outline__leading"/>
                     <span className="mdc-notched-outline__notch">
@@ -630,9 +628,8 @@ export class ChipTextArea extends TextArea<ChipTextAreaProps> {
 
     public render(): React.ReactNode {
         // The style for the main element
-        const style: MDCCSSProperties = {
+        const style: React.CSSProperties = {
             marginTop: "20px",
-            "--mdc-theme-primary": "#4a6eff",
             width: "100%"
         };
 
@@ -642,7 +639,8 @@ export class ChipTextArea extends TextArea<ChipTextAreaProps> {
         }
 
         return (
-            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea" style={style}>
+            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea themed-text-field"
+                   style={style}>
                 <span className="mdc-notched-outline">
                     <span className="mdc-notched-outline__leading"/>
                     <span className="mdc-notched-outline__notch">

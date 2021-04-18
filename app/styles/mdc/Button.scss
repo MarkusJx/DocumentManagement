@@ -1,0 +1,9 @@
+@use "node_modules/@material/button/button";
+
+@include button.core-styles;
+
+@mixin theme($buttonColor) {
+  .themed-button {
+    --mdc-theme-primary: #{$buttonColor};
+  }
+}

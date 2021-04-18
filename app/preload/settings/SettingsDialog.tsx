@@ -45,10 +45,6 @@ class SettingsDialogElement extends React.Component {
     private readonly containers: HTMLElement[] = [];
 
     public render(): React.ReactNode {
-        const style: MDCCSSProperties = {
-            "--mdc-theme-primary": 'blue'
-        };
-
         const dialogContentStyle: MDCCSSProperties = {
             paddingLeft: 0,
             paddingRight: 0
@@ -71,7 +67,7 @@ class SettingsDialogElement extends React.Component {
 
         return (
             <Dialog titleId={"settings-dialog-title"} contentId={"settings-dialog-content"} title={"Settings"}
-                    ref={e => this.dialog = e} style={style} contentStyle={dialogContentStyle}>
+                    ref={e => this.dialog = e} contentStyle={dialogContentStyle}>
                 <div style={settingContainerStyle} ref={e => this.containers.push(e)} className="mdc-ripple-surface">
                     <p>Load the most recent database on startup</p>
                     <Switch id={"load-recent-database-on-start-switch"} ref={e => this.loadRecentOnStartupSwitch = e}

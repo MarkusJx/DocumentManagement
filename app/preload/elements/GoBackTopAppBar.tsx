@@ -1,6 +1,5 @@
 import React from "react";
 import constants from "../util/constants";
-import MDCCSSProperties from "../util/MDCCSSProperties";
 import {topAppBar} from "./MDCWrapper";
 import Tooltip from "./Tooltip";
 
@@ -45,13 +44,9 @@ export default class GoBackTopAppBar extends React.Component<GoBackTopAppBarProp
     }
 
     public render(): React.ReactNode {
-        const topAppBarStyle: MDCCSSProperties = {
-            "--mdc-theme-primary": "#214456"
-        };
-
         return (
             <>
-                <topAppBar.Header style={topAppBarStyle}>
+                <topAppBar.Header>
                     <topAppBar.NavigationSection title={this.props.title}>
                         <topAppBar.NavigationButton onClick={GoBackTopAppBar.backClick} label={"Back"}
                                                     iconName={"arrow_back"}
