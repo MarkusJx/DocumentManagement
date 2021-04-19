@@ -1,25 +1,37 @@
-@use "node_modules/@material/list/mdc-list";
-@use "node_modules/@material/menu-surface/mdc-menu-surface";
-@use "node_modules/@material/menu/mdc-menu";
 @use "node_modules/@material/menu-surface";
 @use "node_modules/@material/list";
-@use "app/styles/shared";
 
-/// Set the menu theme
+.text-field-auto-complete__container {
+  position: absolute;
+  border-radius: 5px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, .12);
+  display: inline-block;
+  transition: opacity 0.125s ease-in-out;
+  width: 100%;
+  right: 0;
+  background: white;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+}
+
+// Alternative (more strong) box shadow effects:
+// 0 5px 5px -3px rgb(0 0 0 / 17%), 0px 8px 10px 4px rgb(0 0 0 / 25%), 0px 3px 13px 8px rgb(0 0 0 / 18%);
+// 0 5px 5px -3px rgb(0 0 0 / 15%), 0px 8px 10px 4px rgb(0 0 0 / 16%), 0px 3px 13px 8px rgb(0 0 0 / 15%)
+
+/// Set the chip text area theme
 ///
 /// @param {color} $backgroundColor the background color of the menu
 /// @param {color} $textColor the text color of the menu
 /// @param {color} $hoverColor the color of menu items on hover
 /// @param {color} $activeColor the color of menu items on mouse click
 @mixin theme($backgroundColor, $textColor, $hoverColor, $activeColor) {
-  .themed-menu-surface {
+  .text-field-auto-complete__container {
     @include menu-surface.fill-color($backgroundColor);
     @include menu-surface.ink-color($textColor);
-    @include shared.transition-color();
 
     .mdc-list {
       @include list.item-primary-text-ink-color($textColor);
-      @include shared.transition-color();
 
       .mdc-list-item {
         transition: background-color 0.125s ease-in-out;

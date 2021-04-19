@@ -1,19 +1,4 @@
 @use "theme";
-@use "elements/PropertyField";
-@use "shared";
-
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #ffffff;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #999;
-  border-radius: 20px;
-}
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;

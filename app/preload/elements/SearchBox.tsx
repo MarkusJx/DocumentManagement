@@ -240,6 +240,10 @@ export class SearchBox extends React.Component<SearchBoxProps> {
 
         return (
             <div ref={e => this.container = e} className="search-box__container">
+                <div className="search-box__title-container">
+                    <h1 className="search-box__title">Search</h1>
+                </div>
+
                 <div className="search-box__main-content">
                     <OutlinedTextField title={"File name"} ref={e => this.filenameTextArea = e}
                                        labelId={"search-file-name"}/>

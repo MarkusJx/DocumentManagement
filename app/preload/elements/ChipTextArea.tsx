@@ -304,22 +304,11 @@ export class TextFieldAutoComplete extends React.Component<TextFieldAutoComplete
 
         // Set the css style
         const style: React.CSSProperties = {
-            position: 'absolute',
-            borderRadius: '5px',
-            boxShadow: '0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0,0,0,.12)',
-            display: 'inline-block',
-            transition: 'opacity 0.125s ease-in-out',
-            width: '100%',
-            right: 0,
-            background: 'white',
-            zIndex: 999,
-            opacity: 0,
-            visibility: 'hidden',
             top: top
         };
 
         return (
-            <div style={style}>
+            <div style={style} className="text-field-auto-complete__container">
                 <ul className="mdc-list">
                     {this.generateMenuItems()}
                 </ul>

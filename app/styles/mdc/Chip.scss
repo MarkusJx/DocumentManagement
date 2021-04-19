@@ -1,1 +1,8 @@
 @use "node_modules/@material/chips/mdc-chips";
+@use "node_modules/@material/chips";
+
+@mixin theme($backgroundColor) {
+  .mdc-chip {
+    @include chips.fill-color($backgroundColor);
+  }
+}

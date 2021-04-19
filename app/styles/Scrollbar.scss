@@ -1,0 +1,29 @@
+@use "sass:color";
+
+::-webkit-scrollbar {
+  width: 17.5px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+}
+
+/// Set the scrollbar theme
+///
+/// @param {color} $backgroundColor the color of the scrollbar background
+/// @param {color} $thumbColor the color of the scrollbar handle
+/// @param {color} $hoverColor the color of the scrollbar on hover
+@mixin theme($backgroundColor, $thumbColor, $hoverColor) {
+  ::-webkit-scrollbar-track {
+    background: $backgroundColor;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: $thumbColor;
+    border: 5px solid $backgroundColor;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: $hoverColor;
+  }
+}

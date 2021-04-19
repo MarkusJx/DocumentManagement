@@ -254,7 +254,7 @@ function createWindow(): void {
         logger.error("Could not load the index.html:", e);
     });
 
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

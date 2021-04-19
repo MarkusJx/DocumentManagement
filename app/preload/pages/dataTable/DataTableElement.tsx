@@ -12,17 +12,12 @@ import FileEditor from "../../dialogs/FileEditor";
 const logger = getLogger();
 
 /**
- * The last or next id. dunno.
- */
-let lastId = 0;
-
-/**
  * Get an id
  *
  * @return the id
  */
 function getId(): string {
-    return 'tooltip-' + lastId++;
+    return 'tooltip-' + util.generateUid();
 }
 
 /**

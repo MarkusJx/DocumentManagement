@@ -1,7 +1,8 @@
+@use "app/styles/shared";
+
 .property-field__container {
   border-radius: 5px;
   border-width: 1px;
-  border-color: grey;
   border-style: solid;
   padding: 0 20px;
   margin: 20px auto;
@@ -10,4 +11,15 @@
 .property-field__remove-button.mdc-button.themed-button {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+/// Set the property field theme
+///
+/// @param {color} $borderColor the border color
+@mixin theme($borderColor) {
+  .property-field__container {
+    border-color: $borderColor;
+
+    @include shared.transition-color();
+  }
 }

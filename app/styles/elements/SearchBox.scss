@@ -1,22 +1,35 @@
 @use "app/styles/shared";
 
 .search-box__container {
-  padding: 0;
+  margin: 0;
+  border-radius: 6px;
+  display: none;
+  max-width: 1100px;
 
   .search-box__main-content {
     margin-top: 0;
     display: none;
     height: 0;
+    border-radius: 6px;
+    padding: 0 20px 20px;
   }
 
   &.visible {
-    padding: 0 20px 20px 20px;
+    margin: 10px auto 20px auto;
+    display: block;
 
     .search-box__main-content {
       height: unset;
       display: grid;
     }
   }
+}
+
+.search-box__title {
+  font-family: shared.$font;
+  font-weight: 400;
+  width: max-content;
+  margin: 5px auto;
 }
 
 .search-box__exact-match-container {
@@ -46,10 +59,20 @@
 ///
 /// @param {color} $highlightColor the border color of text fields
 /// @param {color} $textColor the text color
-@mixin theme($highlightColor, $textColor) {
+/// @param {color} $borderColor the border color
+@mixin theme($highlightColor, $textColor, $borderColor) {
   .search-box__container {
     --mdc-theme-primary: #{$highlightColor};
+    border: $borderColor 1px solid;
     @include shared.transition-color();
+  }
+
+  .search-box__title {
+    color: $textColor;
+  }
+
+  .search-box__title-container {
+    border-bottom: $borderColor 1px solid;
   }
 
   .search-box__exact-match-container {
