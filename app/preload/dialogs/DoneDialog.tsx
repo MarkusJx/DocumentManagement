@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Checkmark from "../elements/Checkmark";
+import {contextBridge} from "electron";
 
 /**
  * A static done dialog instance
@@ -128,3 +129,12 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('done-dialog-container')
     );
 });
+
+contextBridge.exposeInMainWorld('DoneDialog', {
+    show: (text: string) => {
+        DoneDialog.show(text);
+    },
+    hide: () => {
+        DoneDialog.hide();
+    }
+})

@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 /// Set the data table element theme
 ///
 /// @param {color} $iconColor the color of data table element icons
@@ -6,17 +8,21 @@
 @mixin theme($iconColor, $okIconColor, $errorIconColor) {
   .data-table-element__folder-icon {
     color: $iconColor;
+    @include shared.transition-color();
   }
 
   .data-table-element__document-icon {
     color: $iconColor;
+    @include shared.transition-color();
   }
 
   .data-table-element__ok-icon {
     color: $okIconColor;
+    @include shared.transition-color();
   }
 
   .data-table-element__error-icon {
     color: $errorIconColor;
+    @include shared.transition-color();
   }
 }

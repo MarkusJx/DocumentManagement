@@ -1,4 +1,4 @@
-@import "app/styles/shared";
+@use "app/styles/shared";
 
 // The start screen container
 .start-screen-container {
@@ -13,7 +13,7 @@
 
 // A start screen heading
 .start-screen-heading {
-  font-family: $font;
+  font-family: shared.$font;
   font-weight: 400;
   margin-left: auto;
   margin-right: auto;
@@ -23,7 +23,7 @@
 
 // A start screen list
 .start-screen-list {
-  font-family: $font;
+  font-family: shared.$font;
   font-weight: 300;
 }
 
@@ -35,17 +35,21 @@
   // A start screen heading container
   .start-screen-heading-container {
     border-bottom: 1px solid $borderColor;
+    @include shared.transition-color();
   }
 
   .start-screen-list {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .start-screen-heading {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .start-screen-container {
     border-color: $borderColor;
+    @include shared.transition-color();
   }
 }

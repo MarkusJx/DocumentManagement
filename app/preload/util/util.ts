@@ -11,7 +11,6 @@ import {
 import log4js, {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
 import fs from "fs";
-import path from "path";
 import {AnySettings, DatabaseProvider, DatabaseSetting, SQLiteSettings} from "../../shared/Settings";
 import {Recents} from "../settings/recentConnections";
 import constants from "./constants";
@@ -127,22 +126,6 @@ export default class util {
     }
 
     /**
-     * Import a css file
-     *
-     * @param file the path to the file to import relative to the source path
-     */
-    public static importCss(file: string): void {
-        const element: HTMLLinkElement = document.createElement('link');
-        element.href = path.join(__dirname, '..', '..', file);
-        element.rel = "stylesheet";
-        element.type = "text/css";
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.head.appendChild(element);
-        });
-    }
-
-    /**
      * Sleep for some time
      *
      * @param ms the number of milliseconds to sleep
@@ -166,6 +149,19 @@ export default class util {
                 .substring(1);
         }
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    }
+
+    /**
+     * Check if a HTML Element is visible.
+     * Source: https://stackoverflow.com/a/5354536
+     *
+     * @param elm the element to check
+     * @return true if the element is visible on the screen
+     */
+    public static checkVisible(elm: HTMLElement): boolean {
+        let rect = elm.getBoundingClientRect();
+        let viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+        return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
     }
 
     /**

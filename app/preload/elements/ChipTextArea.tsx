@@ -814,7 +814,7 @@ export class TextAreaWithAutoComplete extends TextAreaWithAutoCompleteBase<TextA
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-menu-surface--anchor">
+            <div className="mdc-menu-surface--anchor" ref={e => this.$this = e}>
                 <TextArea ref={e => super.textArea = e} title={this.title} value={this._value}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}
                                        ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}/>
@@ -907,7 +907,7 @@ export class ChipTextAreaWithAutoComplete extends TextAreaWithAutoCompleteBase<C
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-menu-surface--anchor">
+            <div className="mdc-menu-surface--anchor" ref={e => this.$this = e}>
                 <ChipTextArea ref={e => super.textArea = e} chipValueExists={this.chipValueExists}
                               chipTooltipText={this.chipTooltipText} title={this.title} value={this._value}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}

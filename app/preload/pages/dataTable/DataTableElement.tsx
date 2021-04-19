@@ -6,8 +6,8 @@ import constants from "../../util/constants";
 import {database} from "../../databaseWrapper";
 import {MDCTooltip} from "@material/tooltip";
 import {getLogger} from "log4js";
-import {showErrorDialog} from "../../elements/ErrorDialog";
-import FileEditor from "../../elements/FileEditor";
+import {showErrorDialog} from "../../dialogs/ErrorDialog";
+import FileEditor from "../../dialogs/FileEditor";
 
 const logger = getLogger();
 
@@ -179,7 +179,7 @@ class OpenDocumentButton extends DataTableButton<OpenDocumentButtonProps> {
     private async openDocument(): Promise<void> {
         try {
             if (this.documentPath) {
-                util.openFileUsingDefaultProgram(constants.databaseManager.databaseInfo.sourcePath
+                util.openFileUsingDefaultProgram(constants.databaseManager.getSourcePath()
                     + '/' + this.documentPath);
             }
         } catch (e) {
@@ -338,7 +338,7 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
                 <th className="mdc-data-table__cell" scope="row">{this.document.filename}</th>
                 <TableCellOkErrorIcon ok={this.document.exists}/>
                 <td className="mdc-data-table__cell">
-                    <div className="material-icons" aria-describedby={tooltipId}>
+                    <div className="material-icons data-table-element__document-icon" aria-describedby={tooltipId}>
                         insert_drive_file
                     </div>
                     <Tooltip id={tooltipId} title={"File"}/>
@@ -479,7 +479,7 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
                 <th className="mdc-data-table__cell" scope="row">{this.directory.name}</th>
                 <TableCellOkErrorIcon ok={this.directory.exists}/>
                 <td className="mdc-data-table__cell">
-                    <div className="material-icons" aria-describedby={tooltipId}>
+                    <div className="material-icons data-table-element__folder-icon" aria-describedby={tooltipId}>
                         folder
                     </div>
                     <Tooltip id={tooltipId} title={"Folder"}/>

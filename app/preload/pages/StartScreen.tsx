@@ -1,9 +1,6 @@
 import React from "react";
 import {OutlinedButton} from "../elements/MDCWrapper";
 import SettingsDialog from "../settings/SettingsDialog";
-import util from "../util/util";
-
-util.importCss("styles/pages/StartScreen.css");
 
 /**
  * The start screen properties

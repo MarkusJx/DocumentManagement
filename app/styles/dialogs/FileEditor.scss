@@ -1,16 +1,21 @@
+@use "app/styles/shared";
+
 /// Set the file editor theme
 ///
 /// @param {color} $textColor the text color
 @mixin theme($textColor) {
   .file-editor-creation-date-container {
     color: $textColor;
+    @include shared.transition-color();
 
     .react-date-picker__inputGroup__input {
       color: $textColor;
+      @include shared.transition-color();
     }
 
     .react-date-picker__button__icon {
       stroke: $textColor;
+      @include shared.transition-color();
     }
   }
 }

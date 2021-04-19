@@ -1,7 +1,7 @@
 import React from "react";
 import {Action, FileScanner} from "../databaseWrapper";
 import {Recents} from "../settings/recentConnections";
-import {showErrorDialog} from "../elements/ErrorDialog";
+import {showErrorDialog} from "../dialogs/ErrorDialog";
 import {ipcRenderer} from "electron";
 import {MainDataTable} from "./dataTable/MainDataTable";
 import constants from "../util/constants";

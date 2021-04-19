@@ -1,0 +1,66 @@
+@use "app/styles/shared";
+
+.file-info__container {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 6px;
+  //padding: 20px;
+}
+
+.file-info__paragraph {
+  margin: 10px auto;
+  width: max-content;
+  word-break: break-all;
+  display: grid;
+  grid-template-columns: max-content auto;
+  column-gap: 5px;
+  max-width: 100%;
+  font-family: shared.$font;
+}
+
+.file-info__property {
+  font-weight: 300;
+}
+
+.file-info__heading-container {
+  width: 100%;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+
+.file-info__heading {
+  font-family: shared.$font;
+  font-weight: 400;
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 22px;
+}
+
+.file-info__content {
+  padding: 10px 20px;
+}
+
+/// Set the file info theme
+///
+/// @param {color} $borderColor the color of all borders
+/// @param {color} $textColor the color of any text elements
+/// @param {color} $secondaryTextColor the color of the file info properties
+@mixin theme($borderColor, $textColor, $secondaryTextColor) {
+  .file-info__container {
+    border-color: $borderColor;
+    color: $textColor;
+  }
+
+  .file-info__heading-container {
+    border-bottom-color: $borderColor;
+  }
+
+  .file-info__heading {
+    color: $textColor;
+  }
+
+  .file-info__property {
+    color: $secondaryTextColor;
+  }
+}

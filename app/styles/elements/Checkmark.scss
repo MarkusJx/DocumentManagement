@@ -6,7 +6,6 @@
   border-radius: 50%;
   display: block;
   stroke-width: 2;
-  stroke: #fff;
   stroke-miterlimit: 10;
   margin: 25px auto auto auto;
   box-shadow: inset 0 0 0 #7ac142;
@@ -60,5 +59,11 @@
 @keyframes checkmark__fill {
   100% {
     box-shadow: inset 0 0 0 30px #7ac142;
+  }
+}
+
+@mixin theme($checkmarkColor) {
+  .checkmark {
+    stroke: $checkmarkColor;
   }
 }

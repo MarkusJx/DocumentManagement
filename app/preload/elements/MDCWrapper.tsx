@@ -17,6 +17,7 @@ import {
     TextFieldAutoComplete
 } from "./ChipTextArea";
 import {MDCDataTable} from "@material/data-table";
+import util from "../util/util";
 
 /**
  * A checkbox
@@ -620,23 +621,31 @@ export class OutlinedTextField extends TextArea<OutlinedTextFieldProps> {
         // The style for the main element
         const style: MDCCSSProperties = {
             marginTop: "20px",
-            "--mdc-theme-primary": "#4a6eff",
             width: "100%"
         };
 
+        const helperId: string = 'helper-text-' + util.generateUid();
+
         return (
-            <label className="mdc-text-field mdc-text-field--outlined themed-text-field" style={style}
-                   ref={e => this.$this = e}>
-                <span className="mdc-notched-outline">
-                    <span className="mdc-notched-outline__leading"/>
-                    <span className="mdc-notched-outline__notch">
-                        <span className="mdc-floating-label" id={this.props.labelId}>{this.props.title}</span>
+            <>
+                <label className="mdc-text-field mdc-text-field--outlined themed-text-field" style={style}
+                       ref={e => this.$this = e}>
+                    <span className="mdc-notched-outline">
+                        <span className="mdc-notched-outline__leading"/>
+                        <span className="mdc-notched-outline__notch">
+                            <span className="mdc-floating-label" id={this.props.labelId}>{this.props.title}</span>
+                        </span>
+                        <span className="mdc-notched-outline__trailing"/>
                     </span>
-                    <span className="mdc-notched-outline__trailing"/>
-                </span>
-                <input type="text" className="mdc-text-field__input" aria-labelledby={this.props.labelId}
-                       onInput={this.onInput}/>
-            </label>
+                    <input type="text" className="mdc-text-field__input" aria-labelledby={this.props.labelId}
+                           onInput={this.onInput} aria-controls={helperId} aria-describedby={helperId}/>
+                </label>
+                <div className="mdc-text-field-helper-line">
+                    <div
+                        className="mdc-text-field-helper-text mdc-text-field-helper-text--persistent themed-helper-text"
+                        aria-hidden="false" id={helperId}/>
+                </div>
+            </>
         );
     }
 }
@@ -666,7 +675,7 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
 
     public render(): React.ReactNode {
         return (
-            <div className="mdc-menu-surface--anchor">
+            <div className="mdc-menu-surface--anchor" ref={e => this.$this = e}>
                 <OutlinedTextField ref={e => this.textArea = e} title={this.title} value={this._value}
                                    labelId={this.props.labelId}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}

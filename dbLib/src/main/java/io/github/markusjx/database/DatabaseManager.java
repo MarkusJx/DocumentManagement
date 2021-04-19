@@ -848,6 +848,28 @@ public class DatabaseManager {
     }
 
     /**
+     * Check if a property exists
+     *
+     * @param value the property to check
+     * @return true if the property exists
+     */
+    @SuppressWarnings("unused")
+    public synchronized boolean propertyExists(String value) {
+        return manager.find(Property.class, value) != null;
+    }
+
+    /**
+     * Check if a property value exists
+     *
+     * @param value the property value to check
+     * @return true if the property value exists
+     */
+    @SuppressWarnings("unused")
+    public synchronized boolean propertyValueExists(String value) {
+        return manager.find(PropertyValue.class, value) != null;
+    }
+
+    /**
      * Get all documents by a {@link DocumentFilter},
      * Returns a list of documents sorted by the
      * calculated filter accuracy.

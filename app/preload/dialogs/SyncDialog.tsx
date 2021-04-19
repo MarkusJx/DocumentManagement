@@ -5,7 +5,7 @@ import util from "../util/util";
 import {database, FileScanner} from "../databaseWrapper";
 import {ipcRenderer} from "electron";
 import {getLogger} from "log4js";
-import {showErrorDialog} from "../elements/ErrorDialog";
+import {showErrorDialog} from "./ErrorDialog";
 import constants from "../util/constants";
 import DoneDialog from "./DoneDialog";
 import DirectorySelector from "../elements/DirectorySelector";
@@ -300,6 +300,12 @@ class SyncDialogElement extends React.Component {
         this.swipeDialog.progressBar.progressBar.determinate = false;
         const couldSync = await constants.databaseManager.synchronizeDirectory(this.updatedDirectory, this.selectedPath.path);
         if (couldSync) {
+            if (constants.activeSetting.localPath != null) {
+                logger.info("The local path is set, deleting it");
+                constants.activeSetting.localPath = null;
+                constants.saveActiveSetting();
+            }
+
             await constants.mainDataTable.loadDatabase();
             logger.debug("Main data table loaded");
             this.hide();

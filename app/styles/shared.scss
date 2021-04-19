@@ -26,6 +26,13 @@
   animation-timing-function: ease-in-out;
 }
 
+/// Transition the color change
+@mixin transition-color() {
+  transition: all 0.25s ease-in-out;
+  transition-property: color, background-color, background, --mdc-theme-primary, border-color, border-bottom-color,
+  border-top-color, border-left-color, border-right-color, --mdc-checkbox-unchecked-color;
+}
+
 // Adds a space after the element
 .after-space:after {
   content: " ";

@@ -13,7 +13,7 @@ $scaleFrom: 0.8;
 // The duration it takes to show or hide the dialog
 $showHideDuration: 0.125s;
 
-@import "app/styles/shared";
+@use "app/styles/shared";
 
 // The swipe dialog background
 .swipe-dialog__background {
@@ -30,7 +30,7 @@ $showHideDuration: 0.125s;
   &.hidden {
     display: block;
     // Hide the sync dialog background
-    @include inline-animation($showHideDuration) {
+    @include shared.inline-animation($showHideDuration) {
       0% {
         display: block;
         opacity: 1;
@@ -48,7 +48,7 @@ $showHideDuration: 0.125s;
     // The hidden sync dialog
     .swipe-dialog__dialog {
       // Hide the sync dialog
-      @include inline-animation($showHideDuration) {
+      @include shared.inline-animation($showHideDuration) {
         0% {
           transform: scale(1, 1);
         }
@@ -64,7 +64,7 @@ $showHideDuration: 0.125s;
     opacity: 1;
     display: block;
     // Show the sync dialog background
-    @include inline-animation($showHideDuration) {
+    @include shared.inline-animation($showHideDuration) {
       0% {
         display: none;
         opacity: 0;
@@ -82,7 +82,7 @@ $showHideDuration: 0.125s;
     // The visible sync dialog
     .swipe-dialog__dialog {
       // Show the sync dialog
-      @include inline-animation($showHideDuration) {
+      @include shared.inline-animation($showHideDuration) {
         0% {
           transform: scale(#{$scaleFrom}, #{$scaleFrom});
         }
@@ -130,7 +130,7 @@ $showHideDuration: 0.125s;
 
 // The swipe dialog title
 .swipe-dialog__title {
-  font-family: $font;
+  font-family: shared.$font;
   margin: auto;
   width: max-content;
   font-size: 28px;
@@ -151,7 +151,7 @@ $showHideDuration: 0.125s;
   $animationDuration: 0.5s;
   $swipeMargin: -110%;
 
-  font-family: $font;
+  font-family: shared.$font;
   font-weight: 300;
   margin-right: $swipeMargin;
   width: calc(100% - #{$dialogContentPadding * 2});
@@ -163,7 +163,7 @@ $showHideDuration: 0.125s;
   &.centered {
     right: 0;
     left: 0;
-    @include inline-animation($animationDuration) {
+    @include shared.inline-animation($animationDuration) {
       0% {
         left: abs($swipeMargin);
       }
@@ -177,7 +177,7 @@ $showHideDuration: 0.125s;
   &.left {
     left: $swipeMargin;
     right: 0;
-    @include inline-animation($animationDuration) {
+    @include shared.inline-animation($animationDuration) {
       0% {
         left: 0;
       }
@@ -204,21 +204,26 @@ $showHideDuration: 0.125s;
 @mixin theme($background, $textColor, $topBarColor, $topBarTextColor, $hideBackgroundColor) {
   .swipe-dialog__dialog {
     background: $background;
+    @include shared.transition-color();
   }
 
   .swipe-dialog__dialog-top-bar {
     background-color: $topBarColor;
+    @include shared.transition-color();
   }
 
   .swipe-dialog__title {
     color: $topBarTextColor;
+    @include shared.transition-color();
   }
 
   .swipe-dialog__background {
     background-color: $hideBackgroundColor;
+    @include shared.transition-color();
   }
 
   .swipe-dialog__swipe-element {
     color: $textColor;
+    @include shared.transition-color();
   }
 }

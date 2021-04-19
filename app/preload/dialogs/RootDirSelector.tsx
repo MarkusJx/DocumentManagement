@@ -5,7 +5,7 @@ import {getLogger} from "log4js";
 import DirectorySelector from "../elements/DirectorySelector";
 import {ipcRenderer} from "electron";
 import constants from "../util/constants";
-import {showErrorDialog} from "../elements/ErrorDialog";
+import {showErrorDialog} from "./ErrorDialog";
 
 const logger = getLogger();
 

@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {Dialog} from "./MDCWrapper";
+import {Dialog} from "../elements/MDCWrapper";
 
 /**
  * The static error dialog

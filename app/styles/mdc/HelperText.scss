@@ -1,0 +1,9 @@
+@use "node_modules/@material/textfield/helper-text";
+
+@include helper-text.helper-text-core-styles;
+
+@mixin theme($textColor) {
+  .themed-helper-text.mdc-text-field-helper-text.mdc-text-field-helper-text--persistent {
+    color: $textColor;
+  }
+}

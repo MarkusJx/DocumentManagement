@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 .error-dialog__dialog {
   margin-top: 30px;
   height: calc(100vh - 30px);
@@ -18,14 +20,17 @@
 @mixin theme($textColor, $buttonColor, $codeBackgroundColor, $codeTextColor) {
   .error-dialog__text {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .error-dialog__dialog .themed-dialog-button {
     --mdc-theme-primary: #{$buttonColor};
+    @include shared.transition-color();
   }
 
   .error-dialog__error-container {
     background-color: $codeBackgroundColor;
     color: $codeTextColor;
+    @include shared.transition-color();
   }
 }

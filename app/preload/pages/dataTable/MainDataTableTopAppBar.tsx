@@ -5,10 +5,11 @@ import {MainDataTable} from "./MainDataTable";
 import SettingsDialog from "../../settings/SettingsDialog";
 import SyncDialog from "../../dialogs/SyncDialog";
 import {getLogger} from "log4js";
-import {showErrorDialog} from "../../elements/ErrorDialog";
+import {showErrorDialog} from "../../dialogs/ErrorDialog";
 import Snackbars from "../../util/Snackbars";
 import RootDirSelector from "../../dialogs/RootDirSelector";
 import CopyDatabaseDialog from "../../dialogs/CopyDatabaseDialog";
+import DatabaseInfo from "../../dialogs/DatabaseInfo";
 
 const logger = getLogger();
 
@@ -37,6 +38,7 @@ enum settings {
     RELOAD = "Reload",
     SET_ROOT_DIR = "Set root directory",
     COPY_DATABASE = "Copy the database",
+    DATABASE_INFO = "Show database info",
     EXIT = "Exit"
 }
 
@@ -98,6 +100,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
             settings.SYNCHRONIZE,
             settings.SET_ROOT_DIR,
             settings.COPY_DATABASE,
+            settings.DATABASE_INFO,
             settings.RELOAD,
             settings.EXIT
         ];
@@ -176,6 +179,10 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
             }
             case settings.COPY_DATABASE: {
                 CopyDatabaseDialog.open();
+                break;
+            }
+            case settings.DATABASE_INFO: {
+                DatabaseInfo.show();
                 break;
             }
         }

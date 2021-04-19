@@ -3,6 +3,7 @@
 @use "node_modules/@material/menu/mdc-menu";
 @use "node_modules/@material/menu-surface";
 @use "node_modules/@material/list" as list;
+@use "app/styles/shared";
 
 /// Set the menu theme
 ///
@@ -14,9 +15,11 @@
   .themed-menu-surface {
     @include menu-surface.fill-color($backgroundColor);
     @include menu-surface.ink-color($textColor);
+    @include shared.transition-color();
 
     .mdc-list {
       @include list.item-primary-text-ink-color($textColor);
+      @include shared.transition-color();
 
       .mdc-list-item {
         transition: background-color 0.125s ease-in-out;

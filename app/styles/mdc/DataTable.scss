@@ -1,6 +1,7 @@
 @use "node_modules/@material/data-table/data-table";
 @use "node_modules/@material/data-table" as data-table-theme;
 @use "node_modules/@material/data-table/data-table" as table;
+@use "app/styles/shared";
 
 @include data-table.core-styles;
 @include data-table.theme-baseline;
@@ -11,7 +12,8 @@
 /// @param {color} $dividerColor the color of the row dividers
 /// @param {color} $textColor the color of any texts
 /// @param {color} $hoverColor the color of the rows on hover
-@mixin theme($background, $dividerColor, $textColor, $hoverColor) {
+/// @param {color} $disabledColor the color of an disabled button
+@mixin theme($background, $dividerColor, $textColor, $hoverColor, $disabledButtonColor) {
   .themed-data-table {
     @include data-table-theme.fill-color($background);
     @include data-table-theme.divider-color($dividerColor);
@@ -21,6 +23,19 @@
     @include data-table-theme.row-hover-fill-color($hoverColor);
 
     border-color: $dividerColor;
+
+    @include shared.transition-color();
+
+    .mdc-data-table__pagination .mdc-data-table__pagination-trailing .mdc-data-table__pagination-button {
+      color: $textColor;
+      --mdc-ripple-color: #{$textColor};
+
+      @include shared.transition-color();
+
+      &:disabled {
+        color: $disabledButtonColor;
+      }
+    }
   }
 }
 

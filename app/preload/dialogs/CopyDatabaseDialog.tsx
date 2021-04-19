@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import {SwipeDialog, SwipeDialogSwipeElement} from "./SwipeDialog";
 import {DatabaseConfigurator} from "../pages/DatabaseConfigurator";
 import {getLogger} from "log4js";
-import {showErrorDialog} from "../elements/ErrorDialog";
+import {showErrorDialog} from "./ErrorDialog";
 import util from "../util/util";
 import {Action} from "../databaseWrapper";
 import constants from "../util/constants";

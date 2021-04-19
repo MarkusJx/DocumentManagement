@@ -1,5 +1,6 @@
 @use "node_modules/@material/button/button";
 @use "node_modules/@material/button" as mdc-button;
+@use "app/styles/shared";
 
 @include button.core-styles;
 
@@ -15,13 +16,19 @@
     @include mdc-button.outline-color($outlineColor);
     @include mdc-button.disabled-ink-color($disabledColor);
     @include mdc-button.disabled-outline-color($disabledColor);
+
+    @include shared.transition-color();
   }
 
   .main-data-table__action-button:disabled {
     color: $disabledColor;
+
+    @include shared.transition-color();
   }
 
   .main-data-table__action-button:before, .main-data-table__action-button:after {
     background-color: $iconButtonRippleColor;
+
+    @include shared.transition-color();
   }
 }

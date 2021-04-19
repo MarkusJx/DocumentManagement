@@ -13,6 +13,7 @@
 @use "mdc/Checkbox";
 @use "mdc/Ripple";
 @use "mdc/Chip";
+@use "mdc/HelperText";
 
 @use "pages/LoadingScreen";
 @use "elements/SearchBox";
@@ -25,6 +26,9 @@
 @use "dialogs/SettingsDialog";
 @use "dialogs/FileEditor";
 @use "dialogs/ErrorDialog";
+@use "elements/Checkmark";
+@use "elements/FileInfo";
+@use "shared";
 
 /// Set the theme colors
 ///
@@ -56,7 +60,7 @@
               $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor, $errorDialogButtonColor) {
   @include SwipeDialog.theme($background, $textColor, $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor);
   @include DoneDialog.theme($background, $hideBackgroundColor, $themeColor, $textColor);
-  @include DataTable.theme($background, $borderColor, $textColor, $hoverColor);
+  @include DataTable.theme($background, $borderColor, $textColor, $hoverColor, $disabledButtonColor);
   @include TopAppBar.theme($topAppBarColor, $topAppBarTextColor);
   @include TextField.theme($lightThemeColor, $borderColor, $darkTextColor, $hoverOutlineColor);
   @include Dialog.theme($themeColor, $background, $darkTextColor, $darkTextColor);
@@ -75,6 +79,9 @@
   @include Ripple.theme($iconButtonRippleColor);
   @include FileEditor.theme($textColor);
   @include ErrorDialog.theme($textColor, $errorDialogButtonColor, $codeBackgroundColor, $codeTextColor);
+  @include Checkmark.theme($background);
+  @include FileInfo.theme($borderColor, $darkTextColor, $textColor);
+  @include HelperText.theme($textColor);
 }
 
 body {
@@ -85,8 +92,7 @@ body {
   -ms-user-select: none;
   user-select: none;
 
-  transition: all 0.25s ease-in-out;
-  transition-property: color, background-color;
+  @include shared.transition-color();
 
   $background: white;
   $themeColor: blue;
@@ -133,7 +139,7 @@ body {
     $codeTextColor: black;
     $disabledButtonColor: #c3c3c361;
     $iconColor: #bfbfbf;
-    $okIconColor: #32fd42;
+    $okIconColor: #68d015;
     $errorIconColor: #de4a4a;
     $dataTableLoadingColor: #484848;
     $iconButtonRippleColor: #b9b9b9;

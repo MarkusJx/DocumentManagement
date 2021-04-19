@@ -1,14 +1,15 @@
 import React from "react";
 
 import {database} from "../databaseWrapper";
-import {ChipTextAreaWithAutoComplete} from "./ChipTextArea";
-import {PropertySetter} from "./PropertyField";
+import {ChipTextAreaWithAutoComplete} from "../elements/ChipTextArea";
+import {PropertySetter} from "../elements/PropertyField";
 import constants from "../util/constants";
-import {DateTextField} from "./DateTextField";
-import {Dialog} from "./MDCWrapper";
+import {DateTextField} from "../elements/DateTextField";
+import {Dialog} from "../elements/MDCWrapper";
 import {showErrorDialog} from "./ErrorDialog";
 import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
+import FileInfo from "../elements/FileInfo";
 
 const logger = getLogger();
 
@@ -61,6 +62,12 @@ class FileEditorElement extends React.Component {
      * @private
      */
     private dialog: Dialog;
+
+    /**
+     * The file info
+     * @private
+     */
+    private fileInfo: FileInfo = null;
 
     /**
      * Create a file editor instance
@@ -133,6 +140,7 @@ class FileEditorElement extends React.Component {
      */
     public open(document: database.Document): void {
         this.currentDocument = document;
+        this.fileInfo.document = document;
 
         this.chipTextArea.chipValues = this.currentDocument.tags.map(tag => tag.name);
         this.propertySetter.propertyValues = this.currentDocument.properties;
@@ -165,6 +173,7 @@ class FileEditorElement extends React.Component {
         return (
             <Dialog titleId={"file-editor-dialog-title"} contentId={"file-editor-dialog-content"}
                     title={"Edit file properties"} contentStyle={contentStyle} ref={e => this.dialog = e}>
+                <FileInfo ref={e => this.fileInfo = e}/>
                 <ChipTextAreaWithAutoComplete getAutoCompleteOptions={FileEditorElement.getAutoCompleteOptions}
                                               ref={e => this.chipTextArea = e}
                                               chipValueExists={FileEditorElement.chipValueExists}

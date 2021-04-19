@@ -190,7 +190,7 @@ async function run() {
         console.log("The scss cache is out of date, running sass");
         try {
             await spawnAsync("sass", [
-                "app/styles:out/styles",
+                "app/styles/style.scss:out/styles/style.css",
                 `--load-path=${path.join(__dirname, '..', 'node_modules')}`,
                 `--load-path=${path.join(__dirname, '..')}`,
                 "--update",

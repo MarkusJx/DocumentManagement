@@ -1,8 +1,15 @@
 @use "node_modules/@material/icon-button";
 @use "node_modules/@material/top-app-bar/mdc-top-app-bar";
 @use "node_modules/@material/top-app-bar" as top-app-bar;
+@use "app/styles/shared";
 
 @include icon-button.core-styles;
+
+.mdc-top-app-bar--dense-fixed-adjust {
+  padding-top: 0;
+  margin-top: 48px;
+  overflow: auto;
+}
 
 /// Set the top app bar theme
 ///
@@ -12,5 +19,7 @@
   .themed-top-app-bar {
     @include top-app-bar.fill-color($background);
     @include top-app-bar.ink-color($textColor);
+
+    @include shared.transition-color();
   }
 }

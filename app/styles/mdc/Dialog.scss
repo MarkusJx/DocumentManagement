@@ -1,4 +1,5 @@
 @use "node_modules/@material/dialog";
+@use "app/styles/shared";
 
 @include dialog.core-styles;
 
@@ -13,9 +14,12 @@
     @include dialog.container-fill-color($fillColor);
     @include dialog.title-ink-color($titleColor);
     @include dialog.content-ink-color($textColor);
+
+    @include shared.transition-color();
   }
 
   .themed-dialog-button {
     --mdc-theme-primary: #{$buttonColor};
+    @include shared.transition-color();
   }
 }

@@ -3,7 +3,7 @@ import {database} from "../../databaseWrapper";
 import constants from "../../util/constants";
 import {DataTable, MDCDataTableContainer, MDCDataTableProgressIndicator,} from "../../elements/MDCWrapper";
 import {getLogger} from "log4js";
-import {showErrorDialog} from "../../elements/ErrorDialog";
+import {showErrorDialog} from "../../dialogs/ErrorDialog";
 import {SearchBox} from "../../elements/SearchBox";
 import Tooltip from "../../elements/Tooltip";
 import MainDataTableTopAppBar from "./MainDataTableTopAppBar";

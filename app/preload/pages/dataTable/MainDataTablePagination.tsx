@@ -1,7 +1,7 @@
 import {database} from "../../databaseWrapper";
 import React from "react";
 import constants from "../../util/constants";
-import {showErrorDialog} from "../../elements/ErrorDialog";
+import {showErrorDialog} from "../../dialogs/ErrorDialog";
 import {getLogger} from "log4js";
 
 const logger = getLogger();

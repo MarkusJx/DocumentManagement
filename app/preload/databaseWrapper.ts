@@ -1194,6 +1194,7 @@ export namespace database {
          * The database info
          */
         public databaseInfo: DatabaseInfo;
+
         /**
          * The java instance
          * @private
@@ -1211,6 +1212,19 @@ export namespace database {
             this.databaseInfo = null;
 
             this.setDatabaseInfo().then();
+        }
+
+        /**
+         * Get the database's source path
+         *
+         * @return the source path
+         */
+        public getSourcePath(): string {
+            if (constants.activeSetting != null && constants.activeSetting.localPath != null) {
+                return constants.activeSetting.localPath;
+            } else {
+                return this.databaseInfo.sourcePath;
+            }
         }
 
         /**
@@ -1397,6 +1411,26 @@ export namespace database {
             }
 
             return result;
+        }
+
+        /**
+         * Check if a property exists
+         *
+         * @param value the property to check
+         * @return true if the property exists
+         */
+        public propertyExists(value: string): Promise<boolean> {
+            return java_callMethod(this.impl, 'propertyExists', value);
+        }
+
+        /**
+         * Check if a property value exists
+         *
+         * @param value the property value to check
+         * @return true if the property value exists
+         */
+        public propertyValueExists(value: string): Promise<boolean> {
+            return java_callMethod(this.impl, 'propertyValueExists', value);
         }
 
         /**

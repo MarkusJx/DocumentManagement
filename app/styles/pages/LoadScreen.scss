@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 .load-screen-heading {
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
@@ -21,5 +23,6 @@
 @mixin theme($textColor) {
   .load-screen-heading {
     color: $textColor;
+    @include shared.transition-color();
   }
 }

@@ -18,7 +18,7 @@
     @include textfield.outline-color($outlineColor);
     @include textfield.label-color($outlineColor);
     @include textfield.hover-outline-color($hoverOutlineColor);
-    @include textfield.caret-color($textColor);;
+    @include textfield.caret-color($textColor);
 
     &.mdc-text-field--focused:not(.mdc-text-field--disabled) {
       .mdc-floating-label.text-area-label {

@@ -3,7 +3,7 @@ import React from "react";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
 import {ipcRenderer} from "electron";
-import {showErrorDialog} from "../elements/ErrorDialog";
+import {showErrorDialog} from "../dialogs/ErrorDialog";
 import constants from "../util/constants";
 import util from "../util/util";
 import {Recents} from "../settings/recentConnections";

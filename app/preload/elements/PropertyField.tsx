@@ -119,6 +119,35 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
             </div>
         );
     }
+
+    public componentDidMount(): void {
+        setTimeout(() => {
+            this._propertyNameTextArea.textArea.textField.listen('focusout', async () => {
+                if (this._propertyNameTextArea.value.trim().length > 0) {
+                    if (await constants.databaseManager.propertyExists(this._propertyNameTextArea.value.trim())) {
+                        this._propertyNameTextArea.textArea.textField.helperTextContent = "";
+                    } else {
+                        console.log("def");
+                        this._propertyNameTextArea.textArea.textField.helperTextContent = "The property does not exist";
+                    }
+                } else {
+                    this._propertyNameTextArea.textArea.textField.helperTextContent = "";
+                }
+            });
+
+            this._propertyValueTextArea.textArea.textField.listen('focusout', async () => {
+                if (this._propertyValueTextArea.value.trim().length > 0) {
+                    if (await constants.databaseManager.propertyValueExists(this._propertyValueTextArea.value.trim())) {
+                        this._propertyValueTextArea.textArea.textField.helperTextContent = "";
+                    } else {
+                        this._propertyValueTextArea.textArea.textField.helperTextContent = "The property value does not exist";
+                    }
+                } else {
+                    this._propertyValueTextArea.textArea.textField.helperTextContent = "";
+                }
+            });
+        }, 1000);
+    }
 }
 
 /**
@@ -291,7 +320,8 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
                 <div key={pv.name + '-' + pv.value + '-' + this._nextId++} className="property-field__container">
                     <PropertyField propertyName={pv.name} propertyValue={pv.value}
                                    ref={e => this._propertyFields.push(e)}/>
-                    <button className="mdc-button themed-button" onClick={this.removeElement.bind(this, pv)}>
+                    <button className="mdc-button themed-button property-field__remove-button"
+                            onClick={this.removeElement.bind(this, pv)}>
                         <span className="mdc-button__ripple"/>
                         <span className="mdc-button__label">remove</span>
                     </button>

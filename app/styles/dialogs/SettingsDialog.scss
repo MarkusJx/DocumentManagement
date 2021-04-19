@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 .settings-dialog__setting-container {
   display: grid;
   grid-template-columns: auto min-content;
@@ -12,5 +14,6 @@
 @mixin theme($borderBottomColor) {
   .settings-dialog__setting-container {
     border-bottom: 0.5px solid $borderBottomColor;
+    @include shared.transition-color();
   }
 }

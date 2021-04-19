@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 .load-recent-page__main-cell {
   padding: 12px;
 }
@@ -32,13 +34,16 @@
 @mixin theme($textColor, $borderColor, $paragraphColor) {
   .load-recent-page__heading {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .load-recent-page__heading-container {
     border-bottom: 1px solid $borderColor;
+    @include shared.transition-color();
   }
 
   .load-recent-page__paragraph {
     color: $paragraphColor;
+    @include shared.transition-color();
   }
 }

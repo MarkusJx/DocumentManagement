@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 .start-scan-screen {
   margin: auto;
   border-radius: 5px;
@@ -68,26 +70,32 @@
   .start-scan-screen {
     --mdc-theme-primary: #{$themeColor};
     border-color: $borderColor;
+    @include shared.transition-color();
   }
 
   .start-scan-screen-grid-element {
     border-bottom-color: $borderColor;
+    @include shared.transition-color();
   }
 
   .start-scan-path {
     color: $codeTextColor;
     background-color: $codeBackgroundColor;
+    @include shared.transition-color();
   }
 
   .start-scan-screen-heading {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .start-scan-screen-subheading {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .start-scan-screen-text {
     color: $textColor;
+    @include shared.transition-color();
   }
 }

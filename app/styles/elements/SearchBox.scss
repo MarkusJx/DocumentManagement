@@ -1,11 +1,22 @@
-.search-box__container {
-  padding: 0 20px;
-}
+@use "app/styles/shared";
 
-.search-box__main-content {
-  margin-top: 0;
-  display: none;
-  height: 0;
+.search-box__container {
+  padding: 0;
+
+  .search-box__main-content {
+    margin-top: 0;
+    display: none;
+    height: 0;
+  }
+
+  &.visible {
+    padding: 0 20px 20px 20px;
+
+    .search-box__main-content {
+      height: unset;
+      display: grid;
+    }
+  }
 }
 
 .search-box__exact-match-container {
@@ -38,22 +49,27 @@
 @mixin theme($highlightColor, $textColor) {
   .search-box__container {
     --mdc-theme-primary: #{$highlightColor};
+    @include shared.transition-color();
   }
 
   .search-box__exact-match-container {
     color: $textColor;
     --mdc-checkbox-unchecked-color: #{$textColor};
+    @include shared.transition-color();
   }
 
   .search-box__date-range-container {
     color: $textColor;
+    @include shared.transition-color();
 
     .react-daterange-picker__inputGroup__input {
       color: $textColor;
+      @include shared.transition-color();
     }
 
     .react-daterange-picker__button__icon {
       stroke: $textColor;
+      @include shared.transition-color();
     }
   }
 }

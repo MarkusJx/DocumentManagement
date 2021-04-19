@@ -1,3 +1,5 @@
+@use "app/styles/shared";
+
 .database-configurator__subheading {
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
@@ -23,13 +25,16 @@
 @mixin theme($textColor) {
   .database-configurator__subheading {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .database-configurator__info-text {
     color: $textColor;
+    @include shared.transition-color();
   }
 
   .database-config-dialog__text {
     color: $textColor;
+    @include shared.transition-color();
   }
 }

@@ -1,5 +1,6 @@
 @use "node_modules/@material/linear-progress/mdc-linear-progress";
 @use "node_modules/@material/linear-progress";
+@use "app/styles/shared";
 
 /// Set the progress indicator theme
 ///
@@ -8,9 +9,11 @@
 @mixin theme($progressBarColor, $loadingColor) {
   .themed-linear-progress {
     @include linear-progress.bar-color($progressBarColor);
+    @include shared.transition-color();
 
     .mdc-data-table__scrim {
       background-color: $loadingColor;
+      @include shared.transition-color();
     }
   }
 }

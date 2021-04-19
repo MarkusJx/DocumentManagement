@@ -6,6 +6,7 @@ import {PropertySetter} from "./PropertyField";
 import {DateRangeTextField} from "./DateTextField";
 import constants from "../util/constants";
 import {getLogger} from "log4js";
+import util from "../util/util";
 
 const logger = getLogger();
 
@@ -44,12 +45,6 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * @private
      */
     private chipTextArea: ChipTextAreaWithAutoComplete;
-
-    /**
-     * The element containing the main content
-     * @private
-     */
-    private mainContentElement: HTMLDivElement;
 
     /**
      * The html container element
@@ -95,7 +90,6 @@ export class SearchBox extends React.Component<SearchBoxProps> {
         this.exact_match_checkbox = null;
         this.propertySetter = null;
         this.chipTextArea = null;
-        this.mainContentElement = null;
         this.mainContentShown = false;
         this.dateRangeTextField = null;
         this.startButton = null;
@@ -175,18 +169,35 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * Show or hide the main content
      */
     public showHideMainContent(): void {
+        function scrollToTop(smooth: boolean = true): void {
+            const scrollElement = document.getElementsByClassName('mdc-top-app-bar--dense-fixed-adjust')[0];
+            scrollElement.scroll({
+                top: 0,
+                left: 0,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        }
+
+        if (this.mainContentShown && !util.checkVisible(this.container)) {
+            scrollToTop();
+            return;
+        }
+
         this.mainContentShown = !this.mainContentShown;
         if (this.mainContentShown) {
-            this.mainContentElement.style.height = "unset";
-            this.mainContentElement.style.marginTop = "20px";
-            this.mainContentElement.style.display = "grid";
-            this.container.style.padding = '0 20px 20px 20px';
+            this.container.classList.add("visible");
+
+            if (!util.checkVisible(this.container)) {
+                scrollToTop();
+            }
         } else {
-            this.mainContentElement.style.height = "0";
-            this.mainContentElement.style.marginTop = "0";
-            this.mainContentElement.style.display = "none";
-            this.container.style.padding = '0';
+            const wasVisible = util.checkVisible(this.container);
+            this.container.classList.remove("visible");
             this.clear();
+
+            if (wasVisible) {
+                scrollToTop(false);
+            }
         }
     }
 
@@ -229,7 +240,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
 
         return (
             <div ref={e => this.container = e} className="search-box__container">
-                <div ref={e => this.mainContentElement = e} className="search-box__main-content">
+                <div className="search-box__main-content">
                     <OutlinedTextField title={"File name"} ref={e => this.filenameTextArea = e}
                                        labelId={"search-file-name"}/>
                     <div className="search-box__exact-match-container">
