@@ -1,6 +1,4 @@
-# DocumentManagement
-
-A (somewhat) simple database based document management system built using Hibernate and React
+[![DocumentManagement](https://socialify.git.ci/MarkusJx/DocumentManagement/image?description=1&language=1&owner=1&pattern=Plus&theme=Light)](https://github.com/MarkusJx/DocumentManagement)
 
 ## Getting Started
 
