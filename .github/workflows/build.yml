@@ -23,6 +23,7 @@ jobs:
           distribution: 'adopt'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
+        if: matrix.os == 'ubuntu-latest'
         with:
           languages: java, javascript
 
@@ -70,7 +71,8 @@ jobs:
         uses: actions/upload-artifact@v2.2.3
         with:
           name: ${{steps.version_name.outputs.version}}
-          path: dist/docman-v${{steps.latest_release.outputs.release}}-beta.${{steps.date.outputs.date}}.*
+          path: dist/docman-*
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
+        if: matrix.os == 'ubuntu-latest'
