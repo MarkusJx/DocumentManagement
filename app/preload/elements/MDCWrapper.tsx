@@ -501,7 +501,7 @@ interface DialogProps {
     // Whether the dialog has a cancel button
     hasCancelButton?: boolean;
     // The id of the title element
-    titleId: string;
+    titleId?: string;
     // The id of the content element
     contentId: string;
     // The dialog title
@@ -569,9 +569,13 @@ export class Dialog extends React.Component<DialogProps> {
                     <div className="mdc-dialog__surface" role="alertdialog" aria-modal="true"
                          aria-labelledby={this.props.titleId} aria-describedby={this.props.contentId}
                          style={this.props.surfaceStyle}>
-                        <h2 className="mdc-dialog__title" id={this.props.titleId}>
-                            {this.props.title}
-                        </h2>
+                        {
+                            this.props.titleId ? (
+                                <h2 className="mdc-dialog__title" id={this.props.titleId}>
+                                    {this.props.title}
+                                </h2>
+                            ) : null
+                        }
                         <div className="mdc-dialog__content" id={this.props.contentId} style={this.props.contentStyle}>
                             {this.props.children}
                         </div>

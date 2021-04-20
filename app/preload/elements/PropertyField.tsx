@@ -122,26 +122,34 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
 
     public componentDidMount(): void {
         this._propertyNameTextArea.textArea.textField.listen('focusout', async () => {
-            if (this._propertyNameTextArea.value.trim().length > 0) {
-                if (await constants.databaseManager.propertyExists(this._propertyNameTextArea.value.trim())) {
-                    this._propertyNameTextArea.textArea.textField.helperTextContent = "";
+            try {
+                if (this._propertyNameTextArea.value.trim().length > 0) {
+                    if (await constants.databaseManager.propertyExists(this._propertyNameTextArea.value.trim())) {
+                        this._propertyNameTextArea.textArea.textField.helperTextContent = "";
+                    } else {
+                        this._propertyNameTextArea.textArea.textField.helperTextContent = "The property does not exist";
+                    }
                 } else {
-                    this._propertyNameTextArea.textArea.textField.helperTextContent = "The property does not exist";
+                    this._propertyNameTextArea.textArea.textField.helperTextContent = "";
                 }
-            } else {
-                this._propertyNameTextArea.textArea.textField.helperTextContent = "";
+            } catch (e) {
+                logger.error("The focus out listener for the property name failed:", e);
             }
         });
 
         this._propertyValueTextArea.textArea.textField.listen('focusout', async () => {
-            if (this._propertyValueTextArea.value.trim().length > 0) {
-                if (await constants.databaseManager.propertyValueExists(this._propertyValueTextArea.value.trim())) {
-                    this._propertyValueTextArea.textArea.textField.helperTextContent = "";
+            try {
+                if (this._propertyValueTextArea.value.trim().length > 0) {
+                    if (await constants.databaseManager.propertyValueExists(this._propertyValueTextArea.value.trim())) {
+                        this._propertyValueTextArea.textArea.textField.helperTextContent = "";
+                    } else {
+                        this._propertyValueTextArea.textArea.textField.helperTextContent = "The property value does not exist";
+                    }
                 } else {
-                    this._propertyValueTextArea.textArea.textField.helperTextContent = "The property value does not exist";
+                    this._propertyValueTextArea.textArea.textField.helperTextContent = "";
                 }
-            } else {
-                this._propertyValueTextArea.textArea.textField.helperTextContent = "";
+            } catch (e) {
+                logger.error("The focus out listener for the property value failed:", e);
             }
         });
     }

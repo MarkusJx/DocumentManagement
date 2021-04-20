@@ -11,3 +11,4 @@ dist/
 buildscripts/tmp
 *.db
 *.log
+licenses.txt

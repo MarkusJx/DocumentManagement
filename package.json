@@ -57,7 +57,8 @@
       "out/shared/**",
       "out/styles/style.css",
       "out/main.js",
-      "!node_modules/java/build/jvm_dll_path.jsons"
+      "!node_modules/java/build/jvm_dll_path.jsons",
+      "licenses/**"
     ],
     "extraResources": [
       "dbLib/build/libs/*.jar",
@@ -76,7 +77,7 @@
     "nsis": {
       "oneClick": false,
       "artifactName": "${productName}-v${version}.${ext}",
-      "license": "pack/license.txt",
+      "license": "licenses.txt",
       "installerLanguages": [
         "en_US"
       ]

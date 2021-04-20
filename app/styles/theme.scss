@@ -18,12 +18,14 @@
 @use "dialogs/SettingsDialog";
 @use "dialogs/FileEditor";
 @use "dialogs/ErrorDialog";
+@use "dialogs/LicenseViewer";
 @use "elements/SearchBox";
 @use "elements/DataTableElement";
 @use "elements/Checkmark";
 @use "elements/FileInfo";
 @use "elements/PropertyField";
 @use "elements/ChipTextArea";
+@use "elements/Drawer";
 @use "pages/DatabaseConfigurator";
 @use "pages/LoadRecentPage";
 @use "pages/LoadScreen";
@@ -92,6 +94,7 @@
   @include PropertyField.theme($borderColor);
   @include Chip.theme($chipColor);
   @include ChipTextArea.theme($background, $darkTextColor, $hoverColor, $activeColor);
+  @include Drawer.theme($background, $textColor, $themeColor, $borderColor);
 }
 
 body {

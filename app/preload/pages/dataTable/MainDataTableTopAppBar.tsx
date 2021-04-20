@@ -10,6 +10,7 @@ import Snackbars from "../../util/Snackbars";
 import RootDirSelector from "../../dialogs/RootDirSelector";
 import CopyDatabaseDialog from "../../dialogs/CopyDatabaseDialog";
 import DatabaseInfo from "../../dialogs/DatabaseInfo";
+import LicenseViewer from "../../dialogs/LicenseViewer";
 
 const logger = getLogger();
 
@@ -39,6 +40,7 @@ enum settings {
     SET_ROOT_DIR = "Set root directory",
     COPY_DATABASE = "Copy the database",
     DATABASE_INFO = "Show database info",
+    VIEW_LICENSE = "View License",
     EXIT = "Exit"
 }
 
@@ -102,6 +104,7 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
             settings.COPY_DATABASE,
             settings.DATABASE_INFO,
             settings.RELOAD,
+            settings.VIEW_LICENSE,
             settings.EXIT
         ];
 
@@ -183,6 +186,10 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
             }
             case settings.DATABASE_INFO: {
                 DatabaseInfo.show();
+                break;
+            }
+            case settings.VIEW_LICENSE: {
+                LicenseViewer.open();
                 break;
             }
         }

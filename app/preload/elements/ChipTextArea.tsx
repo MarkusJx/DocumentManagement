@@ -6,6 +6,9 @@ import {MDCTextField} from "@material/textfield";
 import {MDCRipple} from "@material/ripple";
 import {MDCList} from '@material/list';
 import Tooltip from "./Tooltip";
+import {getLogger} from "log4js";
+
+const logger = getLogger();
 
 /**
  * A function to check if a chip value exists
@@ -308,7 +311,7 @@ export class TextFieldAutoComplete extends React.Component<TextFieldAutoComplete
         };
 
         return (
-            <div style={style} className="text-field-auto-complete__container">
+            <div style={style} className="text-field-auto-complete__container" ref={e => this.$this = e}>
                 <ul className="mdc-list">
                     {this.generateMenuItems()}
                 </ul>
@@ -317,7 +320,6 @@ export class TextFieldAutoComplete extends React.Component<TextFieldAutoComplete
     }
 
     public componentDidMount(): void {
-        this.$this = ReactDOM.findDOMNode(this) as HTMLDivElement;
         MDCList.attachTo(this.$this.querySelector('.mdc-list'));
 
         this.parent.textArea.inputListener = this.onTextFieldInput;
@@ -676,26 +678,30 @@ export class ChipTextArea extends TextArea<ChipTextAreaProps> {
      * @private
      */
     protected onInput(event: any): void {
-        const inputEvent = event.nativeEvent as InputEvent;
+        try {
+            const inputEvent = event.nativeEvent as InputEvent;
 
-        // Check if enter was pressed
-        if (inputEvent.data === null && (inputEvent.inputType === "insertLineBreak" || inputEvent.inputType === "insertText")) {
-            const tags: string[] = this.getTextFieldValues();
-            for (let i = 0; i < tags.length; i++) {
-                // Push all unique values to this.currentChipValues
-                if (tags[i].length > 0 && this.currentChipValues.indexOf(tags[i]) === -1) {
-                    this.currentChipValues.push(tags[i]);
+            // Check if enter was pressed
+            if (inputEvent.data === null && (inputEvent.inputType === "insertLineBreak" || inputEvent.inputType === "insertText")) {
+                const tags: string[] = this.getTextFieldValues();
+                for (let i = 0; i < tags.length; i++) {
+                    // Push all unique values to this.currentChipValues
+                    if (tags[i].length > 0 && this.currentChipValues.indexOf(tags[i]) === -1) {
+                        this.currentChipValues.push(tags[i]);
+                    }
                 }
+
+                // Clear the text field and update
+                this.textField.value = "";
+                this.forceUpdate();
+                this.componentDidMount();
             }
 
-            // Clear the text field and update
-            this.textField.value = "";
-            this.forceUpdate();
-            this.componentDidMount();
-        }
-
-        if (this.inputListener) {
-            this.inputListener();
+            if (this.inputListener) {
+                this.inputListener();
+            }
+        } catch (e) {
+            logger.error("onInput failed:", e);
         }
     }
 

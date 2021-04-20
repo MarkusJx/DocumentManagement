@@ -1,0 +1,11 @@
+.license-viewer__license-container {
+  overflow: scroll;
+  padding: 0;
+  max-height: 100%;
+}
+
+.license-viewer__license {
+  height: max-content;
+  padding: 20px;
+  word-break: break-word;
+}

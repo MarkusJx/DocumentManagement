@@ -61,7 +61,23 @@ const functions = {
     }
 };
 
+function mergeLicenses() {
+    const license_dir = path.join(__dirname, '..', 'licenses');
+    const out_file = path.join(__dirname, '..', 'licenses.txt');
+    deleteIfExists(out_file);
+
+    console.log("Writing the license file");
+    fs.readdirSync(license_dir).forEach(v => {
+        fs.appendFileSync(out_file,
+            `========== ${v.replace('.txt', '')} =============================================`);
+        fs.appendFileSync(out_file, '\n\n');
+        fs.appendFileSync(out_file, fs.readFileSync(path.join(license_dir, v)));
+        fs.appendFileSync(out_file, '\n\n');
+    });
+}
+
 async function run() {
+    mergeLicenses();
     deleteIfExists(TMP_DIR);
 
     if (functions.hasOwnProperty(process.platform)) {

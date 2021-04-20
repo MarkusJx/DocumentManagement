@@ -26,4 +26,8 @@
   ::-webkit-scrollbar-thumb:hover {
     background: $hoverColor;
   }
+
+  ::-webkit-scrollbar-corner {
+    background: $backgroundColor;
+  }
 }

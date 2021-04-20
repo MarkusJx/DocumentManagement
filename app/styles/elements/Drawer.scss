@@ -1,0 +1,45 @@
+@use "node_modules/@material/drawer";
+@use "node_modules/@material/list";
+
+@include drawer.core-styles;
+@include drawer.dismissible-core-styles;
+@include drawer.modal-core-styles;
+@include list.core-styles;
+
+/// Set the drawer theme
+///
+/// @param {color} $background the background color
+/// @param {color} $textColor the text color
+/// @param {color} $themeColor the theme color
+/// @param {color} $borderColor the border color
+@mixin theme($background, $textColor, $themeColor, $borderColor) {
+  .themed-drawer-menu.mdc-drawer {
+    background-color: $background;
+    color: $textColor;
+
+    @include list.divider-color($borderColor);
+
+    .mdc-drawer__header {
+      .mdc-drawer__title {
+        color: $textColor;
+      }
+
+      .mdc-drawer__subtitle {
+        color: $borderColor;
+      }
+    }
+
+    .mdc-list-group__subheader {
+      color: $borderColor;
+    }
+
+    .mdc-list .mdc-list-item {
+      color: $textColor;
+
+      &.mdc-list-item--activated {
+        --mdc-theme-primary: #{$themeColor};
+        color: $themeColor;
+      }
+    }
+  }
+}
