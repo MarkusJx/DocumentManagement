@@ -260,7 +260,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
                 if (this.showProgress && this.dataTable != null) {
                     this.dataTable.dataTable.showProgress();
                 }
-            }, 50);
+            }, 100);
         } else {
             this.topAppBar.buttonsEnabled = true;
             this.dataTable.dataTable.hideProgress();

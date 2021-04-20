@@ -1,7 +1,7 @@
 {
   "name": "docman",
   "version": "1.0.0",
-  "description": "",
+  "description": "A database based document management system",
   "main": "out/main.js",
   "scripts": {
     "build": "node --unhandled-rejections=strict buildscripts/build.js",
@@ -52,6 +52,7 @@
   },
   "build": {
     "appId": "io.github.markusjx",
+    "icon": "resources/icon.png",
     "files": [
       "app/ui/**",
       "out/preload/**",
@@ -72,13 +73,14 @@
       },
       {
         "from": "resources/jvm_dll_path.json",
-        "to": "app.asar.unpacked/node_modules/java/build/jvm_dll_path.json"
+        "to": "app/node_modules/java/build/jvm_dll_path.json"
       }
     ],
     "nsis": {
       "oneClick": false,
       "artifactName": "${productName}-v${version}.${ext}",
       "license": "licenses.txt",
+      "installerIcon": "resources/icon.ico",
       "installerLanguages": [
         "en_US"
       ]
