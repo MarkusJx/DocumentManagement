@@ -188,6 +188,10 @@ const decryptionStrategies = {
  * @return the encrypted password
  */
 export async function encryptPassword(password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
+    if (password.length == 0) {
+        return "";
+    }
+
     if (encryptionStrategies.hasOwnProperty(process.platform)) {
         return await encryptionStrategies[process.platform](password, encryptionKey, iv);
     } else {
@@ -204,6 +208,10 @@ export async function encryptPassword(password: string, encryptionKey: Buffer, i
  * @return the decrypted password
  */
 export async function decryptPassword(password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
+    if (password.length == 0) {
+        return "";
+    }
+
     if (decryptionStrategies.hasOwnProperty(process.platform)) {
         return await decryptionStrategies[process.platform](password, encryptionKey, iv);
     } else {

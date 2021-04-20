@@ -73,7 +73,7 @@ export default class StartScreen extends React.Component<StartScreenProps> {
                     <ul className="start-screen-list">
                         <li>This indexes all files inside a selected directory and adds those to the database</li>
                         <li>A search start location must be selected</li>
-                        <li>A database file must be selected to be either created or overridden</li>
+                        <li>A database must be selected to be either created or overridden</li>
                     </ul>
 
                     <div className="start-screen-button-alignment">
