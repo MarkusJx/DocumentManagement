@@ -229,7 +229,19 @@ function createWindow(): void {
                 accelerator: 'Control+Shift+I'
             }
         ]
-    }))
+    }));
+
+    menu.append(new MenuItem({
+        label: 'Help',
+        submenu: [
+            {
+                label: 'View Licenses',
+                click: () => {
+                    mainWindow.webContents.send('show-license-viewer');
+                }
+            }
+        ]
+    }));
 
     let shouldClose: boolean = false;
     mainWindow.on('close', (e) => {

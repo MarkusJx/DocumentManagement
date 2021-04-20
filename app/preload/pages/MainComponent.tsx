@@ -12,6 +12,8 @@ import LoadScreen from "./LoadScreen";
 import {getLogger} from "log4js";
 import StartScreen from "./StartScreen";
 import {DatabaseSetting, RecentDatabase} from "../../shared/Settings";
+import EmptyProps from "../util/EmptyProps";
+import LicenseViewer from "../dialogs/LicenseViewer";
 
 const logger = getLogger();
 
@@ -26,7 +28,7 @@ interface MainComponentState {
 /**
  * The main component class
  */
-export default class MainComponent extends React.Component<{}, MainComponentState> {
+export default class MainComponent extends React.Component<EmptyProps, MainComponentState> {
     /**
      * The start screen
      * @private
@@ -44,7 +46,7 @@ export default class MainComponent extends React.Component<{}, MainComponentStat
      *
      * @param props the properties
      */
-    public constructor(props: {}) {
+    public constructor(props: EmptyProps) {
         super(props);
 
         this.startScreenButtonsEnabled = true;
@@ -103,6 +105,10 @@ export default class MainComponent extends React.Component<{}, MainComponentStat
         ipcRenderer.on('goto-start-screen', () => {
             constants.closeDatabaseManager();
             this.gotoStartPage();
+        });
+
+        ipcRenderer.on('show-license-viewer', () => {
+            LicenseViewer.open();
         });
     }
 

@@ -176,7 +176,7 @@ class LicenseViewerElement extends React.Component {
      * @private
      */
     private async loadLicense(loadPath: string, licenseName: string): Promise<void> {
-        this.drawer[0].titleElement.innerText = `View ${licenseName}s License`;
+        this.drawer[0].titleElement.innerText = `View ${licenseName}'s License`;
         this.licenseElement.innerText = await new Promise<string>(resolve => {
             fs.readFile(loadPath, {encoding: 'utf-8'}, (err, data) => {
                 if (err) {
