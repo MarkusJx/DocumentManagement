@@ -117,7 +117,7 @@ class BuildCache {
     }
 }
 
-function spawnAsync(command, args = [], options = {}) {
+function spawnAsync(command, args = [], options = {}, useBash = false) {
     return new Promise((resolve, reject) => {
         let child;
         if (process.platform === "win32") {
@@ -125,7 +125,12 @@ function spawnAsync(command, args = [], options = {}) {
             _args.push(...args);
             child = spawn("cmd", _args, options);
         } else {
-            child = spawn(command, args, options);
+            if (useBash) {
+                const _args = [command, ...args];
+                child = spawn("bash", _args, options);
+            } else {
+                child = spawn(command, args, options);
+            }
         }
 
         child.stdout.pipe(process.stdout);
@@ -165,7 +170,7 @@ async function run() {
         try {
             await spawnAsync(gradle_command, ["jar"], {
                 cwd: path.join(__dirname, '..', "dbLib")
-            });
+            }, true);
         } catch (e) {
             gradleCache.buildFailed();
             throw e;

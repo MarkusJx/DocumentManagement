@@ -1,8 +1,13 @@
 {
   "name": "docman",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A database based document management system",
   "main": "out/main.js",
+  "homepage": "https://github.com/MarkusJx/DocumentManagement",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarkusJx/DocumentManagement.git"
+  },
   "scripts": {
     "build": "node --unhandled-rejections=strict buildscripts/build.js",
     "prestart": "npm run build",
@@ -14,7 +19,11 @@
     "prepack": "npm run build && node --unhandled-rejections=strict buildscripts/prepack.js",
     "pack": "electron-builder"
   },
-  "author": "MarkusJx",
+  "author": {
+    "name": "MarkusJx",
+    "email": "markusjx11@gmail.com",
+    "url": "https://markusjx.github.io"
+  },
   "license": "GPL-3.0",
   "dependencies": {
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
@@ -52,7 +61,7 @@
   },
   "build": {
     "appId": "io.github.markusjx",
-    "icon": "resources/icon.png",
+    "icon": "build/icon.png",
     "files": [
       "app/ui/**",
       "out/preload/**",
@@ -72,7 +81,7 @@
         ]
       },
       {
-        "from": "resources/jvm_dll_path.json",
+        "from": "build/jvm_dll_path.json",
         "to": "app/node_modules/java/build/jvm_dll_path.json"
       }
     ],
@@ -80,10 +89,29 @@
       "oneClick": false,
       "artifactName": "${productName}-v${version}.${ext}",
       "license": "licenses.txt",
-      "installerIcon": "resources/icon.ico",
+      "installerIcon": "build/icon.ico",
       "installerLanguages": [
         "en_US"
       ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "snap",
+        "deb"
+      ],
+      "category": "Utility",
+      "desktop": {
+        "Type": "Application",
+        "Encoding": "UTF-8",
+        "Name": "docman",
+        "Comment": "A database based document management system",
+        "Icon": "build/icon.png",
+        "Terminal": "false"
+      }
+    },
+    "deb": {
+      "compression": "gz"
     },
     "asar": false,
     "asarUnpack": [

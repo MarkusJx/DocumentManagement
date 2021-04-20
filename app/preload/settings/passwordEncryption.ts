@@ -124,6 +124,7 @@ const encryptionStrategies = {
      * @return the encrypted password
      */
     "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
+        // @ts-ignore
         let passport: typeof import("node-ms-passport").passport = null;
         try {
             // @ts-ignore
@@ -157,6 +158,7 @@ const decryptionStrategies = {
      * @return the decrypted password
      */
     "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
+        // @ts-ignore
         let passport: typeof import("node-ms-passport").passport = null;
         try {
             // @ts-ignore
