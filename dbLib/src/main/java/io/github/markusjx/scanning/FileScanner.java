@@ -69,8 +69,7 @@ public class FileScanner {
                 BasicFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
         BasicFileAttributes attr = basicfile.readAttributes();
         long date = attr.creationTime().toMillis();
-        Instant instant = Instant.ofEpochMilli(date);
-        return LocalDate.ofInstant(instant, ZoneId.systemDefault());
+        return Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     /**

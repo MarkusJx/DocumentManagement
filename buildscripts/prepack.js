@@ -49,7 +49,7 @@ const functions = {
         fs.renameSync(path.join(TMP_DIR, 'jdk-11.0.10+9-jre'), path.join(TMP_DIR, 'jre-11'));
     },
     "linux": async function () {
-        console.log("Creating tmp dir...");
+        /*console.log("Creating tmp dir...");
         fs.mkdirSync(TMP_DIR);
 
         console.log("Downloading jre...");
@@ -60,7 +60,7 @@ const functions = {
         await untar("openjdk.tar.gz", TMP_DIR, TMP_DIR);
 
         console.log("Renaming 'jdk-11.0.10+9-jre' to 'jre-11'...");
-        fs.renameSync(path.join(TMP_DIR, 'jdk-11.0.10+9-jre'), path.join(TMP_DIR, 'jre-11'));
+        fs.renameSync(path.join(TMP_DIR, 'jdk-11.0.10+9-jre'), path.join(TMP_DIR, 'jre-11'));*/
     }
 };
 

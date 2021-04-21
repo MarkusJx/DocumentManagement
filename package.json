@@ -68,7 +68,6 @@
       "out/shared/**",
       "out/styles/style.css",
       "out/main.js",
-      "!node_modules/java/build/jvm_dll_path.json",
       "licenses/**"
     ],
     "extraResources": [
@@ -79,10 +78,6 @@
         "filter": [
           "**/*"
         ]
-      },
-      {
-        "from": "build/jvm_dll_path.json",
-        "to": "app/node_modules/java/build/jvm_dll_path.json"
       }
     ],
     "nsis": {
@@ -111,7 +106,17 @@
       }
     },
     "deb": {
-      "compression": "gz"
+      "compression": "gz",
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3",
+        "openjdk-11-jre"
+      ],
+      "icon": "build/icon.png"
     },
     "asar": false,
     "asarUnpack": [

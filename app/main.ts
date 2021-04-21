@@ -269,12 +269,21 @@ function createWindow(): void {
     mainWindow.webContents.openDevTools();
 }
 
+function addJvmPaths() {
+    if (process.platform == 'win32') {
+        process.env.PATH += ";resources\\jre-11\\bin\\server";
+    } else {
+        process.env.PATH += ":/usr/lib/jvm/java-11-openjdk-amd64/lib/server";
+    }
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
     configureLogger();
     printSystemInfo();
+    addJvmPaths();
     createWindow();
 
     app.on('activate', function (): void {
