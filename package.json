@@ -90,7 +90,6 @@
     "linux": {
       "target": [
         "AppImage",
-        "snap",
         "deb"
       ],
       "category": "Utility",
@@ -111,12 +110,6 @@
         "libappindicator1",
         "libxtst6",
         "libnss3",
-        "openjdk-11-jre"
-      ]
-    },
-    "snap": {
-      "stagePackages": [
-        "default",
         "openjdk-11-jre"
       ]
     },
