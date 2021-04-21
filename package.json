@@ -61,7 +61,6 @@
   },
   "build": {
     "appId": "io.github.markusjx",
-    "icon": "build/icon.png",
     "files": [
       "app/ui/**",
       "out/preload/**",
@@ -84,7 +83,6 @@
       "oneClick": false,
       "artifactName": "${productName}-v${version}.${ext}",
       "license": "licenses.txt",
-      "installerIcon": "build/icon.ico",
       "installerLanguages": [
         "en_US"
       ]
@@ -101,7 +99,6 @@
         "Encoding": "UTF-8",
         "Name": "docman",
         "Comment": "A database based document management system",
-        "Icon": "build/icon.png",
         "Terminal": "false"
       }
     },
@@ -115,8 +112,13 @@
         "libxtst6",
         "libnss3",
         "openjdk-11-jre"
-      ],
-      "icon": "build/icon.png"
+      ]
+    },
+    "snap": {
+      "stagePackages": [
+        "default",
+        "openjdk-11-jre"
+      ]
     },
     "asar": false,
     "asarUnpack": [
