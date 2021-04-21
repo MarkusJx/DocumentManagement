@@ -63,14 +63,14 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: ${{steps.version_name.outputs.version}}
+          name: ${{steps.version_name.outputs.version}}_win64
           path: dist/docman-v${{steps.latest_release.outputs.release}}-beta.${{steps.date.outputs.date}}.exe
 
       - name: Upload beta build ubuntu
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: ${{steps.version_name.outputs.version}}
+          name: ${{steps.version_name.outputs.version}}_ubuntu
           path: dist/docman*
 
       - name: Perform CodeQL Analysis
