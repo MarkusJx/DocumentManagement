@@ -13,7 +13,8 @@
 /// @param {color} $textColor the color of any texts
 /// @param {color} $hoverColor the color of the rows on hover
 /// @param {color} $disabledColor the color of an disabled button
-@mixin theme($background, $dividerColor, $textColor, $hoverColor, $disabledButtonColor) {
+/// @param {color} $themeColor the top app bar color color (is more appropriate)
+@mixin theme($background, $dividerColor, $textColor, $hoverColor, $disabledButtonColor, $themeColor) {
   .themed-data-table {
     @include data-table-theme.fill-color($background);
     @include data-table-theme.divider-color($dividerColor);
@@ -22,7 +23,12 @@
     @include data-table-theme.row-text-color($textColor);
     @include data-table-theme.row-hover-fill-color($hoverColor);
 
+    // Calculate the the row selected color
+    $selectColor: rgba(red($themeColor), green($themeColor), blue($themeColor), 0.1);
+    @include data-table-theme.selected-row-fill-color($selectColor);
+
     border-color: $dividerColor;
+    --mdc-checkbox-unchecked-color: $textColor;
 
     @include shared.transition-color();
 

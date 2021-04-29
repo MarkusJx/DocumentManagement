@@ -8,6 +8,7 @@ import {MDCTooltip} from "@material/tooltip";
 import {getLogger} from "log4js";
 import {showErrorDialog} from "../../dialogs/ErrorDialog";
 import FileEditor from "../../dialogs/FileEditor";
+import {DatatableCheckbox} from "../../elements/MDCWrapper";
 
 const logger = getLogger();
 
@@ -329,8 +330,12 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
         const tooltipId: string = getId();
 
         return (
-            <tr className="mdc-data-table__row" key={this.document.absolutePath}>
-                <th className="mdc-data-table__cell" scope="row">{this.document.filename}</th>
+            <tr className="mdc-data-table__row" key={this.document.absolutePath}
+                data-row-id={'doc-' + this.document.absolutePath}>
+                <DatatableCheckbox id={this.document.absolutePath}/>
+                <th className="mdc-data-table__cell" scope="row" id={this.document.absolutePath}>
+                    {this.document.filename}
+                </th>
                 <TableCellOkErrorIcon ok={this.document.exists}/>
                 <td className="mdc-data-table__cell">
                     <div className="material-icons data-table-element__document-icon" aria-describedby={tooltipId}>
@@ -458,20 +463,21 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
         this.directory = props.directory;
     }
 
-    public exists(): boolean {
-        return this.directory.exists;
-    }
-
     public set enabled(enabled: boolean) {
         this.button.enabled = enabled;
+    }
+
+    public exists(): boolean {
+        return this.directory.exists;
     }
 
     public render(): JSX.Element {
         const tooltipId: string = getId();
 
         return (
-            <tr className="mdc-data-table__row">
-                <th className="mdc-data-table__cell" scope="row">{this.directory.name}</th>
+            <tr className="mdc-data-table__row" data-row-id={'dir-' + this.directory.path}>
+                <DatatableCheckbox id={this.directory.path} hidden={true}/>
+                <th className="mdc-data-table__cell" scope="row" id={this.directory.path}>{this.directory.name}</th>
                 <TableCellOkErrorIcon ok={this.directory.exists}/>
                 <td className="mdc-data-table__cell">
                     <div className="material-icons data-table-element__folder-icon" aria-describedby={tooltipId}>
@@ -521,8 +527,9 @@ export class DirectoryUpElement extends React.Component<DirectoryUpElementProps>
 
     public render(): React.ReactNode {
         return (
-            <tr className="mdc-data-table__row">
-                <th className="mdc-data-table__cell" scope="row">Directory up</th>
+            <tr className="mdc-data-table__row" data-row-id="data-table-directory-up-row">
+                <DatatableCheckbox id="data-table-directory-up" hidden={true}/>
+                <th className="mdc-data-table__cell" scope="row" id="data-table-directory-up">Directory up</th>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell"/>
                 <td className="mdc-data-table__cell"/>

@@ -71,7 +71,7 @@ $FontPathOpenSans: "../../node_modules/open-sans-fonts/open-sans";
               $scrollbarHoverColor, $chipColor) {
   @include SwipeDialog.theme($background, $textColor, $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor);
   @include DoneDialog.theme($background, $hideBackgroundColor, $themeColor, $textColor);
-  @include DataTable.theme($background, $borderColor, $textColor, $hoverColor, $disabledButtonColor);
+  @include DataTable.theme($background, $borderColor, $textColor, $hoverColor, $disabledButtonColor, $topAppBarColor);
   @include TopAppBar.theme($topAppBarColor, $topAppBarTextColor);
   @include TextField.theme($lightThemeColor, $borderColor, $darkTextColor, $hoverOutlineColor);
   @include Dialog.theme($themeColor, $background, $darkTextColor, $darkTextColor);
