@@ -1,6 +1,5 @@
 import React from "react";
 import {database} from "../../databaseWrapper";
-import {MDCDataTableRow} from "../../elements/MDCWrapper";
 import {
     DataTableDirectoryElement,
     DataTableDocumentElement,
@@ -85,7 +84,13 @@ export default class MainDataTableContent extends React.Component<MainDataTableC
         this.dataTableElements = [];
         if (this.directory == null) {
             return (
-                <MDCDataTableRow values={["Loading...", "", "", "", ""]}/>
+                <tr className="mdc-data-table__row">
+                    <th className="mdc-data-table__cell" scope="row">Loading...</th>
+                    <td className="mdc-data-table__cell"/>
+                    <td className="mdc-data-table__cell"/>
+                    <td className="mdc-data-table__cell"/>
+                    <td className="mdc-data-table__cell"/>
+                </tr>
             );
         } else {
             const res: React.ReactNode[] = [];

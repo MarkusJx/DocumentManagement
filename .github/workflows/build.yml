@@ -24,7 +24,11 @@ jobs:
           distribution: 'adopt'
       - name: Install Java ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get remove adoptopenjdk* -y && sudo apt-get install -y openjdk-11-jdk
+        run: |
+          sudo apt-get remove adoptopenjdk* -y
+          sudo apt-get update
+          sudo apt-get dist-upgrade -y
+          sudo apt-get install -y openjdk-11-jdk
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1

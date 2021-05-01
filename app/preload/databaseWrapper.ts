@@ -512,6 +512,10 @@ export namespace database {
         public toJavaValue(): any {
             return this.impl;
         }
+
+        public equals(other: PropertyValueSet): boolean {
+            return this.propertyName == other.propertyName && this.propertyValue == other.propertyValue;
+        }
     }
 
     /**

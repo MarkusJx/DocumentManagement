@@ -660,6 +660,10 @@ export class OutlinedTextField extends TextArea<OutlinedTextFieldProps> {
 interface OutlinedTextFieldWithAutoCompleteProps extends TextAreaWithAutoCompletePropsBase {
     // The label id
     labelId: string;
+    // An on autocomplete option click listener
+    onAutoCompleteOptionClick?: () => void;
+    // The auto complete menu style
+    autoCompleteStyle?: React.CSSProperties;
 }
 
 /**
@@ -683,7 +687,8 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
                 <OutlinedTextField ref={e => this.textArea = e} title={this.title} value={this._value}
                                    labelId={this.props.labelId}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}
-                                       ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}/>
+                                       ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}
+                                       style={this.props.autoCompleteStyle}/>
             </div>
         );
     }
@@ -697,6 +702,9 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
     private onAutoCompleteOptionClick(option: string): void {
         this.autoComplete.hide();
         this.textArea.textField.value = option;
+        if (this.props.onAutoCompleteOptionClick) {
+            this.props.onAutoCompleteOptionClick();
+        }
     }
 }
 
@@ -760,18 +768,22 @@ export class MDCDataTableRow extends React.Component<MDCDataTableRowProps> {
 interface MDCDataTableContainerProps {
     // The data table headers
     headers: string[];
+    checkbox?: boolean;
 }
 
 /**
  * The mdc data table container
  */
 export class MDCDataTableContainer extends React.Component<MDCDataTableContainerProps> {
+    public checkbox: HTMLInputElement = null;
+
     public render(): React.ReactNode {
         return (
             <div className="mdc-data-table__table-container">
                 <table aria-label="Documents" className="mdc-data-table__table">
                     <thead>
                     <tr className="mdc-data-table__header-row">
+                        {this.getCheckbox()}
                         {this.generateHeaderRow()}
                     </tr>
                     </thead>
@@ -781,6 +793,36 @@ export class MDCDataTableContainer extends React.Component<MDCDataTableContainer
                 </table>
             </div>
         );
+    }
+
+    /**
+     * Get the checkbox element, if requested
+     *
+     * @return the generated checkbox element or null
+     * @private
+     */
+    private getCheckbox(): React.ReactNode | null {
+        if (this.props.checkbox === true) {
+            return (
+                <th className="mdc-data-table__header-cell mdc-data-table__header-cell--checkbox" role="columnheader"
+                    scope="col">
+                    <div className="mdc-checkbox mdc-data-table__header-row-checkbox mdc-checkbox--selected">
+                        <input type="checkbox" className="mdc-checkbox__native-control" aria-label="Toggle all rows"
+                               ref={e => this.checkbox = e}/>
+                        <div className="mdc-checkbox__background">
+                            <svg className="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                                <path className="mdc-checkbox__checkmark-path" fill="none"
+                                      d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                            </svg>
+                            <div className="mdc-checkbox__mixedmark"/>
+                        </div>
+                        <div className="mdc-checkbox__ripple"/>
+                    </div>
+                </th>
+            );
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -827,6 +869,35 @@ export class MDCDataTableProgressIndicator extends React.Component {
     }
 }
 
+interface DatatableCheckboxProps {
+    id: string;
+    hidden?: boolean;
+}
+
+export class DatatableCheckbox extends React.Component<DatatableCheckboxProps> {
+    public render(): React.ReactNode {
+        const style: React.CSSProperties = {
+            visibility: this.props.hidden == true ? 'hidden' : 'unset'
+        };
+
+        return (
+            <td className="mdc-data-table__cell mdc-data-table__cell--checkbox">
+                <div className="mdc-checkbox mdc-data-table__row-checkbox" style={style}>
+                    <input type="checkbox" className="mdc-checkbox__native-control" aria-labelledby={this.props.id}/>
+                    <div className="mdc-checkbox__background">
+                        <svg className="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                            <path className="mdc-checkbox__checkmark-path" fill="none"
+                                  d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                        </svg>
+                        <div className="mdc-checkbox__mixedmark"/>
+                    </div>
+                    <div className="mdc-checkbox__ripple"/>
+                </div>
+            </td>
+        );
+    }
+}
+
 /**
  * The data table properties
  */
@@ -858,7 +929,60 @@ export class DataTable extends React.Component<DataTableProps> {
     }
 
     public componentDidMount(): void {
+        if (this.dataTable) {
+            this.dataTable.destroy();
+        }
+
         this.dataTable = new MDCDataTable(this.element);
+    }
+
+    public componentWillUnmount(): void {
+        if (this.dataTable) {
+            this.dataTable.destroy();
+            this.dataTable = null;
+        }
+    }
+}
+
+/**
+ * The mdc fab properties
+ */
+interface MDCFabProps {
+    // The icon name
+    icon: string;
+    // An on click listener
+    onClick?: () => void;
+}
+
+/**
+ * A mdc fab
+ */
+export class MDCFab extends React.Component<MDCFabProps> {
+    /**
+     * The html element
+     */
+    public element: HTMLButtonElement = null;
+
+    /**
+     * The button ripple instance
+     */
+    public ripple: MDCRipple = null;
+
+    public render(): React.ReactNode {
+        return (
+            <button className="mdc-fab mdc-fab--mini" ref={e => this.element = e} onClick={this.props.onClick}>
+                <div className="mdc-fab__ripple"/>
+                <span className="mdc-fab__icon material-icons">{this.props.icon}</span>
+            </button>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.ripple = new MDCRipple(this.element);
+    }
+
+    public componentWillUnmount(): void {
+        this.ripple.destroy();
     }
 }
 

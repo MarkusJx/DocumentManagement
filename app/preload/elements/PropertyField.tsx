@@ -59,6 +59,9 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
 
         this._propertyNameTextArea = null;
         this._propertyValueTextArea = null;
+
+        this.valueAutocompleteClick = this.valueAutocompleteClick.bind(this);
+        this.propertyAutocompleteClick = this.propertyAutocompleteClick.bind(this);
     }
 
     /**
@@ -106,16 +109,22 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
     }
 
     public render(): React.ReactNode {
+        const autoCompleteStyle: React.CSSProperties = {
+            marginTop: '-19px'
+        };
+
         return (
             <div>
                 <OutlinedTextFieldWithAutoComplete getAutoCompleteOptions={PropertyField.getPropertyAutoCompleteOptions}
                                                    title="Property name" value={this._propertyName}
-                                                   ref={e => this._propertyNameTextArea = e} labelId={"property-name"}/>
+                                                   ref={e => this._propertyNameTextArea = e} labelId={"property-name"}
+                                                   autoCompleteStyle={autoCompleteStyle}
+                                                   onAutoCompleteOptionClick={this.propertyAutocompleteClick}/>
                 <OutlinedTextFieldWithAutoComplete
                     getAutoCompleteOptions={PropertyField.getPropertyValueAutoCompleteOptions}
                     title="Property value" value={this._propertyValue}
-                    ref={e => this._propertyValueTextArea = e}
-                    labelId={"property-value"}/>
+                    ref={e => this._propertyValueTextArea = e} onAutoCompleteOptionClick={this.valueAutocompleteClick}
+                    labelId={"property-value"} autoCompleteStyle={autoCompleteStyle}/>
             </div>
         );
     }
@@ -152,6 +161,14 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
                 logger.error("The focus out listener for the property value failed:", e);
             }
         });
+    }
+
+    private valueAutocompleteClick(): void {
+        this._propertyValueTextArea.textArea.textField.helperTextContent = "";
+    }
+
+    private propertyAutocompleteClick(): void {
+        this._propertyNameTextArea.textArea.textField.helperTextContent = "";
     }
 }
 
