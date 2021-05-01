@@ -181,14 +181,15 @@ type getAutoCompleteOptions_t = (input: string) => string[];
 /**
  * Properties for {@link TextFieldAutoComplete}
  */
-type TextFieldAutoCompleteProps = {
+interface TextFieldAutoCompleteProps {
     // A function to get the auto complete options
-    getAutoCompleteOptions: getAutoCompleteOptions_t,
+    getAutoCompleteOptions: getAutoCompleteOptions_t;
     // A function to be called when an auto complete option is clicked
-    onClick: (value: string) => void,
+    onClick: (value: string) => void;
     // The parent element
-    parent: TextAreaWithAutoCompleteBase<any, any>
-};
+    parent: TextAreaWithAutoCompleteBase<any, any>;
+    style?: React.CSSProperties;
+}
 
 /**
  * Properties for an {@link TextFieldAutoComplete.MenuItem}
@@ -309,6 +310,13 @@ export class TextFieldAutoComplete extends React.Component<TextFieldAutoComplete
         const style: React.CSSProperties = {
             top: top
         };
+
+        // Append all styles to style
+        if (this.props.style) {
+            for (let key in this.props.style) {
+                style[key] = this.props.style[key];
+            }
+        }
 
         return (
             <div style={style} className="text-field-auto-complete__container" ref={e => this.$this = e}>

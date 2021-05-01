@@ -475,7 +475,7 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
         const tooltipId: string = getId();
 
         return (
-            <tr className="mdc-data-table__row" data-row-id={'dir-' + this.directory.path}>
+            <tr className="mdc-data-table__row disabled" data-row-id={'dir-' + this.directory.path}>
                 <DatatableCheckbox id={this.directory.path} hidden={true}/>
                 <th className="mdc-data-table__cell" scope="row" id={this.directory.path}>{this.directory.name}</th>
                 <TableCellOkErrorIcon ok={this.directory.exists}/>
@@ -527,7 +527,7 @@ export class DirectoryUpElement extends React.Component<DirectoryUpElementProps>
 
     public render(): React.ReactNode {
         return (
-            <tr className="mdc-data-table__row" data-row-id="data-table-directory-up-row">
+            <tr className="mdc-data-table__row disabled" data-row-id="data-table-directory-up-row">
                 <DatatableCheckbox id="data-table-directory-up" hidden={true}/>
                 <th className="mdc-data-table__cell" scope="row" id="data-table-directory-up">Directory up</th>
                 <td className="mdc-data-table__cell"/>

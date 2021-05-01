@@ -660,6 +660,10 @@ export class OutlinedTextField extends TextArea<OutlinedTextFieldProps> {
 interface OutlinedTextFieldWithAutoCompleteProps extends TextAreaWithAutoCompletePropsBase {
     // The label id
     labelId: string;
+    // An on autocomplete option click listener
+    onAutoCompleteOptionClick?: () => void;
+    // The auto complete menu style
+    autoCompleteStyle?: React.CSSProperties;
 }
 
 /**
@@ -683,7 +687,8 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
                 <OutlinedTextField ref={e => this.textArea = e} title={this.title} value={this._value}
                                    labelId={this.props.labelId}/>
                 <TextFieldAutoComplete getAutoCompleteOptions={this.getAutoCompleteOptions} parent={this}
-                                       ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}/>
+                                       ref={e => this.autoComplete = e} onClick={this.onAutoCompleteOptionClick}
+                                       style={this.props.autoCompleteStyle}/>
             </div>
         );
     }
@@ -697,6 +702,9 @@ export class OutlinedTextFieldWithAutoComplete extends TextAreaWithAutoCompleteB
     private onAutoCompleteOptionClick(option: string): void {
         this.autoComplete.hide();
         this.textArea.textField.value = option;
+        if (this.props.onAutoCompleteOptionClick) {
+            this.props.onAutoCompleteOptionClick();
+        }
     }
 }
 
@@ -926,42 +934,6 @@ export class DataTable extends React.Component<DataTableProps> {
         }
 
         this.dataTable = new MDCDataTable(this.element);
-
-        const getSelectedRows = () => {
-            let selected = this.dataTable.getSelectedRowIds();
-            if (selected == null) {
-                return null;
-            }
-
-            selected = selected.filter(e => e.startsWith('doc-'));
-            if (selected.length == 0) {
-                return null;
-            } else {
-                return selected;
-            }
-        };
-
-        // TODO: Create an edit button
-        this.dataTable.listen('MDCDataTable:rowSelectionChanged', () => {
-            const selected = getSelectedRows();
-            if (selected != null) {
-                // Show the edit button
-            } else {
-                // Hide the edit button
-            }
-        });
-
-        this.dataTable.listen('MDCDataTable:selectedAll', () => {
-            if (getSelectedRows() != null) {
-                // Show the edit button
-            } else {
-                // Hide the edit button
-            }
-        });
-
-        this.dataTable.listen('MDCDataTable:unselectedAll', () => {
-            // Hide the edit button
-        });
     }
 
     public componentWillUnmount(): void {
@@ -969,6 +941,48 @@ export class DataTable extends React.Component<DataTableProps> {
             this.dataTable.destroy();
             this.dataTable = null;
         }
+    }
+}
+
+/**
+ * The mdc fab properties
+ */
+interface MDCFabProps {
+    // The icon name
+    icon: string;
+    // An on click listener
+    onClick?: () => void;
+}
+
+/**
+ * A mdc fab
+ */
+export class MDCFab extends React.Component<MDCFabProps> {
+    /**
+     * The html element
+     */
+    public element: HTMLButtonElement = null;
+
+    /**
+     * The button ripple instance
+     */
+    public ripple: MDCRipple = null;
+
+    public render(): React.ReactNode {
+        return (
+            <button className="mdc-fab mdc-fab--mini" ref={e => this.element = e} onClick={this.props.onClick}>
+                <div className="mdc-fab__ripple"/>
+                <span className="mdc-fab__icon material-icons">{this.props.icon}</span>
+            </button>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.ripple = new MDCRipple(this.element);
+    }
+
+    public componentWillUnmount(): void {
+        this.ripple.destroy();
     }
 }
 

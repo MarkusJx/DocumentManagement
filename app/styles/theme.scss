@@ -12,6 +12,7 @@
 @use "mdc/Ripple";
 @use "mdc/Chip";
 @use "mdc/HelperText";
+@use "mdc/Fab";
 
 @use "dialogs/SwipeDialog";
 @use "dialogs/DoneDialog";
@@ -26,6 +27,7 @@
 @use "elements/PropertyField";
 @use "elements/ChipTextArea";
 @use "elements/Drawer";
+@use "elements/BulkEditFab";
 @use "pages/DatabaseConfigurator";
 @use "pages/LoadRecentPage";
 @use "pages/LoadScreen";

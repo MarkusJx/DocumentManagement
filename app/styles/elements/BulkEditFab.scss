@@ -1,0 +1,44 @@
+@use "app/styles/shared";
+
+$showHideDuration: 0.25s;
+
+.bulk-edit-button {
+  position: fixed;
+  left: calc(100vw - 60px);
+
+  &.visible {
+    margin-top: -55px;
+
+    @include shared.inline-animation($showHideDuration) {
+      0% {
+        margin-top: 0;
+      }
+
+      70% {
+        margin-top: -60px;
+      }
+
+      100% {
+        margin-top: -55px;
+      }
+    }
+  }
+
+  &.hidden {
+    margin-top: 0;
+
+    @include shared.inline-animation($showHideDuration) {
+      0% {
+        margin-top: -55px;
+      }
+
+      30% {
+        margin-top: -60px;
+      }
+
+      100% {
+        margin-top: 0;
+      }
+    }
+  }
+}

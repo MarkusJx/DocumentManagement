@@ -11,6 +11,7 @@ import util from "../../util/util";
 import Snackbars from "../../util/Snackbars";
 import MainDataTablePagination from "./MainDataTablePagination";
 import MainDataTableContent from "./MainDataTableContent";
+import BulkEditFab from "../../elements/BulkEditFab";
 
 const logger = getLogger();
 
@@ -121,12 +122,13 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
 
         this.dataTablePagination.visible = false;
         this.dataTable.componentDidMount();
+        this.listenSelect();
     }
 
     public getSelectedRows(): database.Document[] | null {
         let selected: string[] = this.dataTable.dataTable.getSelectedRowIds();
         if (selected != null && selected.length > 0) {
-            selected = selected.filter(e => e.startsWith('doc-')).map(e => e.substr(3, e.length - 4));
+            selected = selected.filter(e => e.startsWith('doc-')).map(e => e.substr(4, e.length - 4));
             const documents = this.directory.documents.filter(e => selected.includes(e.absolutePath));
             if (documents.length === 0) {
                 return null;
@@ -203,6 +205,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         // Must call componentDidMount on the data
         // table to re-generate the data table object
         this.dataTable.componentDidMount();
+        this.listenSelect();
 
         // Set the filter used
         this.dataTablePagination.setFilter(filter);
@@ -297,6 +300,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             this.dataTable.dataTable.hideProgress();
         }
 
+        this.listenSelect();
         Tooltip.create({
             text: "Go to the start page",
             id: "main-top-app-bar-nav-tooltip"
@@ -311,5 +315,48 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     public componentWillUnmount(): void {
         Tooltip.delete("main-top-app-bar-nav-tooltip");
         Tooltip.delete("main-top-app-bar-action-search-tooltip");
+    }
+
+    private listenSelect(): void {
+        const getSelectedRows = () => {
+            let selected = this.dataTable.dataTable.getSelectedRowIds();
+            if (selected == null) {
+                return null;
+            }
+
+            selected = selected.filter(e => e.startsWith('doc-'));
+            if (selected.length == 0) {
+                return null;
+            } else {
+                return selected;
+            }
+        };
+
+        // TODO: Create an edit button
+        this.dataTable.dataTable.listen('MDCDataTable:rowSelectionChanged', () => {
+            const selected = getSelectedRows();
+            if (selected != null) {
+                // Show the edit button
+                BulkEditFab.show();
+            } else {
+                // Hide the edit button
+                BulkEditFab.hide();
+            }
+        });
+
+        this.dataTable.dataTable.listen('MDCDataTable:selectedAll', () => {
+            if (getSelectedRows() != null) {
+                // Show the edit button
+                BulkEditFab.show();
+            } else {
+                // Hide the edit button
+                BulkEditFab.hide();
+            }
+        });
+
+        this.dataTable.dataTable.listen('MDCDataTable:unselectedAll', () => {
+            // Hide the edit button
+            BulkEditFab.hide();
+        });
     }
 }

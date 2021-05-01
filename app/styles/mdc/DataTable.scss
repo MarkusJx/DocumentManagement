@@ -27,6 +27,16 @@
     $selectColor: rgba(red($themeColor), green($themeColor), blue($themeColor), 0.1);
     @include data-table-theme.selected-row-fill-color($selectColor);
 
+    // A disabled selected row should not be colored
+    .mdc-data-table__row--selected.disabled {
+      background-color: $background;
+
+      // Preserve the hover effect
+      &:hover {
+        background-color: $hoverColor;
+      }
+    }
+
     border-color: $dividerColor;
     --mdc-checkbox-unchecked-color: $textColor;
 
