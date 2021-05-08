@@ -24,6 +24,7 @@ function configureLogger(): void {
         appenders.push("out");
     }
 
+    // log4js requires at least one appender to work
     if (appenders.length > 0) {
         log4js.configure({
             appenders: {
@@ -166,8 +167,12 @@ function createWindow(): void {
         }
     });
 
+    // Manage the main window state.
+    // This saves and restores the windows
+    // positions and sizes on open/close
     mainWindowState.manage(mainWindow);
 
+    // Create the application menu
     menu.append(new MenuItem({
         label: 'File',
         submenu: [

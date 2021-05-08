@@ -1192,16 +1192,41 @@ export namespace topAppBar {
     }
 
     /**
+     * The navigation section state
+     */
+    interface NavigationSectionState {
+        // The top app bar title
+        title: string;
+    }
+
+    /**
      * The navigation section.
      * Usually contains the navigation button,
      * which is a {@link topAppBar.NavigationButton}
      */
-    export class NavigationSection extends React.Component<NavigationSectionProps> {
+    export class NavigationSection extends React.Component<NavigationSectionProps, NavigationSectionState> {
+        public constructor(props: NavigationSectionProps) {
+            super(props);
+
+            this.state = {
+                title: ""
+            };
+        }
+
+        public set title(value: string) {
+            this.setState({
+                title: value
+            });
+        }
+
         public render(): React.ReactNode {
             return (
                 <section className="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
                     {this.props.children}
-                    <span className="mdc-top-app-bar__title">{this.props.title}</span>
+                    <span className="mdc-top-app-bar__title">
+                        {this.props.title}
+                        <span className="top-app-bar-title__secondary">{this.state.title}</span>
+                    </span>
                 </section>
             );
         }
@@ -1224,11 +1249,14 @@ export namespace topAppBar {
     }
 
     export class NavigationButton extends React.Component<ButtonProps> {
+        public element: HTMLButtonElement = null;
+
         public render(): React.ReactNode {
             return (
                 <button className="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button"
                         aria-label={this.props.label} onClick={this.props.onClick} style={this.props.style}
-                        aria-describedby={this.props.describedby} disabled={this.props.enabled === false}>
+                        aria-describedby={this.props.describedby} disabled={this.props.enabled === false}
+                        ref={e => this.element = e}>
                     {this.props.iconName}
                 </button>
             );
@@ -1254,11 +1282,14 @@ export namespace topAppBar {
      * A top app bar action button
      */
     export class ActionButton extends React.Component<ButtonProps> {
+        public element: HTMLButtonElement = null;
+
         public render(): React.ReactNode {
             return (
                 <button className="material-icons mdc-top-app-bar__action-item mdc-icon-button"
                         disabled={this.props.enabled === false} aria-label={this.props.label}
-                        onClick={this.props.onClick} aria-describedby={this.props.describedby}>
+                        onClick={this.props.onClick} aria-describedby={this.props.describedby}
+                        ref={e => this.element = e}>
                     {this.props.iconName}
                 </button>
             );

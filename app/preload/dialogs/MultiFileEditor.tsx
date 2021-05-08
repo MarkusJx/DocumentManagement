@@ -112,17 +112,21 @@ class MultiFileEditorElement extends React.Component {
                     const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
                     const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues;
 
+                    function unique<T>(value: T, index: number, self: T[]) {
+                        return self.indexOf(value) === index;
+                    }
+
                     // Persist the values
                     await Promise.all(this.currentDocuments.map(d => {
                         const newTags: database.Tag[] = d.tags.filter(f => !this.prevTags.some(t => t == f.name));
                         newTags.push(...tags);
-                        return d.setTags(newTags, false);
+                        return d.setTags(newTags.filter(unique), false);
                     }));
 
                     await Promise.all(this.currentDocuments.map(d => {
                         let newProps = d.properties.filter(p1 => !this.prevProperties.some(p2 => p1.equals(p2)));
                         newProps.push(...properties);
-                        return d.setProperties(newProps, true);
+                        return d.setProperties(newProps.filter(unique), true);
                     }));
 
                     // Set the main table to not loading anymore

@@ -1,11 +1,6 @@
 import React from "react";
 import {database} from "../../databaseWrapper";
-import {
-    DataTableDirectoryElement,
-    DataTableDocumentElement,
-    DataTableElement,
-    DirectoryUpElement
-} from "./DataTableElement";
+import {DataTableDirectoryElement, DataTableDocumentElement, DataTableElement} from "./DataTableElement";
 import Snackbars from "../../util/Snackbars";
 
 interface MainDataTableContentProps {
@@ -94,12 +89,6 @@ export default class MainDataTableContent extends React.Component<MainDataTableC
             );
         } else {
             const res: React.ReactNode[] = [];
-            if (this.directory.path != null && this.directory.path.length > 0) {
-                res.push(
-                    <DirectoryUpElement currentDirectory={this.directory} key={this.directory.path}/>
-                );
-            }
-
             res.push(...this.directory.documents.map(doc => (
                 <DataTableDocumentElement document={doc} key={doc.absolutePath + '-' + doc.exists}
                                           ref={e => this.dataTableElements.push(e)}/>

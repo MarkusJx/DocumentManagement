@@ -114,11 +114,13 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @param directory the current directory
      */
     public set directory(directory: database.Directory) {
+        this.topAppBar.navButtonEnabled = directory.path.length > 0;
         this.setState({
             contentId: util.generateUid()
         });
 
         this.content.directory = directory;
+        this.topAppBar.title = directory.path;
 
         this.dataTablePagination.visible = false;
         this.dataTable.componentDidMount();
@@ -199,8 +201,13 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @param total the total number of rows in the query
      */
     public async setSearchResults(searchResults: database.Document[], filter: database.DocumentFilter, offset: number = 0, total: number = null): Promise<void> {
+        // Nothing is selected anymore
+        this.dataTable.dataTable.setSelectedRowIds([]);
         // Set the current state
         this.content.directory = new database.Directory(searchResults, [], null, "");
+        // The back button is always enabled
+        this.topAppBar.navButtonEnabled = true;
+        this.topAppBar.title = "Search results";
 
         // Must call componentDidMount on the data
         // table to re-generate the data table object
@@ -235,13 +242,21 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
                 this.dataTableContainer.checkbox.disabled = true;
             this.dataTable.dataTable.showProgress();
             this.dataTablePagination.disableAllButtons();
+            BulkEditFab.hide();
         } else {
+            this.topAppBar.navButtonEnabled = this.directory.path.length > 0;
             if (this.dataTableContainer.checkbox)
                 this.dataTableContainer.checkbox.disabled = false;
             this.dataTable.dataTable.hideProgress();
 
             // Call componentDidMount on the pagination element to disable the buttons
             this.dataTablePagination.componentDidMount();
+
+            // If nothing is selected, show the bulk edit fab
+            const selected = this.dataTable.dataTable.getSelectedRowIds();
+            if (selected != null && selected.length > 0) {
+                BulkEditFab.show();
+            }
         }
     }
 
@@ -302,7 +317,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
 
         this.listenSelect();
         Tooltip.create({
-            text: "Go to the start page",
+            text: "Move one directory up",
             id: "main-top-app-bar-nav-tooltip"
         });
 
@@ -310,11 +325,17 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             text: "Show/Hide the search bar",
             id: "main-top-app-bar-action-search-tooltip"
         });
+
+        Tooltip.create({
+            text: "Go to the start screen",
+            id: "main-top-app-bar-go-home-tooltip"
+        });
     }
 
     public componentWillUnmount(): void {
         Tooltip.delete("main-top-app-bar-nav-tooltip");
         Tooltip.delete("main-top-app-bar-action-search-tooltip");
+        Tooltip.delete("main-top-app-bar-go-home-tooltip");
     }
 
     private listenSelect(): void {
@@ -332,7 +353,6 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             }
         };
 
-        // TODO: Create an edit button
         this.dataTable.dataTable.listen('MDCDataTable:rowSelectionChanged', () => {
             const selected = getSelectedRows();
             if (selected != null) {

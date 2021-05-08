@@ -315,6 +315,8 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
     public constructor(props: DataTableDocumentElementProps) {
         super(props);
         this.document = props.document;
+
+        this.openDocument = this.openDocument.bind(this);
     }
 
     public set enabled(enabled: boolean) {
@@ -331,7 +333,7 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
 
         return (
             <tr className="mdc-data-table__row" key={this.document.absolutePath}
-                data-row-id={'doc-' + this.document.absolutePath}>
+                data-row-id={'doc-' + this.document.absolutePath} onDoubleClick={this.openDocument}>
                 <DatatableCheckbox id={this.document.absolutePath}/>
                 <th className="mdc-data-table__cell" scope="row" id={this.document.absolutePath}>
                     {this.document.filename}
@@ -352,6 +354,22 @@ export class DataTableDocumentElement extends DataTableElement<DataTableDocument
                 </td>
             </tr>
         );
+    }
+
+    /**
+     * Open the document
+     * @private
+     */
+    private async openDocument(): Promise<void> {
+        try {
+            if (this.document.exists && this.document.absolutePath) {
+                util.openFileUsingDefaultProgram(constants.databaseManager.getSourcePath()
+                    + '/' + this.document.absolutePath);
+            }
+        } catch (e) {
+            logger.error("An error occurred while opening a document:", e);
+            showErrorDialog("An error occurred while opening a document:", e.message);
+        }
     }
 }
 
@@ -461,6 +479,8 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
     public constructor(props: DataTableDirectoryElementProps) {
         super(props);
         this.directory = props.directory;
+
+        this.onDirectoryOpen = this.onDirectoryOpen.bind(this);
     }
 
     public set enabled(enabled: boolean) {
@@ -475,7 +495,8 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
         const tooltipId: string = getId();
 
         return (
-            <tr className="mdc-data-table__row disabled" data-row-id={'dir-' + this.directory.path}>
+            <tr className="mdc-data-table__row disabled" data-row-id={'dir-' + this.directory.path}
+                onDoubleClick={this.onDirectoryOpen}>
                 <DatatableCheckbox id={this.directory.path} hidden={true}/>
                 <th className="mdc-data-table__cell" scope="row" id={this.directory.path}>{this.directory.name}</th>
                 <TableCellOkErrorIcon ok={this.directory.exists}/>
@@ -493,50 +514,20 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
             </tr>
         );
     }
-}
 
-/**
- * The directory up element properties
- */
-export type DirectoryUpElementProps = {
-    // The current directory
-    currentDirectory: database.Directory
-};
-
-/**
- * An element to move one directory level up
- */
-export class DirectoryUpElement extends React.Component<DirectoryUpElementProps> {
     /**
-     * The path to the directory one level above the current one
+     * The function to be called to open the directory
      * @private
      */
-    private readonly upPath: string;
-
-    /**
-     * Create a directory up element
-     *
-     * @param props the properties
-     */
-    public constructor(props: DirectoryUpElementProps) {
-        super(props);
-
-        const path = props.currentDirectory.path;
-        this.upPath = path.substring(0, path.lastIndexOf('/'));
-    }
-
-    public render(): React.ReactNode {
-        return (
-            <tr className="mdc-data-table__row disabled" data-row-id="data-table-directory-up-row">
-                <DatatableCheckbox id="data-table-directory-up" hidden={true}/>
-                <th className="mdc-data-table__cell" scope="row" id="data-table-directory-up">Directory up</th>
-                <td className="mdc-data-table__cell"/>
-                <td className="mdc-data-table__cell"/>
-                <td className="mdc-data-table__cell"/>
-                <td className="mdc-data-table__cell">
-                    <OpenDirectoryButton dirPath={this.upPath}/>
-                </td>
-            </tr>
-        );
+    private async onDirectoryOpen(): Promise<void> {
+        try {
+            if (this.directory.exists && this.directory.path != null) {
+                await constants.mainDataTable.setDirectory(this.directory.path);
+            }
+        } catch (e) {
+            logger.error("An error occurred while opening a directory:", e);
+            showErrorDialog("An error occurred while opening a directory:", e.message);
+            constants.mainComponent.gotoStartPage();
+        }
     }
 }

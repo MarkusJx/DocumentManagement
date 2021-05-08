@@ -66,15 +66,16 @@ $FontPathOpenSans: "../../node_modules/open-sans-fonts/open-sans";
 /// @param {color} $iconButtonRippleColor the color of the ripple of an icon button in the main data table
 /// @param {color} $errorDialogButtonColor the error dialog button color (should be some kind of red)
 /// @param {color} $scrollbarHoverColor   the color of the scroll bar on hover
+/// @param {color} $topAppBarSecondary    the secondary color of the top app bar title
 @mixin theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor, $buttonOutlineColor,
               $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor, $topAppBarColor,
               $topAppBarTextColor, $hideBackgroundColor, $codeTextColor, $disabledButtonColor, $iconColor,
               $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor, $errorDialogButtonColor,
-              $scrollbarHoverColor, $chipColor) {
+              $scrollbarHoverColor, $chipColor, $topAppBarSecondary) {
   @include SwipeDialog.theme($background, $textColor, $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor);
   @include DoneDialog.theme($background, $hideBackgroundColor, $themeColor, $textColor);
   @include DataTable.theme($background, $borderColor, $textColor, $hoverColor, $disabledButtonColor, $topAppBarColor);
-  @include TopAppBar.theme($topAppBarColor, $topAppBarTextColor);
+  @include TopAppBar.theme($topAppBarColor, $topAppBarTextColor, $topAppBarSecondary);
   @include TextField.theme($lightThemeColor, $borderColor, $darkTextColor, $hoverOutlineColor);
   @include Dialog.theme($themeColor, $background, $darkTextColor, $darkTextColor);
   @include Button.theme($themeColor, $buttonOutlineColor, $disabledButtonColor, $iconButtonRippleColor);
@@ -135,12 +136,13 @@ body {
   $errorDialogButtonColor: #ff0000;
   $scrollbarHoverColor: #919191;
   $chipColor: #e0e0e0;
+  $topAppBarSecondary: #e8e8e8;
 
   @include theme($background, $themeColor, $lightThemeColor, $textColor, $borderColor, $darkTextColor,
           $buttonOutlineColor, $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor,
           $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor, $textColor, $disabledButtonColor,
           $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor,
-          $errorDialogButtonColor, $scrollbarHoverColor, $chipColor);
+          $errorDialogButtonColor, $scrollbarHoverColor, $chipColor, $topAppBarSecondary);
 
   background: $background;
 
@@ -171,7 +173,7 @@ body {
             $buttonOutlineColor, $codeBackgroundColor, $hoverColor, $hoverOutlineColor, $activeColor,
             $topAppBarColor, $topAppBarTextColor, $hideBackgroundColor, $codeTextColor, $disabledButtonColor,
             $iconColor, $okIconColor, $errorIconColor, $dataTableLoadingColor, $iconButtonRippleColor,
-            $errorDialogButtonColor, $scrollbarHoverColor, $chipColor);
+            $errorDialogButtonColor, $scrollbarHoverColor, $chipColor, $topAppBarSecondary);
 
     background: $background;
   }

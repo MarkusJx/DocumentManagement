@@ -40,8 +40,7 @@ enum settings {
     SET_ROOT_DIR = "Set root directory",
     COPY_DATABASE = "Copy the database",
     DATABASE_INFO = "Show database info",
-    VIEW_LICENSE = "View License",
-    EXIT = "Exit"
+    VIEW_LICENSE = "View License"
 }
 
 /**
@@ -59,6 +58,18 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
      * @private
      */
     private topAppBar: topAppBar.Header = null;
+
+    /**
+     * The navigation button
+     * @private
+     */
+    private navbarButton: topAppBar.NavigationButton = null;
+
+    /**
+     * The top app bar navigation section
+     * @private
+     */
+    private navSection: topAppBar.NavigationSection = null;
 
     /**
      * Create a main data table top app bar
@@ -89,10 +100,38 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
     }
 
     /**
+     * Set whether the nav button should be enabled
+     *
+     * @param value whether the nav button should be enabled
+     */
+    public set navButtonEnabled(value: boolean) {
+        this.navbarButton.element.disabled = !value;
+    }
+
+    /**
+     * Set the title
+     *
+     * @param value the new title
+     */
+    public set title(value: string) {
+        this.navSection.title = value;
+    }
+
+    /**
      * Called when the back button is clicked
      * @private
      */
     private static backButtonClick(): void {
+        const path = constants.mainDataTable.directory.path;
+        const upPath = path.substring(0, path.lastIndexOf('/'));
+        constants.mainDataTable.setDirectory(upPath).then().catch((e) => {
+            logger.error("Could not go one directory up:", e);
+            showErrorDialog("Could not go one directory up. Error:", e.stack);
+            constants.mainComponent.gotoStartPage();
+        });
+    }
+
+    private static goHome(): void {
         constants.mainComponent.gotoStartPage();
     }
 
@@ -104,19 +143,23 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
             settings.COPY_DATABASE,
             settings.DATABASE_INFO,
             settings.RELOAD,
-            settings.VIEW_LICENSE,
-            settings.EXIT
+            settings.VIEW_LICENSE
         ];
 
         return (
             <>
                 <topAppBar.Header ref={e => this.topAppBar = e}>
-                    <topAppBar.NavigationSection title="Browse">
+                    <topAppBar.NavigationSection title="Browse" ref={e => this.navSection = e}>
                         <topAppBar.NavigationButton onClick={MainDataTableTopAppBar.backButtonClick} label="Back"
-                                                    iconName="arrow_back" describedby="main-top-app-bar-nav-tooltip"
-                                                    enabled={this.state.buttonsEnabled}/>
+                                                    iconName="arrow_back_ios_new"
+                                                    describedby="main-top-app-bar-nav-tooltip"
+                                                    enabled={this.state.buttonsEnabled}
+                                                    ref={e => this.navbarButton = e}/>
                     </topAppBar.NavigationSection>
                     <topAppBar.ActionButtonsSection>
+                        <topAppBar.ActionButton label="Go home" onClick={MainDataTableTopAppBar.goHome}
+                                                iconName="home" enabled={this.state.buttonsEnabled}
+                                                describedby="main-top-app-bar-go-home-tooltip"/>
                         <topAppBar.ActionButton onClick={this.showHideSearch} label="Search" iconName="search"
                                                 describedby="main-top-app-bar-action-search-tooltip"
                                                 enabled={this.state.buttonsEnabled}/>
@@ -170,10 +213,6 @@ export default class MainDataTableTopAppBar extends React.Component<MainDataTabl
                     constants.mainComponent.gotoStartPage();
                 });
 
-                break;
-            }
-            case settings.EXIT: {
-                constants.mainComponent.gotoStartPage();
                 break;
             }
             case settings.SET_ROOT_DIR: {

@@ -15,11 +15,24 @@
 ///
 /// @param {color} $background the top app bar background color
 /// @param {color} $textColor the top app bar title and icon color
-@mixin theme($background, $textColor) {
+/// @param {color} $secondaryTextColor the top app bar secondary text color
+@mixin theme($background, $textColor, $secondaryTextColor) {
   .themed-top-app-bar {
     @include top-app-bar.fill-color($background);
     @include top-app-bar.ink-color($textColor);
 
     @include shared.transition-color();
+
+    // The top app bar secondary title
+    .top-app-bar-title__secondary {
+      // Add a space before the text
+      &:before {
+        content: " ";
+      }
+
+      color: $secondaryTextColor;
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 300;
+    }
   }
 }
