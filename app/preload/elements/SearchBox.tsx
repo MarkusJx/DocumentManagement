@@ -150,7 +150,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      */
     private static tagExists(value: string): boolean {
         try {
-            return constants.databaseManager.tagExists(value);
+            return constants.databaseManager.tagExistsSync(value);
         } catch (e) {
             logger.error("An error occurred while checking if a tag exists:", e);
             return false;
@@ -222,7 +222,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      */
     private static getTagOptions(value: string): string[] {
         try {
-            return constants.databaseManager.getTagsLike(value).map(t => t.name);
+            return constants.databaseManager.getTagsLikeSync(value).toArraySync().map(t => t.name);
         } catch (e) {
             logger.error("An error occurred while getting all tags like a value:", e);
             return [];

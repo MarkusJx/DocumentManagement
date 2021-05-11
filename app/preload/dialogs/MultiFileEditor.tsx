@@ -1,4 +1,4 @@
-import {Arrays, database, toArray} from "../databaseWrapper";
+import {Arrays, database} from "../databaseWrapper";
 import React from "react";
 import {ChipTextAreaWithAutoComplete} from "../elements/ChipTextArea";
 import {PropertySetter} from "../elements/PropertyField";
@@ -76,7 +76,7 @@ class MultiFileEditorElement extends React.Component {
      */
     private static getAutoCompleteOptions(val: string): string[] {
         try {
-            const tags: database.Tag[] = constants.databaseManager.getTagsLike(val);
+            const tags: database.Tag[] = constants.databaseManager.getTagsLikeSync(val).toArraySync();
             return tags.map(t => t.name);
         } catch (e) {
             logger.error("An error occurred while trying to get the tag auto complete options:", e);
@@ -93,7 +93,7 @@ class MultiFileEditorElement extends React.Component {
      */
     private static chipValueExists(value: string): boolean {
         try {
-            return constants.databaseManager.tagExists(value);
+            return constants.databaseManager.tagExistsSync(value);
         } catch (e) {
             logger.error("An error occurred while checking if a chip value exists:", e);
             return false;
@@ -110,7 +110,7 @@ class MultiFileEditorElement extends React.Component {
 
                     // Get the values
                     const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
-                    const properties: database.PropertyValueSet[] = toArray(this.propertySetter.propertyValues);
+                    const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues.toArraySync();
 
                     function unique<T>(value: T, index: number, self: T[]) {
                         return self.indexOf(value) === index;
@@ -118,13 +118,13 @@ class MultiFileEditorElement extends React.Component {
 
                     // Persist the values
                     await Promise.all(this.currentDocuments.map(d => {
-                        const newTags: database.Tag[] = toArray(d.tags).filter(f => !this.prevTags.some(t => t == f.name));
+                        const newTags: database.Tag[] = d.tags.toArraySync().filter(f => !this.prevTags.some(t => t == f.name));
                         newTags.push(...tags);
                         return d.setTags(newTags.filter(unique), constants.databaseManager, false);
                     }));
 
                     await Promise.all(this.currentDocuments.map(d => {
-                        let newProps = toArray(d.properties).filter(p1 => !this.prevProperties.some(p2 => p1.equals(p2)));
+                        let newProps = d.properties.toArraySync().filter(p1 => !this.prevProperties.some(p2 => p1.equals(p2)));
                         newProps.push(...properties);
                         return d.setProperties(newProps.filter(unique), constants.databaseManager, true);
                     }));
@@ -152,15 +152,15 @@ class MultiFileEditorElement extends React.Component {
         this.currentDocuments = documents;
 
         const tags: string[] = [];
-        toArray(documents[0].tags).forEach(t1 => {
-            if (documents.every(d => toArray(d.tags).some(t2 => t2.name == t1.name))) {
+        documents[0].tags.toArraySync().forEach(t1 => {
+            if (documents.every(d => d.tags.toArraySync().some(t2 => t2.name == t1.name))) {
                 tags.push(t1.name);
             }
         });
 
         const properties: database.PropertyValueSet[] = [];
-        toArray(documents[0].properties).forEach(p1 => {
-            if (documents.every(d => toArray(d.properties).some(p2 => p1.equals(p2)))) {
+        documents[0].properties.toArraySync().forEach(p1 => {
+            if (documents.every(d => d.properties.toArraySync().some(p2 => p1.equals(p2)))) {
                 properties.push(p1);
             }
         });

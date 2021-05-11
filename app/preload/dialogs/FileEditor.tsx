@@ -92,7 +92,7 @@ class FileEditorElement extends React.Component {
      */
     private static getAutoCompleteOptions(val: string): string[] {
         try {
-            const tags: database.Tag[] = constants.databaseManager.getTagsLike(val);
+            const tags: database.Tag[] = constants.databaseManager.getTagsLikeSync(val).toArraySync();
             return tags.map(t => t.name);
         } catch (e) {
             logger.error("An error occurred while trying to get the tag auto complete options:", e);
@@ -169,7 +169,7 @@ class FileEditorElement extends React.Component {
      */
     private static chipValueExists(value: string): boolean {
         try {
-            return constants.databaseManager.tagExists(value);
+            return constants.databaseManager.tagExistsSync(value);
         } catch (e) {
             logger.error("An error occurred while checking if a chip value exists:", e);
             return false;

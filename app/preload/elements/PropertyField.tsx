@@ -87,7 +87,7 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      */
     private static getPropertyAutoCompleteOptions(input: string): string[] {
         try {
-            return constants.databaseManager.getPropertiesLike(input).map(p => p.name);
+            return constants.databaseManager.getPropertiesLikeSync(input).toArraySync().map(p => p.name);
         } catch (e) {
             logger.error("An error occurred while getting all properties like a value:", e);
             return [];
@@ -102,7 +102,7 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      */
     private static getPropertyValueAutoCompleteOptions(input: string): string[] {
         try {
-            return constants.databaseManager.getPropertyValuesLike(input).map(p => p.value);
+            return constants.databaseManager.getPropertyValuesLikeSync(input).toArraySync().map(p => p.value);
         } catch (e) {
             logger.error("An error occurred while getting all property values like a value:", e);
             return [];
@@ -258,10 +258,7 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      * @param values the values to set
      */
     public set propertyValues(values: javaTypes.List<database.PropertyValueSet>) {
-        this._propertyValues = [];
-        for (let i = 0; i < values.sizeSync(); i++) {
-            this._propertyValues.push(values.getSync(i));
-        }
+        this._propertyValues = values.toArraySync();
         this.forceUpdate();
     }
 
@@ -310,7 +307,7 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
 
         return (
             this._propertyValues.map((pv: database.PropertyValueSet) => (
-                <div key={pv.property.name + '-' + pv.property.value + '-' + this._nextId++}
+                <div key={pv.property.name + '-' + pv.property.name + '-' + this._nextId++}
                      className="property-field__container">
                     <PropertyField propertyName={pv.property.name} propertyValue={pv.propertyValue.value}
                                    ref={e => this._propertyFields.push(e)}/>
@@ -340,11 +337,7 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      * @private
      */
     private addElement() {
-        const values: database.PropertyValueSet[] = [];
-        const list = this.propertyValues;
-        for (let i = 0; i < list.sizeSync(); i++) {
-            values.push(list.getSync(i));
-        }
+        const values: database.PropertyValueSet[] = this.propertyValues.toArraySync();
 
         values.push(new database.PropertyValueSet(new database.Property(""), new database.PropertyValue("")));
         this._propertyValues = values.filter(unique);

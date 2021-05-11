@@ -1,4 +1,4 @@
-import java, {java_instance_proxy, JavaClass, JavaType} from "@markusjx/java";
+import java, {java_instance_proxy, JavaClass} from "@markusjx/java";
 import * as fs from "fs";
 import path from "path";
 import {getLogger} from "log4js";
@@ -16,15 +16,6 @@ if (fs.existsSync(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR
 }
 
 export class Arrays extends java.importClass<typeof javaTypes.Arrays>('java.util.Arrays') {
-}
-
-export function toArray<T extends JavaType>(list: javaTypes.List<T>): T[] {
-    const res: T[] = [];
-    for (let i = 0; i < list.sizeSync(); i++) {
-        res.push(list.getSync(i));
-    }
-
-    return res;
 }
 
 java.logging.setLogLevel(3);
