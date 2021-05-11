@@ -253,7 +253,7 @@ export default class MainComponent extends React.Component<EmptyProps, MainCompo
             const fileScanner = new FileScanner(file);
             const rootDir = await fileScanner.startScan();
 
-            if (await constants.databaseManager.persistDirectory(rootDir.javaValue(), file)) {
+            if (await constants.databaseManager.persistDirectoryProxy(rootDir.javaValue(), file)) {
                 logger.info("Successfully persisted the directory");
             } else {
                 logger.error("Could not persist the directory");

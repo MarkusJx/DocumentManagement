@@ -5,11 +5,11 @@ import Store from "electron-store";
 import path from 'path';
 import log4js from "log4js";
 import {createStore, StoreType} from "./shared/Settings";
+import * as fs from "fs";
+import FindJavaHome from "./shared/FindJavaHome";
 
 const logger = log4js.getLogger();
 const LOG_TO_CONSOLE: boolean = false;
-
-app.allowRendererProcessReuse = false;
 
 function configureLogger(): void {
     const store: Store<StoreType> = createStore();
@@ -127,7 +127,7 @@ function printSystemInfo() {
 /**
  * Create the main window
  */
-function createWindow(): void {
+async function createWindow(): Promise<void> {
     logger.info("Creating the main window");
     Store.initRenderer();
     autoUpdater.checkForUpdatesAndNotify().then(r => {
@@ -260,25 +260,40 @@ function createWindow(): void {
 
     ipcMain.on('before-close-finished', () => {
         logger.info("The before close actions finished, closing the window");
+        if (mainWindow.webContents.isDevToolsOpened()) {
+            mainWindow.webContents.closeDevTools();
+        }
         mainWindow.close();
     });
 
+    const store = createStore();
+    const lib_regex = /.+\.(dll|so|dylib)$/;
+    const jvmPath: string = store.get('jvmPath');
+    if (jvmPath === null || !fs.existsSync(jvmPath) || !lib_regex.test(jvmPath)) {
+        try {
+            const home = await FindJavaHome();
+            store.set('jvmPath', home);
+        } catch (e) {
+            logger.error("Could not find the JVM:", e);
+            dialog.showErrorBox("Could not find a JVM", e);
+            return;
+        }
+    }
+    console.log("Using jvm library:", store.get('jvmPath'));
+
     // Load index.html
     logger.info("Loading index.html");
-    mainWindow.loadFile(path.join(__dirname, '..', 'app', 'ui', 'index.html')).then(() => {
+    try {
+        await mainWindow.loadFile(path.join(__dirname, '..', 'app', 'ui', 'index.html'));
         logger.info("index.html loaded");
-    }).catch(e => {
+    } catch (e) {
         logger.error("Could not load the index.html:", e);
-    });
+        dialog.showErrorBox("Could not load the ui", e);
+        return;
+    }
 
-    mainWindow.webContents.openDevTools();
-}
-
-function addJvmPaths() {
-    if (process.platform == 'win32') {
-        process.env.PATH += ";resources\\jre-11\\bin\\server";
-    } else {
-        process.env.PATH += ":/usr/lib/jvm/java-11-openjdk-amd64/lib/server";
+    if (process.argv.includes('--debug')) {
+        mainWindow.webContents.openDevTools();
     }
 }
 
@@ -288,13 +303,12 @@ function addJvmPaths() {
 app.whenReady().then(() => {
     configureLogger();
     printSystemInfo();
-    addJvmPaths();
-    createWindow();
+    createWindow().then();
 
     app.on('activate', function (): void {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+        if (BrowserWindow.getAllWindows().length === 0) createWindow().then();
     });
 });
 

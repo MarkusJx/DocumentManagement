@@ -2,6 +2,8 @@ package io.github.markusjx.database.persistence;
 
 import io.github.markusjx.datatypes.ChainedHashMap;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.spi.PersistenceUnitInfo;
 import java.util.Arrays;
@@ -12,6 +14,8 @@ import java.util.Set;
  * A custom persistence provider
  */
 public abstract class PersistenceProvider {
+    private static final Logger logger = LoggerFactory.getLogger(PersistenceProvider.class);
+
     /**
      * Load all managed classes.
      * Gets all with {@link CustomPersistenceUnit} annotated classes.
@@ -35,7 +39,7 @@ public abstract class PersistenceProvider {
             // Put all annotated classes into the result map
             annotated.forEach(c -> map.putValue(c.getAnnotation(CustomPersistenceUnit.class).unitName(), c.getName()));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get the managed classes using reflection:", e);
         }
 
         return map;

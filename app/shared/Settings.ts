@@ -93,6 +93,8 @@ export interface StoreType {
     mostRecent: string;
     // The settings element
     settings: Settings;
+    // The path to the jvm
+    jmvPath: string;
 }
 
 export function createStore(): Store<StoreType> {
@@ -102,7 +104,8 @@ export function createStore(): Store<StoreType> {
             iv: crypto.randomBytes(16).toString('hex'),
             recents: [],
             mostRecent: null,
-            settings: defaultSettings
+            settings: defaultSettings,
+            jmvPath: null
         }
     });
 }

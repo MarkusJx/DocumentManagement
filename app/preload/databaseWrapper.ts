@@ -4,9 +4,13 @@ import path from "path";
 import {getLogger} from "log4js";
 import constants from "./util/constants";
 import javaTypes from "./javaTypes";
+import {createStore} from "../shared/Settings";
 
 const JAR_NAME = 'dbLib-1.0-SNAPSHOT.jar';
 const logger = getLogger();
+
+const store = createStore();
+java.ensureJVM(store.get('jvmPath'));
 
 logger.info("Loading the java library");
 if (fs.existsSync(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR_NAME))) {
@@ -288,7 +292,7 @@ export class FileScanner extends java.importClass<typeof FileScannerClass>("io.g
      * @return the scanned directory
      */
     public async startScan(): Promise<database.Directory> {
-        const dir: database.DirectoryProxy = await super.scan();
+        const dir: database.DirectoryProxy = await this.scan();
         return new database.Directory(dir, this.source);
     }
 }
@@ -522,11 +526,9 @@ export namespace database {
 
         public constructor(impl: DirectoryProxy | Document[], baseDir: string) {
             if (!Array.isArray(impl)) {
-                this.impl = impl as DirectoryProxy;
+                this.impl = impl;
             } else {
-                console.log(impl);
-                console.log(typeof impl);
-                const tmp = (impl as Document[]).map(d => d.javaValue());
+                const tmp = impl.map(d => d.javaValue());
                 this.impl = new DirectoryClass("", "");
                 this.impl.documents.addAllSync(Arrays.asListSync(tmp));
             }
@@ -801,7 +803,7 @@ export namespace database {
          */
         public getNumDocumentsBy(filter: DocumentFilter): Promise<BigInt>
 
-        public persistDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean>;
+        protected persistDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean>;
 
         /**
          * Get the number of documents in a directory but not in the database
@@ -981,7 +983,7 @@ export namespace database {
          * @return the documents filtered by the filter
          */
         public async getDocumentsByFilter(filter: DocumentFilter, offset: number): Promise<Document[]> {
-            const docList = await super.getDocumentsBy(filter, offset);
+            const docList = await this.getDocumentsBy(filter, offset);
             let sourcePath: string;
             if (constants.activeSetting != null && constants.activeSetting.localPath != null) {
                 sourcePath = constants.activeSetting.localPath;
@@ -1005,9 +1007,9 @@ export namespace database {
          * @param sourcePath the source path
          * @return whether the operation was successful
          */
-        public async persistDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean> {
+        public async persistDirectoryProxy(directory: DirectoryProxy, sourcePath: string): Promise<boolean> {
             const info = await this.setDatabaseInfo();
-            return await super.persistDirectory(directory, sourcePath) && info;
+            return await this.persistDirectory(directory, sourcePath) && info;
         }
 
         /**

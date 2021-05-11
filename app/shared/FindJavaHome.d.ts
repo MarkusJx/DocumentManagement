@@ -1,0 +1,1 @@
+export default function FindJavaHome(): Promise<string>;
