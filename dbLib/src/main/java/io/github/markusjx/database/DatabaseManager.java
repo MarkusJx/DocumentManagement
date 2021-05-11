@@ -55,6 +55,11 @@ public class DatabaseManager {
         logger.info("Creating the database manager");
     }
 
+    @SuppressWarnings("unused")
+    public DatabaseManager(DatabaseManager other) {
+        this.manager = other.manager;
+    }
+
     /**
      * Convert an array of tag names into an array of tags
      *
@@ -900,10 +905,15 @@ public class DatabaseManager {
      */
     @SuppressWarnings("unused")
     public synchronized long getNumDocumentsBy(DocumentFilter filter) {
-        CriteriaBuilder cb = manager.getCriteriaBuilder();
-        CriteriaQuery<Long> query = filter.getFilterRequestCount(cb);
+        try {
+            var cb = manager.getCriteriaBuilder();
+            CriteriaQuery<Long> query = filter.getFilterRequestCount(cb);
 
-        return manager.createQuery(query).getSingleResult();
+            return manager.createQuery(query).getSingleResult();
+        } catch (Exception e) {
+            logger.error("Could not get the number of documents by a filer", e);
+            return 0;
+        }
     }
 
     /**

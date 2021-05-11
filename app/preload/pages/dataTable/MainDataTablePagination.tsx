@@ -223,7 +223,7 @@ export default class MainDataTablePagination extends React.Component<MainDataTab
         try {
             constants.mainDataTable.setLoading(true);
             // Get the documents
-            const documents: database.Document[] = await constants.databaseManager.getDocumentsBy(this.filter, offset);
+            const documents: database.Document[] = await constants.databaseManager.getDocumentsByFilter(this.filter, offset);
             // No need to set the offset and limit, MainDataTable#setSearchResults will handle this
             await constants.mainDataTable.setSearchResults(documents, this.filter, offset, this.state.total);
             constants.mainDataTable.setLoading(false);

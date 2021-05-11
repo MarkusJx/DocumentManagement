@@ -453,7 +453,7 @@ class OpenDirectoryButton extends DataTableButton<OpenDirectoryButtonProps> {
  */
 export type DataTableDirectoryElementProps = {
     // The directory to display
-    directory: database.DirectoryProxy
+    directory: database.Directory
 };
 
 /**
@@ -469,7 +469,7 @@ export class DataTableDirectoryElement extends DataTableElement<DataTableDirecto
      * The directory to display
      * @private
      */
-    private readonly directory: database.DirectoryProxy;
+    private readonly directory: database.Directory;
 
     /**
      * Create a data table directory element

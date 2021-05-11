@@ -26,12 +26,18 @@ public abstract class PersistenceProvider {
             map.put(null, Arrays.asList(managedClasses));
         }
 
-        // Initiate reflections and get all annotated classes
-        Reflections reflections = new Reflections("io.github.markusjx");
-        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(CustomPersistenceUnit.class);
+        try {
+            // Initiate reflections and get all annotated classes
+            var reflections = new Reflections("io.github.markusjx");
 
-        // Put all annotated classes into the result map
-        annotated.forEach(c -> map.putValue(c.getAnnotation(CustomPersistenceUnit.class).unitName(), c.getName()));
+            Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(CustomPersistenceUnit.class);
+
+            // Put all annotated classes into the result map
+            annotated.forEach(c -> map.putValue(c.getAnnotation(CustomPersistenceUnit.class).unitName(), c.getName()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return map;
     }
 

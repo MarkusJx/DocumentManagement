@@ -183,7 +183,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         try {
             this.setLoading(true);
             const filter: database.DocumentFilter = await this.searchBox.getFilter();
-            const documents: database.Document[] = await constants.databaseManager.getDocumentsBy(filter, 0);
+            const documents: database.Document[] = await constants.databaseManager.getDocumentsByFilter(filter, 0);
             await this.setSearchResults(documents, filter);
             this.setLoading(false);
         } catch (e) {
@@ -204,7 +204,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         // Nothing is selected anymore
         this.dataTable.dataTable.setSelectedRowIds([]);
         // Set the current state
-        this.content.directory = new database.Directory(searchResults, [], null, "");
+        this.content.directory = new database.Directory(searchResults, "");
         // The back button is always enabled
         this.topAppBar.navButtonEnabled = true;
         this.topAppBar.title = "Search results";
@@ -220,7 +220,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         // Show the pagination bar and set the elements
         this.dataTablePagination.visible = true;
         if (total == null) {
-            this.dataTablePagination.setTotalElements(await constants.databaseManager.getNumDocumentsBy(filter), offset);
+            this.dataTablePagination.setTotalElements(Number(await constants.databaseManager.getNumDocumentsBy(filter)), offset);
         } else {
             this.dataTablePagination.setTotalElements(total, offset);
         }
@@ -267,7 +267,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      */
     public async setDirectory(directoryPath: string): Promise<void> {
         this.setLoading(true);
-        this.directory = await constants.databaseManager.getDirectory(directoryPath);
+        this.directory = await constants.databaseManager.getDirectoryBy(directoryPath);
         this.setLoading(false);
     }
 

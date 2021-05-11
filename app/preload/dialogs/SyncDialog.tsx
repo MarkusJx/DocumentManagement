@@ -131,7 +131,7 @@ class SyncDialogElement extends React.Component {
      * The updated directory to persist
      * @private
      */
-    private updatedDirectory: database.DirectoryProxy = null;
+    private updatedDirectory: database.Directory = null;
 
     /**
      * The content pages of the swipe dialog
@@ -275,10 +275,10 @@ class SyncDialogElement extends React.Component {
         this.swipeDialog.cancelButton.enabled = false;
         this.swipeDialog.progressBar.progressBar.determinate = false;
         const scanner: FileScanner = new FileScanner(this.selectedPath.path);
-        scanner.scan().then(async (directory: database.DirectoryProxy) => {
+        scanner.startScan().then(async (directory: database.Directory) => {
             this.updatedDirectory = directory;
-            this.elementsToRemove.directories = Number(await constants.databaseManager.getDirectoriesNotIn(directory));
-            this.elementsToRemove.documents = Number(await constants.databaseManager.getDocumentsNotIn(directory));
+            this.elementsToRemove.directories = Number(await constants.databaseManager.getDirectoriesNotIn(directory.javaValue()));
+            this.elementsToRemove.documents = Number(await constants.databaseManager.getDocumentsNotIn(directory.javaValue()));
             this.swipeDialog.continueButton.enabled = true;
             this.swipeDialog.cancelButton.enabled = true;
             this.swipeDialog.progressBar.progressBar.determinate = true;
@@ -298,7 +298,7 @@ class SyncDialogElement extends React.Component {
         this.swipeDialog.continueButton.enabled = false;
         this.swipeDialog.cancelButton.enabled = false;
         this.swipeDialog.progressBar.progressBar.determinate = false;
-        const couldSync = await constants.databaseManager.synchronizeDirectory(this.updatedDirectory, this.selectedPath.path);
+        const couldSync = await constants.databaseManager.synchronizeDirectory(this.updatedDirectory.javaValue(), this.selectedPath.path);
         if (couldSync) {
             if (constants.activeSetting.localPath != null) {
                 logger.info("The local path is set, deleting it");

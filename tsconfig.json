@@ -6,7 +6,9 @@
     "outDir": "out",
     "lib": [
       "ESNext",
-      "DOM"
+      "DOM",
+      "es6",
+      "dom.iterable"
     ],
     "inlineSourceMap": true,
     "jsx": "react"

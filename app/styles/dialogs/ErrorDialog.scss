@@ -29,6 +29,7 @@
   }
 
   .error-dialog__error-container {
+    user-select: text;
     background-color: $codeBackgroundColor;
     color: $codeTextColor;
     @include shared.transition-color();

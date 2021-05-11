@@ -34,6 +34,12 @@ public class FilenameFilter implements DocumentFilterBase {
         this.exactMatch = exactMatch;
     }
 
+    @SuppressWarnings("unused")
+    public FilenameFilter(FilenameFilter other) {
+        this.filename = other.filename;
+        this.exactMatch = other.exactMatch;
+    }
+
     /**
      * Get the filter operations
      *

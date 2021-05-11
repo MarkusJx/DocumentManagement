@@ -52,6 +52,11 @@ public class PropertyFilter implements DocumentFilterBase {
         }
     }
 
+    @SuppressWarnings("unused")
+    public PropertyFilter(PropertyFilter other) {
+        this.properties = other.properties;
+    }
+
     /**
      * Get the filters
      *

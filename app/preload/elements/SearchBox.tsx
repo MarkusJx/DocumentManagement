@@ -113,7 +113,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * @return the generated document filter
      */
     public async getFilter(): Promise<database.DocumentFilter> {
-        const filters: database.filters.DocumentFilterBase[] = [];
+        const filters: database.filters.DocumentFilter[] = [];
         if (this.filenameTextArea.value.length > 0) {
             const filename: string = this.filenameTextArea.value;
             const exactMatch: boolean = this.exact_match_checkbox.checked;
@@ -138,7 +138,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
             filters.push(await database.filters.DateFilter.getByDates(values[0], values[1]));
         }
 
-        return await database.DocumentFilter.create(...filters);
+        return database.DocumentFilter.create(...filters);
     }
 
     /**

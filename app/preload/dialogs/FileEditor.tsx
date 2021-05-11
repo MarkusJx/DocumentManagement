@@ -10,6 +10,7 @@ import {showErrorDialog} from "./ErrorDialog";
 import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
 import FileInfo from "../elements/FileInfo";
+import javaTypes from "../javaTypes";
 
 const logger = getLogger();
 
@@ -109,14 +110,19 @@ class FileEditorElement extends React.Component {
 
                     // Get the values
                     const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
-                    const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues;
+                    const properties: javaTypes.List<database.PropertyValueSet> = this.propertySetter.propertyValues;
                     const date: Date = this.dateTextField.value;
 
+                    const props: database.PropertyValueSet[] = [];
+                    for (let i = 0; i < properties.sizeSync(); i++) {
+                        props.push(properties.getSync(i));
+                    }
+
                     // Persist the values
-                    await this.currentDocument.setTags(tags, false);
-                    await this.currentDocument.setProperties(properties, date == null);
+                    await this.currentDocument.setTags(tags, constants.databaseManager, false);
+                    await this.currentDocument.setProperties(props, constants.databaseManager, date == null);
                     if (date != null) {
-                        await this.currentDocument.setDate(date, true);
+                        await this.currentDocument.setDate(date, constants.databaseManager, true);
                     }
 
                     // Set the main table to not loading anymore
@@ -142,9 +148,14 @@ class FileEditorElement extends React.Component {
         this.currentDocument = document;
         this.fileInfo.document = document;
 
-        this.chipTextArea.chipValues = this.currentDocument.tags.map(tag => tag.name);
+        const tags: string[] = [];
+        for (let i = 0; i < this.currentDocument.tags.sizeSync(); i++) {
+            tags.push(this.currentDocument.tags.getSync(i).name);
+        }
+
+        this.chipTextArea.chipValues = tags;
         this.propertySetter.propertyValues = this.currentDocument.properties;
-        this.dateTextField.value = this.currentDocument.date;
+        this.dateTextField.value = this.currentDocument.creationDate;
 
         this.dialog.open();
     }

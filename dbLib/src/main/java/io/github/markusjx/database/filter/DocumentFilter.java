@@ -23,6 +23,11 @@ public class DocumentFilter {
         this.filters = new ArrayList<>();
     }
 
+    @SuppressWarnings("unused")
+    public DocumentFilter(DocumentFilter other) {
+        this.filters = other.filters;
+    }
+
     /**
      * Create a document filter by a filter array
      *
