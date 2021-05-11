@@ -948,7 +948,7 @@ export namespace database {
             super(impl);
             this.databaseInfo = null;
 
-            this.setDatabaseInfo().then();
+            this.updateDatabaseInfo().then();
         }
 
         /**
@@ -1008,8 +1008,11 @@ export namespace database {
          * @return whether the operation was successful
          */
         public async persistDirectoryProxy(directory: DirectoryProxy, sourcePath: string): Promise<boolean> {
-            const info = await this.setDatabaseInfo();
-            return await this.persistDirectory(directory, sourcePath) && info;
+            if (await this.persistDirectory(directory, sourcePath)) {
+                return this.updateDatabaseInfo();
+            } else {
+                return false;
+            }
         }
 
         /**
@@ -1049,7 +1052,7 @@ export namespace database {
          * @return whether the operation was successful
          * @private
          */
-        private async setDatabaseInfo(): Promise<boolean> {
+        private async updateDatabaseInfo(): Promise<boolean> {
             const info: DatabaseInfo = await this.getDatabaseInfo();
             if (info != null) {
                 this.databaseInfo = info;

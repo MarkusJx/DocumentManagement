@@ -146,8 +146,14 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * Load a database
      */
     public loadDatabase(): Promise<void> {
-        this.setLoading(true);
-        return this.loadFinished();
+        try {
+            this.setLoading(true);
+            return this.loadFinished();
+        } catch (e) {
+            logger.error("Could not load the database:", e);
+            showErrorDialog("Could not load the database. Error:", e.stack);
+            constants.mainComponent.gotoStartPage();
+        }
     }
 
     /**
@@ -232,7 +238,8 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @param loading whether to show it
      */
     public setLoading(loading: boolean): void {
-        constants.searchBox.startButtonEnabled = !loading
+        if (constants.searchBox != null)
+            constants.searchBox.startButtonEnabled = !loading
         this.topAppBar.buttonsEnabled = !loading;
         this.showProgress = loading;
         this.content.loading = loading;

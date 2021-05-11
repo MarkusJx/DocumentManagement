@@ -1,5 +1,5 @@
 import React from "react";
-import {Action, FileScanner} from "../databaseWrapper";
+import {Action, database, FileScanner} from "../databaseWrapper";
 import {Recents} from "../settings/recentConnections";
 import {showErrorDialog} from "../dialogs/ErrorDialog";
 import {ipcRenderer} from "electron";
@@ -245,25 +245,28 @@ export default class MainComponent extends React.Component<EmptyProps, MainCompo
      * Start the directory scan
      *
      * @param file the path to scan
+     * @param dbManager
      * @private
      */
-    private async startScan(file: string): Promise<void> {
+    private async startScan(file: string, dbManager: database.DatabaseManager): Promise<void> {
         try {
             logger.info("Running file scan");
             const fileScanner = new FileScanner(file);
             const rootDir = await fileScanner.startScan();
 
-            if (await constants.databaseManager.persistDirectoryProxy(rootDir.javaValue(), file)) {
+            if (await dbManager.persistDirectoryProxy(rootDir.javaValue(), file)) {
                 logger.info("Successfully persisted the directory");
             } else {
                 logger.error("Could not persist the directory");
                 showErrorDialog("Could not save the directory");
+                constants.scanLoadingScreen.visible = false;
                 this.gotoStartPage();
                 return
             }
         } catch (e) {
             logger.error("An error occurred while scanning the file system:", e);
             showErrorDialog("An error occurred while scanning the file system", e.message);
+            constants.scanLoadingScreen.visible = false;
             this.gotoStartPage();
             return;
         }
@@ -277,6 +280,7 @@ export default class MainComponent extends React.Component<EmptyProps, MainCompo
         });
         constants.scanLoadingScreen.visible = false;
 
+        constants.databaseManager = dbManager;
         await constants.mainDataTable.loadDatabase();
     }
 }

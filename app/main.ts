@@ -275,7 +275,7 @@ async function createWindow(): Promise<void> {
             store.set('jvmPath', home);
         } catch (e) {
             logger.error("Could not find the JVM:", e);
-            dialog.showErrorBox("Could not find a JVM", e);
+            dialog.showErrorBox("Could not find a JVM", e.stack.toString());
             return;
         }
     }
@@ -288,7 +288,7 @@ async function createWindow(): Promise<void> {
         logger.info("index.html loaded");
     } catch (e) {
         logger.error("Could not load the index.html:", e);
-        dialog.showErrorBox("Could not load the ui", e);
+        dialog.showErrorBox("Could not load the ui", e.stack.toString());
         return;
     }
 
