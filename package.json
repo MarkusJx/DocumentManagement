@@ -24,7 +24,7 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "@markusjx/java": "0.0.7",
+    "@markusjx/java": "0.0.8",
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
     "custom-electron-titlebar": "^3.2.6",
     "electron-store": "^8.0.0",
@@ -105,8 +105,7 @@
         "libnotify4",
         "libappindicator1",
         "libxtst6",
-        "libnss3",
-        "openjdk-11-jre"
+        "libnss3"
       ]
     },
     "asar": true,
