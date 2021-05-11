@@ -6,7 +6,7 @@ import path from 'path';
 import log4js from "log4js";
 import {createStore, StoreType} from "./shared/Settings";
 import * as fs from "fs";
-import FindJavaHome from "./shared/FindJavaHome";
+import FindJavaHome from "../app/shared/FindJavaHome";
 
 const logger = log4js.getLogger();
 const LOG_TO_CONSOLE: boolean = false;

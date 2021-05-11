@@ -63,7 +63,8 @@
       "out/shared/**",
       "out/styles/style.css",
       "out/main.js",
-      "licenses/**"
+      "licenses/**",
+      "app/shared/FindJavaHome.js"
     ],
     "extraResources": [
       "dbLib/build/libs/*.jar",

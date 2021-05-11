@@ -1,6 +1,5 @@
-import findJavaHome from "find-java-home";
-import path from "path";
-import * as fs from "fs";
+const path = require("path");
+const fs = require("fs");
 
 /**
  * Find the java home
@@ -9,7 +8,7 @@ import * as fs from "fs";
  */
 function findHome() {
     return new Promise((resolve, reject) => {
-        findJavaHome({allowJre: true}, (err, res) => {
+        require('find-java-home')({allowJre: true}, (err, res) => {
             if (err) {
                 reject(err);
             } else {
@@ -19,7 +18,7 @@ function findHome() {
     });
 }
 
-export default async function FindJavaHome() {
+async function FindJavaHome() {
     const home = await findHome();
     let libPath = 'lib';
     if (process.platform === 'win32') {
@@ -46,3 +45,5 @@ export default async function FindJavaHome() {
         throw new Error(`Neither '${client}' nor '${server}' exists, cannot continue`);
     }
 }
+
+module.exports = FindJavaHome;
