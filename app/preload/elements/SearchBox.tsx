@@ -120,9 +120,9 @@ export class SearchBox extends React.Component<SearchBoxProps> {
             filters.push(await database.filters.FilenameFilter.create(filename, exactMatch));
         }
 
-        if (this.propertySetter.propertyValues.length > 0) {
-            const properties: string[] = this.propertySetter.propertyValues
-                .flatMap(v => [v.propertyName, v.propertyValue]);
+        const propertyValues = await this.propertySetter.propertyValues.toArray();
+        if (propertyValues.length > 0) {
+            const properties: string[] = propertyValues.flatMap(v => [v.property.name, v.propertyValue.value]);
 
             const map: PropertyMap = PropertyMap.of(...properties);
             filters.push(await database.filters.PropertyFilter.create(map));

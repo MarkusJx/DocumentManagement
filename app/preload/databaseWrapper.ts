@@ -5,6 +5,28 @@ import {getLogger} from "log4js";
 import constants from "./util/constants";
 import javaTypes from "./javaTypes";
 import {createStore} from "../shared/Settings";
+import {
+    DatabaseInfoProxy,
+    DatabaseManagerProxy,
+    DateFilterProxy,
+    DirectoryProxy,
+    DocumentFilterProxy,
+    DocumentProxy,
+    FilenameFilterProxy,
+    FileScannerProxy,
+    JavaChainedHashMapProxy,
+    LocalDateProxy,
+    LoggerProxy,
+    PersistenceProvider,
+    PropertyFilterProxy,
+    PropertyProxy,
+    PropertyValueProxy,
+    PropertyValueSetProxy,
+    SQLiteProviderClass,
+    TagFilterProxy,
+    TagProxy
+} from "./databaseTypes";
+
 
 const JAR_NAME = 'dbLib-1.0-SNAPSHOT.jar';
 const logger = getLogger();
@@ -47,16 +69,6 @@ export class Action extends java.importClass("org.hibernate.tool.schema.Action")
     public static readonly UPDATE: Action;
 }
 
-declare class LocalDateProxy extends JavaClass {
-    public static parse(date: string): Promise<LocalDateProxy>;
-
-    public static parseSync(date: string): LocalDateProxy;
-
-    public toString(): Promise<string>;
-
-    public toStringSync(): string;
-}
-
 class LocalDate extends java.importClass<typeof LocalDateProxy>('java.time.LocalDate') {
     /**
      * Convert a {@link Date} to a java.time.LocalDate
@@ -73,20 +85,7 @@ class LocalDate extends java.importClass<typeof LocalDateProxy>('java.time.Local
     }
 }
 
-/**
- * The java logger
- */
-declare class LoggerClass extends JavaClass {
-    /**
-     * Configure the logger
-     *
-     * @param logToConsole whether to log to the console
-     * @param logToFile whether to log to a file
-     */
-    public static configureLogger(logToConsole: boolean, logToFile: boolean): Promise<void>;
-}
-
-export class Logger extends java.importClass<typeof LoggerClass>("io.github.markusjx.util.Logging") {
+export class Logger extends java.importClass<typeof LoggerProxy>("io.github.markusjx.util.Logging") {
 }
 
 const MANAGED_CLASSES = [
@@ -95,28 +94,9 @@ const MANAGED_CLASSES = [
     "io.github.markusjx.database.types.PropertyValue", "io.github.markusjx.database.types.Tag"
 ];
 
-/**
- * A persistence provider
- */
-export declare abstract class PersistenceProvider extends JavaClass {
-}
+const SQLITE_PROVIDER = "io.github.markusjx.database.persistence.SQLiteProvider";
 
-/**
- * A SQLite persistence provider
- */
-declare class SQLiteProviderClass extends PersistenceProvider {
-    /**
-     * Create a {@link SQLiteProviderClass}
-     *
-     * @param databaseFile the database file
-     * @param action the database creation action
-     * @param showSQL whether to show the generated sql commands
-     * @param classNames the names of the classes. Should be empty.
-     */
-    public static newInstance(databaseFile: string, action: Action, showSQL: boolean, classNames: string[]): Promise<SQLiteProviderClass>;
-}
-
-export class SQLiteProvider extends java.importClass<typeof SQLiteProviderClass>("io.github.markusjx.database.persistence.SQLiteProvider") {
+export class SQLiteProvider extends java.importClass<typeof SQLiteProviderClass>(SQLITE_PROVIDER) {
 }
 
 /**
@@ -159,7 +139,6 @@ export declare class MariaDBProvider extends PersistenceProvider {
  * An entity manager
  */
 export declare abstract class EntityManager extends java_instance_proxy {
-
 }
 
 declare abstract class EntityManagerFactory extends java_instance_proxy {
@@ -187,13 +166,6 @@ export class CustomPersistence {
         const factory = await CustomPersistence.instance.createEntityManagerFactory(persistenceUnitName, provider);
         return factory.createEntityManager();
     }
-}
-
-/**
- * A wrapper around io.github.markusjx.datatypes.ChainedHashMap
- */
-declare class JavaChainedHashMapProxy extends JavaClass {
-    public static fromStringArray(array: string[]): Promise<JavaChainedHashMapProxy>;
 }
 
 export class JavaChainedHashMap extends java.importClass<typeof JavaChainedHashMapProxy>("io.github.markusjx.datatypes.ChainedHashMap") {
@@ -255,22 +227,13 @@ export class PropertyMap {
     }
 }
 
-declare class FileScannerClass extends JavaClass {
-    /**
-     * Create a new {@link FileScannerClass}
-     *
-     * @param source the source directory
-     */
-    public constructor(source: string);
-
-    public scan(): Promise<database.DirectoryProxy>;
-}
+const FILE_SCANNER = "io.github.markusjx.scanning.FileScanner";
 
 /**
  * A file scanner.
  * Basically a wrapper around io.github.markusjx.scanning.FileScanner.java
  */
-export class FileScanner extends java.importClass<typeof FileScannerClass>("io.github.markusjx.scanning.FileScanner") {
+export class FileScanner extends java.importClass<typeof FileScannerProxy>(FILE_SCANNER) {
     /**
      * The source directory
      */
@@ -292,7 +255,7 @@ export class FileScanner extends java.importClass<typeof FileScannerClass>("io.g
      * @return the scanned directory
      */
     public async startScan(): Promise<database.Directory> {
-        const dir: database.DirectoryProxy = await this.scan();
+        const dir: DirectoryProxy = await this.scan();
         return new database.Directory(dir, this.source);
     }
 }
@@ -323,28 +286,12 @@ export namespace database {
         javaValue(): JavaClass;
     }
 
-    declare class PropertyValueSetProxy extends JavaClass {
-        public constructor(property?: Property, propertyValue?: PropertyValue);
-
-        public get property(): Property;
-
-        public get propertyValue(): PropertyValue;
-
-        public equals(other: PropertyValueSetProxy): Promise<boolean>;
-    }
+    const PROPERTY_VALUE_SET = "io.github.markusjx.database.types.PropertyValueSet";
 
     /**
      * A property value set
      */
-    export class PropertyValueSet extends java.importClass<typeof PropertyValueSetProxy>("io.github.markusjx.database.types.PropertyValueSet") {
-    }
-
-    declare class PropertyProxy extends JavaClass {
-        public constructor(name?: string);
-
-        public get name(): string;
-
-        public get values(): javaTypes.List<PropertyValueProxy>;
+    export class PropertyValueSet extends java.importClass<typeof PropertyValueSetProxy>(PROPERTY_VALUE_SET) {
     }
 
     /**
@@ -353,48 +300,16 @@ export namespace database {
     export class Property extends java.importClass<typeof PropertyProxy>("io.github.markusjx.database.types.Property") {
     }
 
-    declare class PropertyValueProxy extends JavaClass {
-        public constructor(name?: string);
-
-        public get value(): string;
-    }
-
     /**
      * A property value for a {@link Property}
      */
     export class PropertyValue extends java.importClass<typeof PropertyValueProxy>("io.github.markusjx.database.types.PropertyValue") {
     }
 
-    declare class TagProxy extends JavaClass {
-        public constructor(name?: string | TagProxy);
-
-        public get name(): string;
-
-        public equals(other: JavaClass): Promise<boolean>;
-    }
-
     /**
      * A document tag
      */
     export class Tag extends java.importClass<typeof TagProxy>("io.github.markusjx.database.types.Tag") {
-    }
-
-    declare class DocumentProxy extends JavaClass {
-        public constructor(toCopy?: DocumentProxy);
-
-        public get filename(): string;
-
-        public get absolutePath(): string;
-
-        public get parentPath(): string;
-
-        public get tags(): javaTypes.List<Tag>;
-
-        public get properties(): javaTypes.List<PropertyValueSet>;
-
-        public get creationDate(): LocalDateProxy;
-
-        public set creationDate(date: LocalDateProxy);
     }
 
     /**
@@ -467,8 +382,8 @@ export namespace database {
          */
         public async setProperties(properties: PropertyValueSet[], dbManager: database.DatabaseManager, persistThis: boolean = true): Promise<void> {
             await this.properties.clear();
-            await Promise.all(properties.filter(v => v.propertyName != null && v.propertyName.length > 0 &&
-                v.propertyValue != null && v.propertyValue.length > 0).map(v => this.properties.add(v)));
+            await Promise.all(properties.filter(v => v.property.name != null && v.property.name.length > 0 &&
+                v.propertyValue.value != null && v.propertyValue.value.length > 0).map(v => this.properties.add(v)));
 
             await dbManager.persistPropertyValueSets(this.properties);
 
@@ -499,18 +414,6 @@ export namespace database {
         public persist(dbManager: database.DatabaseManager): Promise<void> {
             return dbManager.persistDocument(this.impl);
         }
-    }
-
-    export declare class DirectoryProxy extends JavaClass {
-        public constructor(toCopy?: DirectoryProxy | string, name?: string);
-
-        public get path(): string;
-
-        public get name(): string;
-
-        public get documents(): javaTypes.List<DocumentProxy>;
-
-        public get directories(): javaTypes.List<DirectoryProxy>;
     }
 
     const DirectoryClass = java.importClass<typeof DirectoryProxy>("io.github.markusjx.database.types.Directory");
@@ -594,12 +497,6 @@ export namespace database {
 
         const FILENAME_FILTER = "io.github.markusjx.database.filter.filters.FilenameFilter";
 
-        declare class FilenameFilterProxy extends JavaClass {
-            public constructor(filter: FilenameFilterProxy);
-
-            public static newInstance(filename: string, exactMatch: boolean): Promise<FilenameFilterProxy>;
-        }
-
         /**
          * A filename filter
          */
@@ -629,12 +526,6 @@ export namespace database {
 
         const TAG_FILTER = "io.github.markusjx.database.filter.filters.TagFilter";
 
-        declare class TagFilterProxy extends JavaClass {
-            public constructor(other: TagFilterProxy);
-
-            public static newInstance(tags: string[]): Promise<TagFilterProxy>;
-        }
-
         /**
          * A tag filter
          */
@@ -659,12 +550,6 @@ export namespace database {
                 const impl = await TagFilter.newInstance(tags);
                 return new TagFilter(impl);
             }
-        }
-
-        declare class PropertyFilterProxy extends JavaClass {
-            public constructor(other: PropertyFilterProxy);
-
-            public static newInstance(map: JavaChainedHashMapProxy): Promise<PropertyFilterProxy>;
         }
 
         const PROPERTY_FILTER = "io.github.markusjx.database.filter.filters.PropertyFilter";
@@ -693,10 +578,6 @@ export namespace database {
                 const impl = await PropertyFilter.newInstance(await props.toJavaChainedHashMap());
                 return new PropertyFilter(impl);
             }
-        }
-
-        declare class DateFilterProxy extends JavaClass {
-            public static getByDate(d1: LocalDateProxy, d2: LocalDateProxy): Promise<DateFilterProxy>;
         }
 
         const DATE_FILTER = "io.github.markusjx.database.filter.filters.dates.DateFilter";
@@ -734,12 +615,6 @@ export namespace database {
 
     const DOCUMENT_FILTER = "io.github.markusjx.database.filter.DocumentFilter";
 
-    declare class DocumentFilterProxy extends JavaClass {
-        public constructor(other: DocumentFilterProxy);
-
-        public static createFilter(filterList: filters.DocumentFilter[]): Promise<DocumentFilterProxy>;
-    }
-
     /**
      * A document filter
      */
@@ -766,20 +641,6 @@ export namespace database {
         }
     }
 
-    declare class DatabaseInfoProxy extends JavaClass {
-        public constructor(source?: string);
-
-        /**
-         * Get the source path
-         */
-        public get sourcePath(): string;
-
-        /**
-         * Set the source path
-         */
-        public set sourcePath(path: string);
-    }
-
     const DATABASE_INFO = "io.github.markusjx.database.DatabaseInfo";
 
     /**
@@ -789,145 +650,6 @@ export namespace database {
     }
 
     const DATABASE_MANAGER = "io.github.markusjx.database.DatabaseManager";
-
-    declare class DatabaseManagerProxy extends JavaClass {
-        public constructor(other: DatabaseManagerProxy);
-
-        public static newInstance(manager: EntityManager): Promise<DatabaseManagerProxy>;
-
-        /**
-         * Get the number of rows in a filter query
-         *
-         * @param filter the filter to use
-         * @return the number of rows
-         */
-        public getNumDocumentsBy(filter: DocumentFilter): Promise<BigInt>
-
-        protected persistDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean>;
-
-        /**
-         * Get the number of documents in a directory but not in the database
-         *
-         * @param directory the directory to match
-         * @return the number of matching documents
-         */
-        public getDocumentsNotIn(directory: DirectoryProxy): Promise<number>;
-
-        /**
-         * Get the number of directories in another directory but not in the database
-         *
-         * @param directory the directory to match
-         * @return the number of matching directories
-         */
-        public getDirectoriesNotIn(directory: DirectoryProxy): Promise<number>;
-
-        /**
-         * Synchronize a directory
-         *
-         * @param directory the directory to sync with
-         * @param sourcePath the path to the source directory
-         * @return true if the operation was successful
-         */
-        public synchronizeDirectory(directory: DirectoryProxy, sourcePath: string): Promise<boolean>;
-
-        /**
-         * Get all properties with a name like name
-         *
-         * @param name the name to search for
-         * @return the properties with a name like name
-         */
-        public getPropertiesLikeSync(name: string): javaTypes.List<Property>;
-
-        /**
-         * Check if a tag exists
-         *
-         * @param name the tag name
-         * @return true if the tag exists
-         */
-        public tagExistsSync(name: string): boolean;
-
-        /**
-         * Get all tags with a name like name
-         *
-         * @param name the name to search for
-         * @return the list of tags
-         */
-        public getTagsLikeSync(name: string): javaTypes.List<Tag>;
-
-        /**
-         * Get all property values with a value like value
-         *
-         * @param value the value to search for
-         * @return the property values
-         */
-        public getPropertyValuesLikeSync(value: string): javaTypes.List<PropertyValue>;
-
-        /**
-         * Check if a property exists
-         *
-         * @param value the property to check
-         * @return true if the property exists
-         */
-        public propertyExists(value: string): Promise<boolean>;
-
-        /**
-         * Check if a property value exists
-         *
-         * @param value the property value to check
-         * @return true if the property value exists
-         */
-        public propertyValueExists(value: string): Promise<boolean>;
-
-        /**
-         * Get the database info
-         *
-         * @return the retrieved database info
-         */
-        public getDatabaseInfo(): Promise<DatabaseInfo>;
-
-        /**
-         * Close the database connection
-         */
-        public close(): Promise<void>;
-
-        /**
-         * Persist a document
-         *
-         * @param document the document to persist
-         */
-        public persistDocument(document: DocumentProxy): Promise<void>;
-
-        /**
-         * Copy the database of this database manager to another database
-         *
-         * @param toCopyTo the database manager managing the database to copy to
-         * @return true if the operation was successful
-         */
-        public copyDatabaseTo(toCopyTo: DatabaseManager): Promise<boolean>;
-
-        /**
-         * Clear the entity manager
-         */
-        public clear(): Promise<void>;
-
-        /**
-         * Persist a list of {@link Tag}s
-         *
-         * @param tags the tags to persist
-         */
-        public persistTags(tags: javaTypes.List<Tag>): Promise<void>;
-
-        /**
-         * Persist a list of {@link PropertyValueSet}s
-         *
-         * @param propertyValues the sets to persist
-         */
-        public persistPropertyValueSets(propertyValues: javaTypes.List<PropertyValueSet>): Promise<void>;
-
-        protected getDocumentsBy(filter: DocumentFilter, offset: number): Promise<javaTypes.List<DocumentProxy>>;
-
-        protected getDirectory(_path: string): Promise<DirectoryProxy>;
-    }
 
     /**
      * The database manager

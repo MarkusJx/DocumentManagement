@@ -1,19 +1,12 @@
 import {exec} from "child_process";
-import {
-    Action,
-    CustomPersistence,
-    database,
-    Logger,
-    MariaDBProvider,
-    MySQLProvider,
-    PersistenceProvider
-} from "../databaseWrapper";
+import {Action, CustomPersistence, database, Logger, MariaDBProvider, MySQLProvider} from "../databaseWrapper";
 import log4js, {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
 import fs from "fs";
 import {AnySettings, DatabaseProvider, DatabaseSetting, SQLiteSettings} from "../../shared/Settings";
 import {Recents} from "../settings/recentConnections";
 import constants from "./constants";
+import {PersistenceProvider} from "../databaseTypes";
 
 const logger = getLogger();
 

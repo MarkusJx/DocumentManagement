@@ -880,6 +880,7 @@ public class DatabaseManager {
      * calculated filter accuracy.
      *
      * @param filter the filters
+     * @param offset the elements in the result list to skip
      * @return the retrieved documents
      */
     public synchronized List<Document> getDocumentsBy(DocumentFilter filter, int offset) {

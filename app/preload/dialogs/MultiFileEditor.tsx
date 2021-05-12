@@ -124,7 +124,7 @@ class MultiFileEditorElement extends React.Component {
                     }));
 
                     await Promise.all(this.currentDocuments.map(d => {
-                        let newProps = d.properties.toArraySync().filter(p1 => !this.prevProperties.some(p2 => p1.equals(p2)));
+                        let newProps = d.properties.toArraySync().filter(p1 => !this.prevProperties.some(p2 => p1.equalsSync(p2)));
                         newProps.push(...properties);
                         return d.setProperties(newProps.filter(unique), constants.databaseManager, true);
                     }));
@@ -160,7 +160,7 @@ class MultiFileEditorElement extends React.Component {
 
         const properties: database.PropertyValueSet[] = [];
         documents[0].properties.toArraySync().forEach(p1 => {
-            if (documents.every(d => d.properties.toArraySync().some(p2 => p1.equals(p2)))) {
+            if (documents.every(d => d.properties.toArraySync().some(p2 => p1.equalsSync(p2)))) {
                 properties.push(p1);
             }
         });
