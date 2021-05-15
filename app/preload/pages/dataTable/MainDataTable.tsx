@@ -43,6 +43,11 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     public searchBox: SearchBox = null;
 
     /**
+     * The top app bar
+     */
+    public topAppBar: MainDataTableTopAppBar = null;
+
+    /**
      * The actual mdc data table
      * @private
      */
@@ -53,12 +58,6 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
      * @private
      */
     private dataTablePagination: MainDataTablePagination = null;
-
-    /**
-     * The top app bar
-     * @private
-     */
-    private topAppBar: MainDataTableTopAppBar = null;
 
     /**
      * The content
@@ -172,7 +171,8 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
 
         // Check if the source path exists on the hard drive
         if ((constants.activeSetting.localPath == null && !await util.fileExists(databaseInfo.sourcePath)) ||
-            (constants.activeSetting.localPath != null && !await util.fileExists(constants.activeSetting.localPath))) {
+            (constants.activeSetting.localPath != null && !await util.fileExists(constants.activeSetting.localPath)) &&
+            this.directory.path === "") {
             logger.warn("The source directory could not be found");
             Snackbars.sourceDirNotFoundSnackbar.snackbarText = "The source directory could not be found. " +
                 "You may want to set/update the local path manually.";
@@ -192,6 +192,7 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
             const documents: database.Document[] = await constants.databaseManager.getDocumentsByFilter(filter, 0);
             await this.setSearchResults(documents, filter);
             this.setLoading(false);
+            this.topAppBar.navButtonEnabled = true;
         } catch (e) {
             logger.error("An error occurred while searching for documents:", e);
             showErrorDialog("Could not start the search. Error:", e.message);
@@ -209,10 +210,17 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
     public async setSearchResults(searchResults: database.Document[], filter: database.DocumentFilter, offset: number = 0, total: number = null): Promise<void> {
         // Nothing is selected anymore
         this.dataTable.dataTable.setSelectedRowIds([]);
+
+        // Get the source path
+        let sourcePath: string;
+        if (constants.activeSetting != null && constants.activeSetting.localPath != null) {
+            sourcePath = constants.activeSetting.localPath;
+        } else {
+            sourcePath = constants.databaseManager.databaseInfo.sourcePath;
+        }
+
         // Set the current state
-        this.content.directory = new database.Directory(searchResults, "");
-        // The back button is always enabled
-        this.topAppBar.navButtonEnabled = true;
+        this.content.directory = new database.Directory(searchResults, sourcePath);
         this.topAppBar.title = "Search results";
 
         // Must call componentDidMount on the data
@@ -230,6 +238,9 @@ export class MainDataTable extends React.Component<MainDataTableProps, MainDataT
         } else {
             this.dataTablePagination.setTotalElements(total, offset);
         }
+
+        // The back button is always enabled
+        this.topAppBar.navButtonEnabled = true;
     }
 
     /**

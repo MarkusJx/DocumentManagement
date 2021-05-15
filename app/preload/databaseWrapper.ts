@@ -80,14 +80,26 @@ class LocalDate extends java.importClass<typeof LocalDateProxy>('java.time.Local
         return LocalDate.parseSync(date.toISOString().split('T')[0]);
     }
 
+    /**
+     * Convert a LocalDateProxy to a javascript date
+     *
+     * @param date the date to convert
+     * @return the converted date
+     */
     public static toJSDate(date: LocalDateProxy): Date {
         return new Date(date.toStringSync());
     }
 }
 
+/**
+ * The java logger class
+ */
 export class Logger extends java.importClass<typeof LoggerProxy>("io.github.markusjx.util.Logging") {
 }
 
+/**
+ * The java managed classes
+ */
 const MANAGED_CLASSES = [
     "io.github.markusjx.database.DatabaseInfo", "io.github.markusjx.database.types.Directory",
     "io.github.markusjx.database.types.Document", "io.github.markusjx.database.types.Property",
@@ -96,6 +108,9 @@ const MANAGED_CLASSES = [
 
 const SQLITE_PROVIDER = "io.github.markusjx.database.persistence.SQLiteProvider";
 
+/**
+ * The sqlite provider
+ */
 export class SQLiteProvider extends java.importClass<typeof SQLiteProviderClass>(SQLITE_PROVIDER) {
 }
 
@@ -141,11 +156,29 @@ export declare class MariaDBProvider extends PersistenceProvider {
 export declare abstract class EntityManager extends java_instance_proxy {
 }
 
+/**
+ * The java entity manager factory
+ */
 declare abstract class EntityManagerFactory extends java_instance_proxy {
+    /**
+     * Create an entity manager
+     *
+     * @return the created entity manager
+     */
     public static createEntityManager(): Promise<EntityManager>;
 }
 
+/**
+ * The java custom persistence class
+ */
 declare class CustomPersistenceClass extends EntityManager {
+    /**
+     * Create a entity manager factory
+     *
+     * @param persistenceUnitName the persistence unit name
+     * @param provider the persistence provider
+     * @return the created entity manager factory
+     */
     public static createEntityManagerFactory(persistenceUnitName: string, provider: PersistenceProvider): Promise<typeof EntityManagerFactory>;
 }
 
@@ -168,6 +201,9 @@ export class CustomPersistence {
     }
 }
 
+/**
+ * A Chained hash map
+ */
 export class JavaChainedHashMap extends java.importClass<typeof JavaChainedHashMapProxy>("io.github.markusjx.datatypes.ChainedHashMap") {
 }
 
@@ -316,7 +352,10 @@ export namespace database {
      * A document
      */
     export class Document implements Persistable, JavaConvertible {
-        private readonly impl: DocumentProxy;
+        /**
+         * Is set to true if the document was found on the hard drive
+         */
+        public readonly exists: boolean;
 
         /**
          * Create a document
@@ -326,32 +365,59 @@ export namespace database {
             this.exists = fs.existsSync(`${baseDir}/${this.absolutePath}`);
         }
 
+        /**
+         * The document proxy
+         * @private
+         */
+        private readonly impl: DocumentProxy;
+
+        /**
+         * Get the file name
+         */
         public get filename(): string {
             return this.impl.filename;
         }
 
+        /**
+         * Get the absolute path
+         */
         public get absolutePath(): string {
             return this.impl.absolutePath;
         }
 
+        /**
+         * Get the parent path
+         */
         public get parentPath(): string {
             return this.impl.parentPath;
         }
 
+        /**
+         * Get the tags
+         */
         public get tags(): javaTypes.List<Tag> {
             return this.impl.tags;
         }
 
+        /**
+         * Get the properties
+         */
         public get properties(): javaTypes.List<PropertyValueSet> {
             return this.impl.properties;
         }
 
+        /**
+         * Get the creation date
+         */
         public get creationDate(): Date {
             return LocalDate.toJSDate(this.impl.creationDate);
         }
 
-        public readonly exists: boolean;
-
+        /**
+         * Set the creation date
+         *
+         * @param date the new creation date
+         */
         public set creationDate(date: Date) {
             this.impl.creationDate = LocalDate.dateToJavaLocalDate(date);
         }
@@ -422,11 +488,26 @@ export namespace database {
      * A directory
      */
     export class Directory implements JavaConvertible {
+        /**
+         * The base directory
+         */
         public readonly baseDir: string;
+        /**
+         * Is set to true if the directory exists
+         */
+        public readonly exists: boolean;
+        /**
+         * The directory proxy
+         * @private
+         */
         private readonly impl: DirectoryProxy;
 
-        public readonly exists: boolean;
-
+        /**
+         * Create á new directory
+         *
+         * @param impl the proxy to copy or documents to store
+         * @param baseDir the base directory
+         */
         public constructor(impl: DirectoryProxy | Document[], baseDir: string) {
             if (!Array.isArray(impl)) {
                 this.impl = impl;
@@ -439,14 +520,23 @@ export namespace database {
             this.exists = fs.existsSync(`${baseDir}/${this.path}`);
         }
 
+        /**
+         * Get the directory path
+         */
         public get path(): string {
             return this.impl.path;
         }
 
+        /**
+         * Get the directory's name
+         */
         public get name(): string {
             return this.impl.name;
         }
 
+        /**
+         * Get the documents in this directory
+         */
         public get documents(): Document[] {
             const result: Document[] = [];
             for (let i = 0; i < this.impl.documents.sizeSync(); i++) {
@@ -456,28 +546,13 @@ export namespace database {
             return result;
         }
 
+        /**
+         * Get the directories in this directory
+         */
         public get directories(): Directory[] {
             const result: Directory[] = [];
             for (let i = 0; i < this.impl.directories.sizeSync(); i++) {
                 result.push(new Directory(this.impl.directories.getSync(i), this.baseDir));
-            }
-
-            return result;
-        }
-
-        public async getDocuments(): Promise<Document[]> {
-            const result: Document[] = [];
-            for (let i = 0; i < await this.impl.documents.size(); i++) {
-                result.push(new Document(await this.impl.documents.get(i), this.baseDir));
-            }
-
-            return result;
-        }
-
-        public async getDirectories(): Promise<Directory[]> {
-            const result: Directory[] = [];
-            for (let i = 0; i < await this.impl.directories.size(); i++) {
-                result.push(new Directory(await this.impl.directories.get(i), this.baseDir));
             }
 
             return result;
