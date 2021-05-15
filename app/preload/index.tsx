@@ -8,6 +8,7 @@ import TitleBar from "./util/TitleBar";
 import log4js from "log4js";
 import util from "./util/util";
 import Theming from "./settings/Theming";
+import BackStack from "./util/BackStack";
 
 const logger = log4js.getLogger();
 
@@ -28,6 +29,16 @@ class Main {
             <ScanLoadingScreen ref={e => constants.scanLoadingScreen = e}/>,
             document.getElementById('loading-screen-container')
         );
+
+        document.addEventListener('mouseup', (e: MouseEvent) => {
+            if (e.button === 3) {
+                // Back button pressed
+                BackStack.goBack();
+            } else if (e.button === 4) {
+                // Forward button pressed
+                BackStack.goForward();
+            }
+        })
     }
 }
 

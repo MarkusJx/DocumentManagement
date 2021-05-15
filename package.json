@@ -12,10 +12,8 @@
     "build": "node --unhandled-rejections=strict buildscripts/build.js",
     "prestart": "npm run build",
     "start": "electron .",
-    "pretest": "npm build",
-    "test": "mocha",
-    "rebuild": "electron-rebuild -p -f -w java && node -e \"require('java/postInstall')\"",
-    "postinstall": "npm run-script rebuild",
+    "test": "electron . --debug",
+    "pretest": "npm run build",
     "prepack": "npm run build && node --unhandled-rejections=strict buildscripts/prepack.js",
     "pack": "electron-builder"
   },
@@ -26,38 +24,36 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
+    "@markusjx/java": "0.1.0-beta.2",
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
     "custom-electron-titlebar": "^3.2.6",
-    "electron-store": "^7.0.2",
-    "electron-updater": "^4.3.8",
+    "electron-store": "^8.0.0",
+    "electron-updater": "^4.3.9",
     "electron-window-state": "^5.0.3",
-    "find-java-home": "^1.1.0",
-    "java": "^0.12.1",
+    "find-java-home": "^1.2.0",
     "log4js": "^6.3.0",
     "material-components-web": "^10.0.0",
     "open-sans-fonts": "^1.6.2",
-    "react": "^17.0.1",
-    "react-date-picker": "^8.1.0",
-    "react-dom": "^17.0.1"
+    "react": "^17.0.2",
+    "react-date-picker": "^8.1.1",
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@types/java": "^0.9.1",
-    "@types/mocha": "^8.2.1",
-    "@types/node": "^14.14.30",
-    "@types/react-dom": "^17.0.1",
-    "electron": "^11.1.1",
-    "electron-builder": "^22.10.5",
-    "electron-rebuild": "^2.3.5",
+    "@types/node": "^15.0.2",
+    "@types/react-dom": "^17.0.4",
+    "electron": "^12.0.7",
+    "electron-builder": "^22.11.3",
     "hash-files": "^1.1.1",
-    "sass": "^1.32.10",
-    "typescript": "^4.2.2"
+    "sass": "^1.32.12",
+    "typescript": "^4.2.4"
   },
   "optionalDependencies": {
     "node-ms-passport": "^1.1.2"
   },
   "cmake-js": {
     "runtime": "electron",
-    "runtimeVersion": "11.1.1"
+    "runtimeVersion": "12.0.7"
   },
   "build": {
     "appId": "io.github.markusjx",
@@ -67,7 +63,8 @@
       "out/shared/**",
       "out/styles/style.css",
       "out/main.js",
-      "licenses/**"
+      "licenses/**",
+      "app/shared/FindJavaHome.js"
     ],
     "extraResources": [
       "dbLib/build/libs/*.jar",
@@ -109,13 +106,12 @@
         "libnotify4",
         "libappindicator1",
         "libxtst6",
-        "libnss3",
-        "openjdk-11-jre"
+        "libnss3"
       ]
     },
-    "asar": false,
+    "asar": true,
     "asarUnpack": [
-      "node_modules/java"
+      "node_modules/@markusjx/java"
     ]
   }
 }

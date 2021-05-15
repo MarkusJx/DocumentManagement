@@ -1,4 +1,4 @@
-import {Action} from "../databaseWrapper";
+import {Action, database} from "../databaseWrapper";
 import React from "react";
 import {Button, OutlinedButton} from "../elements/MDCWrapper";
 import {DatabaseConfigurator} from "./DatabaseConfigurator";
@@ -15,7 +15,7 @@ const logger = getLogger();
 /**
  * The start scan callback function
  */
-type startScanClick_t = (file: string) => Promise<void>;
+type startScanClick_t = (file: string, dbManager: database.DatabaseManager) => Promise<void>;
 
 /**
  * The start scan screen properties
@@ -209,8 +209,10 @@ export default class StartScanScreen extends React.Component<StartScanScreenProp
         constants.scanLoadingScreen.visible = true;
         const settings = this.configurator.settings;
 
+        constants.databaseManager = null;
+        let dbManager: database.DatabaseManager = null;
         try {
-            constants.databaseManager = await util.getDatabaseManagerFromSettings(settings,
+            dbManager = await util.getDatabaseManagerFromSettings(settings,
                 Action.CREATE_DROP, constants.SHOW_SQL, true);
         } catch (e) {
             logger.error("Could not create a database", e);
@@ -232,8 +234,9 @@ export default class StartScanScreen extends React.Component<StartScanScreenProp
             constants.activeSetting = await Recents.get(id);
         } catch (e) {
             logger.error("Could not add the database setting to the store:", e);
+            constants.scanLoadingScreen.visible = false;
         }
 
-        await this.onStartClickImpl(this.state.directory);
+        await this.onStartClickImpl(this.state.directory, dbManager);
     }
 }

@@ -6,6 +6,7 @@ import DirectorySelector from "../elements/DirectorySelector";
 import {ipcRenderer} from "electron";
 import constants from "../util/constants";
 import {showErrorDialog} from "./ErrorDialog";
+import BackStack from "../util/BackStack";
 
 const logger = getLogger();
 
@@ -29,6 +30,7 @@ class RootDirSelectorElement extends React.Component {
     }
 
     public open(): void {
+        BackStack.enabled = false;
         if (constants.activeSetting != null && constants.activeSetting.localPath != null) {
             this.directorySelector.path = constants.activeSetting.localPath;
         }
@@ -74,6 +76,7 @@ class RootDirSelectorElement extends React.Component {
 
     public componentDidMount(): void {
         this.dialog.listen('MDCDialog:closing', (event) => {
+            BackStack.enabled = true;
             if (event.detail.action === 'accept') {
                 constants.activeSetting.localPath = this.directorySelector.path;
                 constants.saveActiveSetting();

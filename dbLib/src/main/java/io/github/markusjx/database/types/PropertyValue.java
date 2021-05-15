@@ -24,7 +24,7 @@ public class PropertyValue implements Serializable, Comparable<PropertyValue> {
      * Create an empty property value
      */
     public PropertyValue() {
-        this.value = null;
+        this.value = "";
     }
 
     /**

@@ -5,6 +5,7 @@ import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
 import constants from "../util/constants";
 import {AnySettings, DatabaseProvider, SQLiteSettings} from "../../shared/Settings";
+import BackStack from "../util/BackStack";
 
 const logger = getLogger();
 
@@ -121,6 +122,7 @@ class DatabaseInfoElement extends React.Component<EmptyProps> {
      * Show the dialog
      */
     public show(): void {
+        BackStack.enabled = false;
         this.forceUpdate();
         this.dialog.open();
     }
@@ -144,6 +146,12 @@ class DatabaseInfoElement extends React.Component<EmptyProps> {
                 {DatabaseInfoElement.getAdditionalInfos()}
             </Dialog>
         );
+    }
+
+    public componentDidMount(): void {
+        this.dialog.dialog.listen('MDCDialog:closing', () => {
+            BackStack.enabled = true;
+        });
     }
 }
 

@@ -1,10 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {MDCRipple} from '@material/ripple';
-import {database} from "../databaseWrapper";
+import {Arrays, database} from "../databaseWrapper";
 import {OutlinedTextFieldWithAutoComplete} from "./MDCWrapper";
 import {getLogger} from "log4js";
 import constants from "../util/constants";
+import javaTypes from "../javaTypes";
 
 const logger = getLogger();
 
@@ -86,7 +87,7 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      */
     private static getPropertyAutoCompleteOptions(input: string): string[] {
         try {
-            return constants.databaseManager.getPropertiesLike(input).map(p => p.name);
+            return constants.databaseManager.getPropertiesLikeSync(input).toArraySync().map(p => p.name);
         } catch (e) {
             logger.error("An error occurred while getting all properties like a value:", e);
             return [];
@@ -101,7 +102,7 @@ export class PropertyField extends React.Component<PropertyFieldProps> {
      */
     private static getPropertyValueAutoCompleteOptions(input: string): string[] {
         try {
-            return constants.databaseManager.getPropertyValuesLike(input).map(p => p.value);
+            return constants.databaseManager.getPropertyValuesLikeSync(input).toArraySync().map(p => p.value);
         } catch (e) {
             logger.error("An error occurred while getting all property values like a value:", e);
             return [];
@@ -194,41 +195,6 @@ function notNull<T>(value: T): boolean {
 }
 
 /**
- * A property value set
- */
-class PropertyValueSet {
-    /**
-     * The property name
-     */
-    public readonly name: string;
-
-    /**
-     * The property value
-     */
-    public readonly value: string;
-
-    /**
-     * Create a PropertyValueSet
-     *
-     * @param name the property name
-     * @param value the property value
-     */
-    public constructor(name?: string, value?: string) {
-        this.name = name;
-        this.value = value;
-    }
-
-    /**
-     * Create a {@link PropertyValueSet} from a {@link database.PropertyValueSet}
-     *
-     * @param set the {@link database.PropertyValueSet}
-     */
-    public static from(set: database.PropertyValueSet): PropertyValueSet {
-        return new PropertyValueSet(set.propertyName, set.propertyValue);
-    }
-}
-
-/**
  * The property setter properties
  */
 export interface PropertySetterProps {
@@ -269,19 +235,21 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      * The property value sets
      * @private
      */
-    private _propertyValues: PropertyValueSet[];
+    private _propertyValues: database.PropertyValueSet[];
 
     /**
      * Get the property values
      *
      * @return the property value sets
      */
-    public get propertyValues(): database.PropertyValueSet[] {
-        return this._propertyFields
+    public get propertyValues(): javaTypes.List<database.PropertyValueSet> {
+        const list = this._propertyFields
             .filter(unique)
             .filter(notNull)
             .filter(v => v.propertyName.length > 0 && v.propertyValue.length > 0)
-            .map(f => new database.PropertyValueSet(f.propertyName, f.propertyValue));
+            .map(f => new database.PropertyValueSet(new database.Property(f.propertyName), new database.PropertyValue(f.propertyValue)));
+
+        return Arrays.asListSync(list);
     }
 
     /**
@@ -289,8 +257,8 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      *
      * @param values the values to set
      */
-    public set propertyValues(values: database.PropertyValueSet[]) {
-        this._propertyValues = values.map(p => PropertyValueSet.from(p));
+    public set propertyValues(values: javaTypes.List<database.PropertyValueSet>) {
+        this._propertyValues = values.toArraySync();
         this.forceUpdate();
     }
 
@@ -320,8 +288,8 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
         const $this = ReactDOM.findDOMNode(this) as Element;
         const buttons = $this.getElementsByClassName('mdc-button') as HTMLCollectionOf<HTMLButtonElement>;
 
-        for (let i: number = 0; i < buttons.length; i++) {
-            MDCRipple.attachTo(buttons[i]);
+        for (const button of buttons) {
+            MDCRipple.attachTo(button);
         }
     }
 
@@ -334,13 +302,14 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
 
         // If propertyValues is empty, create one empty property value set
         if (this._propertyValues.length <= 0) {
-            this._propertyValues.push(new PropertyValueSet());
+            this._propertyValues.push(new database.PropertyValueSet());
         }
 
         return (
-            this._propertyValues.map((pv: PropertyValueSet) => (
-                <div key={pv.name + '-' + pv.value + '-' + this._nextId++} className="property-field__container">
-                    <PropertyField propertyName={pv.name} propertyValue={pv.value}
+            this._propertyValues.map((pv: database.PropertyValueSet) => (
+                <div key={pv.property.name + '-' + pv.property.name + '-' + this._nextId++}
+                     className="property-field__container">
+                    <PropertyField propertyName={pv.property.name} propertyValue={pv.propertyValue.value}
                                    ref={e => this._propertyFields.push(e)}/>
                     <button className="mdc-button themed-button property-field__remove-button"
                             onClick={this.removeElement.bind(this, pv)}>
@@ -358,7 +327,7 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      * @param value the value of the element to remove
      * @private
      */
-    private removeElement(value: PropertyValueSet): void {
+    private removeElement(value: database.PropertyValueSet): void {
         this._propertyValues.splice(this._propertyValues.indexOf(value), 1);
         this.forceUpdate();
     }
@@ -368,8 +337,9 @@ export class PropertySetter extends React.Component<PropertySetterProps> {
      * @private
      */
     private addElement() {
-        const values: PropertyValueSet[] = this.propertyValues.map(pv => PropertyValueSet.from(pv));
-        values.push(new PropertyValueSet("", ""));
+        const values: database.PropertyValueSet[] = this.propertyValues.toArraySync();
+
+        values.push(new database.PropertyValueSet(new database.Property(""), new database.PropertyValue("")));
         this._propertyValues = values.filter(unique);
         this.forceUpdate();
     }

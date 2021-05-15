@@ -1,25 +1,23 @@
 package io.github.markusjx;
 
-import io.github.markusjx.database.DatabaseManager;
-import io.github.markusjx.database.filter.DocumentFilter;
-import io.github.markusjx.database.filter.filters.FilenameFilter;
-import io.github.markusjx.database.filter.filters.PropertyFilter;
-import io.github.markusjx.database.filter.filters.TagFilter;
-import io.github.markusjx.database.filter.filters.dates.DateFilter;
-import io.github.markusjx.database.persistence.CustomPersistence;
-import io.github.markusjx.database.persistence.SQLiteProvider;
-import io.github.markusjx.database.types.Document;
+import io.github.markusjx.database.persistence.CustomPersistenceUnit;
 import io.github.markusjx.datatypes.ChainedHashMap;
-import org.hibernate.tool.schema.Action;
+import org.reflections.Reflections;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
-        SQLiteProvider provider = new SQLiteProvider("", Action.CREATE, true);
+        Reflections reflections = new Reflections("io.github.markusjx");
+
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(CustomPersistenceUnit.class);
+
+        ChainedHashMap<String, String> map = new ChainedHashMap<>();
+        // Put all annotated classes into the result map
+        annotated.forEach(c -> map.putValue(c.getAnnotation(CustomPersistenceUnit.class).unitName(), c.getName()));
+        System.out.println(map);
+
+        /*SQLiteProvider provider = new SQLiteProvider("", Action.CREATE, true);
         EntityManagerFactory factory = CustomPersistence.createEntityManagerFactory("documents", provider);
         EntityManager entityManager = factory.createEntityManager();
         DatabaseManager manager = new DatabaseManager(entityManager);
@@ -44,6 +42,6 @@ public class Main {
         System.out.println(docs);
         System.out.println(docs.size());
 
-        entityManager.close();
+        entityManager.close();*/
     }
 }

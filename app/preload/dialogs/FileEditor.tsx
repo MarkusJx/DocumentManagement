@@ -10,6 +10,8 @@ import {showErrorDialog} from "./ErrorDialog";
 import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
 import FileInfo from "../elements/FileInfo";
+import javaTypes from "../javaTypes";
+import BackStack from "../util/BackStack";
 
 const logger = getLogger();
 
@@ -91,7 +93,7 @@ class FileEditorElement extends React.Component {
      */
     private static getAutoCompleteOptions(val: string): string[] {
         try {
-            const tags: database.Tag[] = constants.databaseManager.getTagsLike(val);
+            const tags: database.Tag[] = constants.databaseManager.getTagsLikeSync(val).toArraySync();
             return tags.map(t => t.name);
         } catch (e) {
             logger.error("An error occurred while trying to get the tag auto complete options:", e);
@@ -102,6 +104,7 @@ class FileEditorElement extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
+            BackStack.enabled = true;
             try {
                 if (event.detail.action === "accept") {
                     // Set the main data table to loading
@@ -109,14 +112,19 @@ class FileEditorElement extends React.Component {
 
                     // Get the values
                     const tags: database.Tag[] = this.chipTextArea.chipValues.map(value => new database.Tag(value));
-                    const properties: database.PropertyValueSet[] = this.propertySetter.propertyValues;
+                    const properties: javaTypes.List<database.PropertyValueSet> = this.propertySetter.propertyValues;
                     const date: Date = this.dateTextField.value;
 
+                    const props: database.PropertyValueSet[] = [];
+                    for (let i = 0; i < properties.sizeSync(); i++) {
+                        props.push(properties.getSync(i));
+                    }
+
                     // Persist the values
-                    await this.currentDocument.setTags(tags, false);
-                    await this.currentDocument.setProperties(properties, date == null);
+                    await this.currentDocument.setTags(tags, constants.databaseManager, false);
+                    await this.currentDocument.setProperties(props, constants.databaseManager, date == null);
                     if (date != null) {
-                        await this.currentDocument.setDate(date, true);
+                        await this.currentDocument.setDate(date, constants.databaseManager, true);
                     }
 
                     // Set the main table to not loading anymore
@@ -139,12 +147,18 @@ class FileEditorElement extends React.Component {
      * @param document the document to edit
      */
     public open(document: database.Document): void {
+        BackStack.enabled = false;
         this.currentDocument = document;
         this.fileInfo.document = document;
 
-        this.chipTextArea.chipValues = this.currentDocument.tags.map(tag => tag.name);
+        const tags: string[] = [];
+        for (let i = 0; i < this.currentDocument.tags.sizeSync(); i++) {
+            tags.push(this.currentDocument.tags.getSync(i).name);
+        }
+
+        this.chipTextArea.chipValues = tags;
         this.propertySetter.propertyValues = this.currentDocument.properties;
-        this.dateTextField.value = this.currentDocument.date;
+        this.dateTextField.value = this.currentDocument.creationDate;
 
         this.dialog.open();
     }
@@ -158,7 +172,7 @@ class FileEditorElement extends React.Component {
      */
     private static chipValueExists(value: string): boolean {
         try {
-            return constants.databaseManager.tagExists(value);
+            return constants.databaseManager.tagExistsSync(value);
         } catch (e) {
             logger.error("An error occurred while checking if a chip value exists:", e);
             return false;

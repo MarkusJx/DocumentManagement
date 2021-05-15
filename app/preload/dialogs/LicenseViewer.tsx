@@ -5,6 +5,7 @@ import {getLogger} from "log4js";
 import {Drawer, DrawerAppContent, DrawerListItem} from "../elements/Drawer";
 import path from "path";
 import * as fs from "fs";
+import BackStack from "../util/BackStack";
 
 const logger = getLogger();
 const licensePath: string = path.join(__dirname, '..', '..', '..', "licenses");
@@ -58,6 +59,7 @@ class LicenseViewerElement extends React.Component {
      * Open the license dialog
      */
     public open(): void {
+        BackStack.enabled = false;
         this.dialog.open();
     }
 
@@ -131,6 +133,10 @@ class LicenseViewerElement extends React.Component {
         this.drawer[0].topAppBar.setScrollTarget(this.appContent.mainElement);
         this.loadLicense(path.join(licensePath, 'main.txt'), 'DocumentManagement').then(() => {
             logger.info("Main license loaded");
+        });
+
+        this.dialog.dialog.listen('MDCDialog:closing', () => {
+            BackStack.enabled = true;
         });
     }
 

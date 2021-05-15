@@ -1,19 +1,12 @@
 import {exec} from "child_process";
-import {
-    Action,
-    CustomPersistence,
-    database,
-    Logger,
-    MariaDBProvider,
-    MySQLProvider,
-    PersistenceProvider
-} from "../databaseWrapper";
+import {Action, CustomPersistence, database, Logger, MariaDBProvider, MySQLProvider} from "../databaseWrapper";
 import log4js, {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
 import fs from "fs";
 import {AnySettings, DatabaseProvider, DatabaseSetting, SQLiteSettings} from "../../shared/Settings";
 import {Recents} from "../settings/recentConnections";
 import constants from "./constants";
+import {PersistenceProvider} from "../databaseTypes";
 
 const logger = getLogger();
 
@@ -80,7 +73,7 @@ export default class util {
                                                        create: boolean = false): Promise<database.DatabaseManager> {
         const fromProvider = async (provider: PersistenceProvider): Promise<database.DatabaseManager> => {
             const em = await CustomPersistence.createEntityManager("documents", provider);
-            return await database.DatabaseManager.create(em);
+            return database.DatabaseManager.create(em);
         };
 
         logger.info("Creating a database manager from settings:", settings.provider);
@@ -92,19 +85,19 @@ export default class util {
                     throw new Error("The database file does not exist");
                 }
 
-                return await database.createSQLiteDatabaseManager(setting.file, action, showSQL);
+                return database.createSQLiteDatabaseManager(setting.file, action, showSQL);
             }
             case DatabaseProvider.MariaDB: {
                 const setting = settings as AnySettings;
-                const provider = await MariaDBProvider.create(setting.url, setting.user, setting.password,
-                    action, showSQL);
-                return await fromProvider(provider);
+                const provider = await MariaDBProvider.createInstance(setting.url, setting.user, setting.password,
+                    action, showSQL, []);
+                return fromProvider(provider);
             }
             case DatabaseProvider.MySQL: {
                 const setting = settings as AnySettings;
-                const provider = await MySQLProvider.create(setting.url, setting.user, setting.password,
-                    action, showSQL);
-                return await fromProvider(provider);
+                const provider = await MySQLProvider.createInstance(setting.url, setting.user, setting.password,
+                    action, showSQL, []);
+                return fromProvider(provider);
             }
             default:
                 logger.error("Invalid database provider supplied:", settings.provider);

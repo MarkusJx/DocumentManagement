@@ -31,6 +31,11 @@ public class TagFilter implements DocumentFilterBase {
         }
     }
 
+    @SuppressWarnings("unused")
+    public TagFilter(TagFilter other) {
+        this.tags = other.tags;
+    }
+
     /**
      * Get the filter operations
      *

@@ -113,16 +113,16 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      * @return the generated document filter
      */
     public async getFilter(): Promise<database.DocumentFilter> {
-        const filters: database.filters.DocumentFilterBase[] = [];
+        const filters: database.filters.DocumentFilter[] = [];
         if (this.filenameTextArea.value.length > 0) {
             const filename: string = this.filenameTextArea.value;
             const exactMatch: boolean = this.exact_match_checkbox.checked;
             filters.push(await database.filters.FilenameFilter.create(filename, exactMatch));
         }
 
-        if (this.propertySetter.propertyValues.length > 0) {
-            const properties: string[] = this.propertySetter.propertyValues
-                .flatMap(v => [v.propertyName, v.propertyValue]);
+        const propertyValues = await this.propertySetter.propertyValues.toArray();
+        if (propertyValues.length > 0) {
+            const properties: string[] = propertyValues.flatMap(v => [v.property.name, v.propertyValue.value]);
 
             const map: PropertyMap = PropertyMap.of(...properties);
             filters.push(await database.filters.PropertyFilter.create(map));
@@ -138,7 +138,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
             filters.push(await database.filters.DateFilter.getByDates(values[0], values[1]));
         }
 
-        return await database.DocumentFilter.create(...filters);
+        return database.DocumentFilter.create(...filters);
     }
 
     /**
@@ -150,7 +150,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      */
     private static tagExists(value: string): boolean {
         try {
-            return constants.databaseManager.tagExists(value);
+            return constants.databaseManager.tagExistsSync(value);
         } catch (e) {
             logger.error("An error occurred while checking if a tag exists:", e);
             return false;
@@ -222,7 +222,7 @@ export class SearchBox extends React.Component<SearchBoxProps> {
      */
     private static getTagOptions(value: string): string[] {
         try {
-            return constants.databaseManager.getTagsLike(value).map(t => t.name);
+            return constants.databaseManager.getTagsLikeSync(value).toArraySync().map(t => t.name);
         } catch (e) {
             logger.error("An error occurred while getting all tags like a value:", e);
             return [];

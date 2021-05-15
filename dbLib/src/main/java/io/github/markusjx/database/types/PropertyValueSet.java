@@ -25,8 +25,8 @@ public class PropertyValueSet {
      * Create an empty property value set
      */
     public PropertyValueSet() {
-        this.property = null;
-        this.propertyValue = null;
+        this.property = new Property();
+        this.propertyValue = new PropertyValue();
     }
 
     /**

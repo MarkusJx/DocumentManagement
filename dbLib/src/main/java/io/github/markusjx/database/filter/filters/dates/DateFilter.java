@@ -30,6 +30,11 @@ public class DateFilter implements DocumentFilterBase {
         this.filterImpl = filter;
     }
 
+    @SuppressWarnings("unused")
+    public DateFilter(DateFilter other) {
+        this.filterImpl = other.filterImpl;
+    }
+
     /**
      * Get a single date filter by a date
      *

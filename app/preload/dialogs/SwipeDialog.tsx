@@ -1,6 +1,7 @@
 // Import the css associated with this file
 import React from "react";
 import {Button, ProgressBar} from "../elements/MDCWrapper";
+import BackStack from "../util/BackStack";
 
 /**
  * The sync dialog title properties
@@ -69,6 +70,11 @@ export class SwipeDialogSwipeElement extends React.Component<SwipeDialogSwipeEle
      */
     private element: HTMLElement = null;
 
+    /**
+     * Get the element's title
+     *
+     * @return the title
+     */
     public get title(): string | undefined {
         return this.props.title;
     }
@@ -172,6 +178,7 @@ export class SwipeDialog extends React.Component<SwipeDialogProps> {
 
         this.onContinue = this.onContinue.bind(this);
         this.onCancel = this.onCancel.bind(this);
+        this.backgroundClick = this.backgroundClick.bind(this);
     }
 
     /**
@@ -185,7 +192,7 @@ export class SwipeDialog extends React.Component<SwipeDialogProps> {
 
     public render(): React.ReactNode {
         return (
-            <div className="swipe-dialog__background" ref={e => this.element = e}>
+            <div className="swipe-dialog__background" ref={e => this.element = e} onClick={this.backgroundClick}>
                 <div className="swipe-dialog__dialog">
                     <div className="swipe-dialog__dialog-top-bar">
                         <ProgressBar ref={e => this.progressBar = e} style={{"--mdc-theme-primary": '#00d8b4'}}/>
@@ -214,6 +221,7 @@ export class SwipeDialog extends React.Component<SwipeDialogProps> {
      * Show the swipe dialog
      */
     public show(): void {
+        BackStack.enabled = false;
         this.props.contentPages.forEach(e => e.reset());
         this.props.contentPages[0].makeStartPage();
         this.title.title = this.props.startTitle;
@@ -245,6 +253,8 @@ export class SwipeDialog extends React.Component<SwipeDialogProps> {
                 this.element.classList.remove("hidden");
             }, 125);
         }
+
+        BackStack.enabled = true;
     }
 
     /**
@@ -264,6 +274,22 @@ export class SwipeDialog extends React.Component<SwipeDialogProps> {
         this.progressBar.progressBar.progress = this.currentPage / (this.props.contentPages.length - 1);
         if (this.props.onContinue) {
             this.props.onContinue();
+        }
+    }
+
+    /**
+     * Hide the dialog when the background is clicked
+     *
+     * @param e the mouse event
+     * @private
+     */
+    private backgroundClick(e: any): void {
+        if (e.nativeEvent) {
+            e = e.nativeEvent;
+
+            if (e.path && e.path.length > 0 && e.path[0] === this.element && this.visible) {
+                this.hide();
+            }
         }
     }
 

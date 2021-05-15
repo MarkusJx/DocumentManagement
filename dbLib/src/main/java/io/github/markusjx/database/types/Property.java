@@ -34,8 +34,8 @@ public class Property implements Serializable, Comparable<Property> {
      * Create an empty property instance
      */
     public Property() {
-        this.name = null;
-        this.values = null;
+        this.name = "";
+        this.values = new ArrayList<>();
     }
 
     /**

@@ -2,6 +2,7 @@ import React from "react";
 import {database} from "../../databaseWrapper";
 import {DataTableDirectoryElement, DataTableDocumentElement, DataTableElement} from "./DataTableElement";
 import Snackbars from "../../util/Snackbars";
+import BackStack from "../../util/BackStack";
 
 interface MainDataTableContentProps {
     directory: database.Directory;
@@ -72,6 +73,9 @@ export default class MainDataTableContent extends React.Component<MainDataTableC
             directory: dir
         });
 
+        // Add the current directory to the action stack
+        BackStack.push(dir.path);
+
         this.componentDidMount();
     }
 
@@ -105,9 +109,10 @@ export default class MainDataTableContent extends React.Component<MainDataTableC
 
     public componentDidMount(): void {
         this.dataTableElements = this.dataTableElements.filter(e => e != null);
-        if (this.directory != null && !this.dataTableElements.some(e => e.exists())) {
+        if (this.directory != null && !this.dataTableElements.some(e => e.exists()) &&
+            this.dataTableElements.length > 0 && (this.directory.path !== "" || this.directory.baseDir !== "")) {
             Snackbars.docsNotFoundSnackbar.snackbarText = "No directory or document in the database exists under the " +
-                "specified root path. You may want to update the root path.";
+                "specified path. You may want to update the root path.";
             Snackbars.docsNotFoundSnackbar.open();
         }
     }
