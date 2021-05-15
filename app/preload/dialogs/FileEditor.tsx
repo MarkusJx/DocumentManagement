@@ -11,6 +11,7 @@ import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
 import FileInfo from "../elements/FileInfo";
 import javaTypes from "../javaTypes";
+import BackStack from "../util/BackStack";
 
 const logger = getLogger();
 
@@ -103,6 +104,7 @@ class FileEditorElement extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
+            BackStack.enabled = true;
             try {
                 if (event.detail.action === "accept") {
                     // Set the main data table to loading
@@ -145,6 +147,7 @@ class FileEditorElement extends React.Component {
      * @param document the document to edit
      */
     public open(document: database.Document): void {
+        BackStack.enabled = false;
         this.currentDocument = document;
         this.fileInfo.document = document;
 

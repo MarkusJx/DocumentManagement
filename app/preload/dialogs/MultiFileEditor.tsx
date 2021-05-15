@@ -7,6 +7,7 @@ import constants from "../util/constants";
 import {showErrorDialog} from "./ErrorDialog";
 import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
+import BackStack from "../util/BackStack";
 import PropertyValueSet = database.PropertyValueSet;
 
 const logger = getLogger();
@@ -103,6 +104,7 @@ class MultiFileEditorElement extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog closing event
         this.dialog.listen('MDCDialog:closing', async (event: CustomEvent<{ action: string }>) => {
+            BackStack.enabled = true;
             try {
                 if (event.detail.action === "accept") {
                     // Set the main data table to loading
@@ -149,6 +151,7 @@ class MultiFileEditorElement extends React.Component {
      * @param documents the documents to edit
      */
     public open(documents: database.Document[]): void {
+        BackStack.enabled = false;
         this.currentDocuments = documents;
 
         const tags: string[] = [];

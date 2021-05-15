@@ -2,6 +2,7 @@ import React from "react";
 import {database} from "../../databaseWrapper";
 import {DataTableDirectoryElement, DataTableDocumentElement, DataTableElement} from "./DataTableElement";
 import Snackbars from "../../util/Snackbars";
+import BackStack from "../../util/BackStack";
 
 interface MainDataTableContentProps {
     directory: database.Directory;
@@ -71,6 +72,9 @@ export default class MainDataTableContent extends React.Component<MainDataTableC
         this.setState({
             directory: dir
         });
+
+        // Add the current directory to the action stack
+        BackStack.push(dir.path);
 
         this.componentDidMount();
     }

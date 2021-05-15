@@ -10,6 +10,7 @@ import {getLogger} from "log4js";
 import Theming from "./Theming";
 import {Settings} from "../../shared/Settings";
 import util from "../util/util";
+import BackStack from "../util/BackStack";
 
 const logger = getLogger();
 
@@ -110,6 +111,7 @@ class SettingsDialogElement extends React.Component {
     public componentDidMount(): void {
         // Listen for the dialog to close
         this.dialog.listen('MDCDialog:closing', (event) => {
+            BackStack.enabled = true;
             try {
                 this.storeSettings();
                 // Only show the settings saved/discarded dialog
@@ -143,6 +145,7 @@ class SettingsDialogElement extends React.Component {
      * @param onClose the close listener function
      */
     public open(onClose: () => void): void {
+        BackStack.enabled = false;
         Snackbars.settingsSnackbar.close();
 
         // Only open the dialog if it isn't already opened

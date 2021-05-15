@@ -17,13 +17,40 @@ import DocumentFilter = database.filters.DocumentFilter;
 import DatabaseInfo = database.DatabaseInfo;
 import DatabaseManager = database.DatabaseManager;
 
+/**
+ * A local date proxy
+ */
 export declare class LocalDateProxy extends JavaClass {
+    /**
+     * Parse a date string
+     *
+     * @param date the date string to parse
+     * @return the parsed local date
+     */
     public static parse(date: string): Promise<LocalDateProxy>;
 
+    /**
+     * Parse a date string.
+     * Sync call.
+     *
+     * @param date the date string to parse
+     * @return the parsed local date
+     */
     public static parseSync(date: string): LocalDateProxy;
 
+    /**
+     * Convert a this local date to a date string
+     *
+     * @return the date string
+     */
     public toString(): Promise<string>;
 
+    /**
+     * Convert a this local date to a date string.
+     * Sync call.
+     *
+     * @return the date string
+     */
     public toStringSync(): string;
 }
 
