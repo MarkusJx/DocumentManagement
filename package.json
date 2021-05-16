@@ -67,14 +67,7 @@
       "app/shared/FindJavaHome.js"
     ],
     "extraResources": [
-      "dbLib/build/libs/*.jar",
-      {
-        "from": "buildscripts/tmp/jre-11",
-        "to": "jre-11",
-        "filter": [
-          "**/*"
-        ]
-      }
+      "dbLib/build/libs/*.jar"
     ],
     "nsis": {
       "oneClick": false,
@@ -107,6 +100,11 @@
         "libappindicator1",
         "libxtst6",
         "libnss3"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
       ]
     },
     "asar": true,

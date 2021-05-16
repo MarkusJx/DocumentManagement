@@ -156,6 +156,7 @@ async function createWindow(): Promise<void> {
         minWidth: 530,
         frame: false,
         resizable: true,
+        titleBarStyle: 'hidden',
         webPreferences: {
             preload: path.join(__dirname, 'preload', 'index.js'),
             contextIsolation: true,
@@ -210,11 +211,11 @@ async function createWindow(): Promise<void> {
                 type: 'separator'
             },
             {
-                label: 'Exit',
+                label: 'Quit',
                 click: () => {
                     app.quit();
                 },
-                accelerator: 'Alt+F4'
+                accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Alt+F4'
             }
         ]
     }));
@@ -316,8 +317,8 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', function (): void {
-    if (process.platform !== 'darwin') {
-        logger.info("Quit");
-        app.quit();
-    }
+    // if (process.platform !== 'darwin') {
+    logger.info("Quit");
+    app.quit();
+    // }
 });

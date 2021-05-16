@@ -41,6 +41,13 @@ function mergeLicenses() {
         fs.appendFileSync(out_file, fs.readFileSync(path.join(license_dir, v)));
         fs.appendFileSync(out_file, '\n\n');
     });
+
+    if (process.platform === 'darwin') {
+        const dmg_license = path.join(__dirname, '..', 'build', 'license_en.txt');
+        console.log("Building on macOs, writing license to:", dmg_license);
+        deleteIfExists(dmg_license);
+        fs.copyFileSync(out_file, dmg_license);
+    }
 }
 
 async function run() {

@@ -12,3 +12,5 @@ buildscripts/tmp
 *.db
 *.log
 licenses.txt
+build/license_en.txt
+.DS_STORE

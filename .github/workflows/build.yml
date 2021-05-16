@@ -8,26 +8,19 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macOs-latest]
   
     runs-on: ${{matrix.os}}
 
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Java JDK Windows
+      - name: Setup Java JDK
         uses: actions/setup-java@v2
-        if: matrix.os == 'windows-latest'
         with:
           java-version: 11
           java-package: 'jdk'
           architecture: 'x64'
           distribution: 'adopt'
-      - name: Install Java ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get remove adoptopenjdk* -y
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
@@ -61,16 +54,9 @@ jobs:
       # npm install
       - name: npm install
         run: npm ci
-      - name: Package Windows
-        run: npm run pack
-        if: matrix.os == 'windows-latest'
-        env:
-          GH_TOKEN: ${{secrets.github_token}}
-      - name: Package ubuntu
-        if: matrix.os == 'ubuntu-latest'
+      - name: Package
         run: npm run pack
         env:
-          JAVA_HOME: '/usr/lib/jvm/java-11-openjdk-amd64'
           GH_TOKEN: ${{secrets.github_token}}
 
       # Upload the artifact
@@ -99,6 +85,13 @@ jobs:
         with:
           name: ${{steps.version_name.outputs.version}}_AppImage
           path: dist/docman*.AppImage
+      
+      - name: Upload beta build mac
+        if: matrix.os == 'macOs-latest'
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: ${{steps.version_name.outputs.version}}_dmg
+          path: dist/docman*.dmg
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
