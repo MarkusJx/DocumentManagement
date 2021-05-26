@@ -24,7 +24,7 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "@markusjx/java": "0.1.0-beta.2",
+    "@markusjx/java": "0.1.0-beta.3",
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
     "core-js": "^3.13.0",
     "custom-electron-titlebar": "^3.2.7",
@@ -81,11 +81,7 @@
   "build": {
     "appId": "io.github.markusjx",
     "files": [
-      "app/ui/**",
-      "out/preload/**",
-      "out/shared/**",
-      "out/styles/style.css",
-      "out/main.js",
+      "out/**",
       "licenses/**",
       "app/shared/FindJavaHome.js"
     ],

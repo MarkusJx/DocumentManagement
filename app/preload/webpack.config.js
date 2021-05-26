@@ -1,5 +1,4 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const webpack = require("webpack");
 const path = require("path");
 const nodeExternals = require('webpack-node-externals');
 
@@ -40,17 +39,41 @@ module.exports = {
                 }
             },
             {
+                test: /\.(css|scss|sass)$/,
+                include: [
+                    path.resolve(__dirname, '..', "styles"),
+                    path.resolve(__dirname, '..', '..', "node_modules"),
+                ],
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    {
+                        loader: "css-loader",
+                        options: {
+                            importLoaders: 1,
+                            modules: {
+                                exportLocalsConvention: 'dashes'
+                            }
+                        }
+                    },
+                    "sass-loader"
+                ],
+                resolve: {
+                    extensions: [".css", ".scss", ".sass"]
+                }
+            },
+            {
+                test: /\.(eot|woff|woff2|ttf|svg|png|jpg|gif)$/,
+                use: "url-loader"
+            },
+            {
                 test: /\.node$/,
                 loader: "node-loader",
             }
         ]
     },
     plugins: [
-        // fix "process is not defined" error;
-        // https://stackoverflow.com/a/64553486/1837080
-        new webpack.ProvidePlugin({
-            //process: "process/browser.js",
-        }),
-        new MiniCssExtractPlugin()
+        new MiniCssExtractPlugin({
+            filename: "preload.css"
+        })
     ]
 };

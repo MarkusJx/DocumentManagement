@@ -6,6 +6,7 @@ import {Drawer, DrawerAppContent, DrawerListItem} from "../elements/Drawer";
 import path from "path";
 import * as fs from "fs";
 import BackStack from "../util/BackStack";
+import styles from "../../styles/dialogs/LicenseViewer.scss";
 
 const logger = getLogger();
 const licensePath: string = path.join(__dirname, '..', "licenses");
@@ -121,8 +122,8 @@ class LicenseViewerElement extends React.Component {
                 </Drawer>
                 <DrawerAppContent ref={e => this.appContent = e} style={drawerAppContentStyle}
                                   mainStyle={drawerMainStyle}>
-                    <div className="license-viewer__license-container">
-                        <div ref={e => this.licenseElement = e} className="license-viewer__license"/>
+                    <div className={styles.licenseViewer__licenseContainer}>
+                        <div ref={e => this.licenseElement = e} className={styles.licenseViewer__license}/>
                     </div>
                 </DrawerAppContent>
             </Dialog>

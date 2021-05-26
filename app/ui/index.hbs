@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Document management</title>
+    <title><%= htmlWebpackPlugin.options.title %></title>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <meta content="default-src 'self'; font-src https://fonts.gstatic.com data: 'self';
     style-src-elem https://fonts.googleapis.com 'self' 'unsafe-inline'; img-src data:"
           http-equiv="Content-Security-Policy">
-    <link href="../../out/main.css" rel="stylesheet" type="text/css">
+    <link href="preload.css" rel="stylesheet">
 </head>
 <body>
 <div id="content-root">
@@ -76,6 +76,6 @@
     <!-- The multi file editor dialog goes in here -->
 </div>
 
-<script src="../../out/renderer.bundled.js"></script>
+<%= htmlWebpackPlugin.tags.bodyTags %>
 </body>
 </html>

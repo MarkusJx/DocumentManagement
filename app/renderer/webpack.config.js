@@ -1,5 +1,6 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
     target: "electron-renderer",
@@ -67,6 +68,10 @@ module.exports = {
         ]
     },
     plugins: [
-        new MiniCssExtractPlugin()
+        new MiniCssExtractPlugin(),
+        new HtmlWebpackPlugin({
+            title: "Document management",
+            template: path.resolve(__dirname, '..', 'ui', 'index.hbs')
+        })
     ]
 }

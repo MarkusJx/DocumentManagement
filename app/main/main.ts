@@ -158,8 +158,7 @@ async function createWindow(): Promise<void> {
     // Load index.html
     logger.info("Loading index.html");
     try {
-        await mainWindow.loadFile(path.join(__dirname, '..', 'app', 'ui', 'index.html'));
-        //await mainWindow.loadFile("app/ui/index.html");
+        await mainWindow.loadFile(path.join(__dirname, 'index.html'));
         logger.info("index.html loaded");
     } catch (e) {
         logger.error("Could not load the index.html:", e);
