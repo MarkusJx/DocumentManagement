@@ -218,7 +218,7 @@ export default class StartScanScreen extends React.Component<StartScanScreenProp
             logger.error("Could not create a database", e);
             showErrorDialog("The database could not be created. If you are trying to connect to a remote database, " +
                 "this error may be caused by invalid login credentials. Please check if your connection details are " +
-                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.message);
+                "correct. If they are correct or you did not try to connect to a remote database, here's the error:", e.message);
             constants.scanLoadingScreen.visible = false;
             this.enableButtons();
             return;

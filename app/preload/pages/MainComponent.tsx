@@ -147,7 +147,7 @@ export default class MainComponent extends React.Component<EmptyProps, MainCompo
             logger.error("Could not load the database:", e);
             showErrorDialog("The database could not be loaded. If you are trying to connect to a remote database, " +
                 "this error may be caused by invalid login credentials. Please check if your connection details are " +
-                "correct. If they are correct or you did not try to connect to a remove database, here's the error:", e.stack);
+                "correct. If they are correct or you did not try to connect to a remote database, here's the error:", e.stack);
 
             this.gotoStartPage();
             return;

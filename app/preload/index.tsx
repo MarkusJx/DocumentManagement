@@ -9,6 +9,8 @@ import log4js from "log4js";
 import util from "./util/util";
 import Theming from "./settings/Theming";
 import BackStack from "./util/BackStack";
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 
 const logger = log4js.getLogger();
 

@@ -2,7 +2,7 @@
   "name": "docman",
   "version": "0.1.0",
   "description": "A database based document management system",
-  "main": "out/main.js",
+  "main": "out/main.bundled.js",
   "homepage": "https://github.com/MarkusJx/DocumentManagement",
   "repository": {
     "type": "git",
@@ -24,9 +24,10 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "@markusjx/java": "0.1.0-beta.2",
+    "@markusjx/java": "0.1.0-beta.3",
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
-    "custom-electron-titlebar": "^3.2.6",
+    "core-js": "^3.13.0",
+    "custom-electron-titlebar": "^3.2.7",
     "electron-store": "^8.0.0",
     "electron-updater": "^4.3.9",
     "electron-window-state": "^5.0.3",
@@ -36,17 +37,36 @@
     "open-sans-fonts": "^1.6.2",
     "react": "^17.0.2",
     "react-date-picker": "^8.1.1",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@types/java": "^0.9.1",
-    "@types/node": "^15.0.2",
-    "@types/react-dom": "^17.0.4",
-    "electron": "^12.0.7",
-    "electron-builder": "^22.11.3",
+    "@babel/core": "^7.14.3",
+    "@babel/plugin-transform-react-jsx": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/preset-react": "^7.13.13",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/node": "^15.6.1",
+    "@types/react-dom": "^17.0.5",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "csp-html-webpack-plugin": "^5.1.0",
+    "css-loader": "^5.2.6",
+    "electron": "^13.0.1",
+    "electron-builder": "^22.10.5",
     "hash-files": "^1.1.1",
-    "sass": "^1.32.12",
-    "typescript": "^4.2.4"
+    "html-loader": "^2.1.2",
+    "html-webpack-plugin": "^5.3.1",
+    "mini-css-extract-plugin": "^1.6.0",
+    "node-loader": "^2.0.0",
+    "sass": "^1.34.0",
+    "sass-loader": "^11.1.1",
+    "typescript": "^4.3.2",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-merge": "^5.7.3",
+    "webpack-node-externals": "^3.0.0"
   },
   "optionalDependencies": {
     "node-ms-passport": "^1.1.2"
@@ -58,11 +78,7 @@
   "build": {
     "appId": "io.github.markusjx",
     "files": [
-      "app/ui/**",
-      "out/preload/**",
-      "out/shared/**",
-      "out/styles/style.css",
-      "out/main.js",
+      "out/**",
       "licenses/**",
       "app/shared/FindJavaHome.js"
     ],

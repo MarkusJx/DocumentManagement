@@ -1,74 +1,20 @@
-import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItem} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain, Menu} from 'electron';
 import {autoUpdater} from "electron-updater";
 import windowStateKeeper from "electron-window-state";
 import Store from "electron-store";
 import path from 'path';
 import log4js from "log4js";
-import {createStore, StoreType} from "./shared/Settings";
+import {createStore} from "../shared/Settings";
 import * as fs from "fs";
-import FindJavaHome from "../app/shared/FindJavaHome";
+import FindJavaHome from "../shared/FindJavaHome";
+import {setMenu} from "./menu";
+import configureLogger from "./configureLogger";
+import "core-js/stable";
+import "regenerator-runtime/runtime";
+
+const isDev = process.env.NODE_ENV === "development";
 
 const logger = log4js.getLogger();
-const LOG_TO_CONSOLE: boolean = false;
-
-function configureLogger(): void {
-    const store: Store<StoreType> = createStore();
-    const shouldLog = store.get('settings').logToFile;
-
-    const appenders: string[] = [];
-    if (shouldLog) {
-        appenders.push("app");
-    }
-
-    if (LOG_TO_CONSOLE) {
-        appenders.push("out");
-    }
-
-    // log4js requires at least one appender to work
-    if (appenders.length > 0) {
-        log4js.configure({
-            appenders: {
-                out: {
-                    type: 'stdout',
-                    layout: {
-                        type: 'pattern',
-                        pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
-                    }
-                },
-                app: {
-                    type: 'file',
-                    filename: 'main.log',
-                    layout: {
-                        type: 'pattern',
-                        pattern: '[%d{yyyy-MM-dd hh:mm:ss}] [%f{2}:%l] [%p] %m'
-                    },
-                    maxLogSize: 100000
-                }
-            },
-            categories: {
-                default: {
-                    appenders: appenders,
-                    level: 'info',
-                    enableCallStack: true
-                }
-            }
-        });
-    } else {
-        log4js.configure({
-            appenders: {
-                out: {
-                    type: 'stdout'
-                }
-            },
-            categories: {
-                default: {
-                    appenders: ['out'],
-                    level: 'off'
-                }
-            }
-        });
-    }
-}
 
 ipcMain.handle('select-directory', async (_event, ...args) => {
     const result = await dialog.showOpenDialog({
@@ -158,7 +104,7 @@ async function createWindow(): Promise<void> {
         resizable: true,
         titleBarStyle: 'hidden',
         webPreferences: {
-            preload: path.join(__dirname, 'preload', 'index.js'),
+            preload: path.join(__dirname, 'preload.bundled.js'),
             contextIsolation: true,
             worldSafeExecuteJavaScript: true,
             nodeIntegration: false,
@@ -174,80 +120,7 @@ async function createWindow(): Promise<void> {
     mainWindowState.manage(mainWindow);
 
     // Create the application menu
-    menu.append(new MenuItem({
-        label: 'File',
-        submenu: [
-            {
-                label: 'Load database',
-                click: () => {
-                    mainWindow.webContents.send('load-database');
-                }
-            },
-            {
-                label: 'Create database',
-                click: () => {
-                    mainWindow.webContents.send('create-database');
-                }
-            },
-            {
-                label: 'Load recent',
-                click: () => {
-                    mainWindow.webContents.send('load-recent-database');
-                }
-            },
-            {
-                label: 'Go to start screen',
-                click: () => {
-                    mainWindow.webContents.send('goto-start-screen');
-                }
-            },
-            {
-                label: 'Settings',
-                click: () => {
-                    mainWindow.webContents.send('open-settings');
-                }
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Quit',
-                click: () => {
-                    app.quit();
-                },
-                accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Alt+F4'
-            }
-        ]
-    }));
-
-    menu.append(new MenuItem({
-        label: 'Options',
-        submenu: [
-            {
-                label: 'Toggle DevTools',
-                click: () => {
-                    if (mainWindow.webContents.isDevToolsOpened()) {
-                        mainWindow.webContents.closeDevTools();
-                    } else {
-                        mainWindow.webContents.openDevTools();
-                    }
-                },
-                accelerator: 'Control+Shift+I'
-            }
-        ]
-    }));
-
-    menu.append(new MenuItem({
-        label: 'Help',
-        submenu: [
-            {
-                label: 'View Licenses',
-                click: () => {
-                    mainWindow.webContents.send('show-license-viewer');
-                }
-            }
-        ]
-    }));
+    setMenu(menu, mainWindow);
 
     let shouldClose: boolean = false;
     mainWindow.on('close', (e) => {
@@ -285,7 +158,7 @@ async function createWindow(): Promise<void> {
     // Load index.html
     logger.info("Loading index.html");
     try {
-        await mainWindow.loadFile(path.join(__dirname, '..', 'app', 'ui', 'index.html'));
+        await mainWindow.loadFile(path.join(__dirname, 'index.html'));
         logger.info("index.html loaded");
     } catch (e) {
         logger.error("Could not load the index.html:", e);
@@ -293,7 +166,7 @@ async function createWindow(): Promise<void> {
         return;
     }
 
-    if (process.argv.includes('--debug')) {
+    if (process.argv.includes('--debug') || isDev) {
         mainWindow.webContents.openDevTools();
     }
 }

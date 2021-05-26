@@ -151,13 +151,15 @@ async function run() {
 
     const buildCache = new BuildCache(["package.json", "package-lock.json", "build.js"], "general");
     const gradleCache = new BuildCache(["dbLib/src/**", "dbLib/build.gradle"], "gradle");
-    const tscCache = new BuildCache(["app/preload/**", "app/main.ts", "tsconfig.json"], "tsc")
-    const scssCache = new BuildCache(["app/styles/**"], "scss");
+    const preloadCache = new BuildCache(["app/preload/**", "app/shared/**", "tsconfig.json"], "preload");
+    const mainCache = new BuildCache(["app/main/**", "app/shared/**", "tsconfig.json"], "main");
+    const rendererCache = new BuildCache(["app/styles/**", "app/renderer/**"], "renderer");
 
     const buildCache_build = await buildCache.shouldRebuild();
     const gradleCache_build = await gradleCache.shouldRebuild();
-    const tscCache_build = await tscCache.shouldRebuild();
-    const scssCache_build = await scssCache.shouldRebuild();
+    const preloadCache_build = await preloadCache.shouldRebuild();
+    const mainCache_build = await mainCache.shouldRebuild();
+    const rendererCache_build = await rendererCache.shouldRebuild();
 
     if (buildCache_build) {
         console.log("The build cache is out of date, building everything");
@@ -179,35 +181,46 @@ async function run() {
         console.log("The gradle cache is up-to-date, not building");
     }
 
-    if (buildCache_build || tscCache_build) {
-        console.log("The typescript cache is out of date, running tsc...")
+    if (buildCache_build || preloadCache_build) {
+        console.log("The preload cache is out of date, running webpack...")
         try {
-            await spawnAsync("tsc");
-        } catch (e) {
-            tscCache.buildFailed();
-            throw e;
-        }
-    } else {
-        console.log("The typescript cache is up-to-date, not building");
-    }
-
-    if (buildCache_build || scssCache_build) {
-        console.log("The scss cache is out of date, running sass");
-        try {
-            await spawnAsync("sass", [
-                "app/styles/style.scss:out/styles/style.css",
-                `--load-path=${path.join(__dirname, '..', 'node_modules')}`,
-                `--load-path=${path.join(__dirname, '..')}`,
-                "--update",
-                "--style",
-                "compressed"
+            await spawnAsync("webpack", [
+                "build", "--config", "app/preload/webpack.config.js", "--mode", "production"
             ]);
         } catch (e) {
-            scssCache.buildFailed();
+            preloadCache.buildFailed();
             throw e;
         }
     } else {
-        console.log("The scss cache is up-to-date, not building");
+        console.log("The preload cache is up-to-date, not building");
+    }
+
+    if (buildCache_build || mainCache_build) {
+        console.log("The main cache is out of date, running webpack...");
+        try {
+            await spawnAsync("webpack", [
+                "build", "--config", "app/main/webpack.config.js", "--mode", "production"
+            ]);
+        } catch (e) {
+            mainCache.buildFailed();
+            throw e;
+        }
+    } else {
+        console.log("The main cache is up-to-date, not building");
+    }
+
+    if (buildCache_build || rendererCache_build) {
+        console.log("The renderer cache is out of date, running webpack...");
+        try {
+            await spawnAsync("webpack", [
+                "build", "--config", "app/renderer/webpack.config.js", "--mode", "production"
+            ]);
+        } catch (e) {
+            rendererCache.buildFailed();
+            throw e;
+        }
+    } else {
+        console.log("The renderer cache is up-to-date, not building");
     }
 
     console.log("Done.");

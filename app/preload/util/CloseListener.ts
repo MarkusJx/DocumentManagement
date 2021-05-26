@@ -1,5 +1,7 @@
 import {ipcRenderer} from "electron";
 import {getLogger} from "log4js";
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 
 const logger = getLogger();
 

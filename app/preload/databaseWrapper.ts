@@ -6,6 +6,7 @@ import constants from "./util/constants";
 import javaTypes from "./javaTypes";
 import {createStore} from "../shared/Settings";
 import {
+    ActionProxy,
     DatabaseInfoProxy,
     DatabaseManagerProxy,
     DateFilterProxy,
@@ -17,6 +18,8 @@ import {
     JavaChainedHashMapProxy,
     LocalDateProxy,
     LoggerProxy,
+    MariaDBProviderProxy,
+    MySQLProviderProxy,
     PersistenceProvider,
     PropertyFilterProxy,
     PropertyProxy,
@@ -35,10 +38,10 @@ const store = createStore();
 java.ensureJVM(store.get('jvmPath'));
 
 logger.info("Loading the java library");
-if (fs.existsSync(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR_NAME))) {
-    java.classpath.append(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR_NAME));
+if (fs.existsSync(path.join(__dirname, '..', 'dbLib', 'build', 'libs', JAR_NAME))) {
+    java.classpath.append(path.join(__dirname, '..', 'dbLib', 'build', 'libs', JAR_NAME));
 } else {
-    java.classpath.append(path.join(__dirname, '..', '..', '..', 'dbLib', 'build', 'libs', JAR_NAME));
+    java.classpath.append(path.join(__dirname, '..', '..', 'dbLib', 'build', 'libs', JAR_NAME));
 }
 
 export class Arrays extends java.importClass<typeof javaTypes.Arrays>('java.util.Arrays') {
@@ -48,25 +51,9 @@ java.logging.setLogLevel(3);
 
 /**
  * The hibernate creation action.
- * The following information is from the
- * org.hibernate.tool.schema.Action.java file.
+ * See {@link ActionProxy} for further information.
  */
-export class Action extends java.importClass("org.hibernate.tool.schema.Action") {
-    // No action will be performed
-    public static readonly NONE: Action;
-    // Database creation will be generated
-    public static readonly CREATE_ONLY: Action;
-    // Database dropping will be generated
-    public static readonly DROP: Action;
-    // Database dropping will be generated followed by database creation
-    public static readonly CREATE: Action;
-    // Drop the schema and recreate it on SessionFactory startup.
-    // Additionally, drop the schema on SessionFactory shutdown.
-    public static readonly CREATE_DROP: Action;
-    // Validate the database schema
-    public static readonly VALIDATE: Action;
-    // Update (alter) the database schema
-    public static readonly UPDATE: Action;
+export class Action extends java.importClass<typeof ActionProxy>('org.hibernate.tool.schema.Action') {
 }
 
 class LocalDate extends java.importClass<typeof LocalDateProxy>('java.time.LocalDate') {
@@ -100,7 +87,7 @@ export class Logger extends java.importClass<typeof LoggerProxy>("io.github.mark
 /**
  * The java managed classes
  */
-const MANAGED_CLASSES = [
+export const MANAGED_CLASSES = [
     "io.github.markusjx.database.DatabaseInfo", "io.github.markusjx.database.types.Directory",
     "io.github.markusjx.database.types.Document", "io.github.markusjx.database.types.Property",
     "io.github.markusjx.database.types.PropertyValue", "io.github.markusjx.database.types.Tag"
@@ -114,40 +101,20 @@ const SQLITE_PROVIDER = "io.github.markusjx.database.persistence.SQLiteProvider"
 export class SQLiteProvider extends java.importClass<typeof SQLiteProviderClass>(SQLITE_PROVIDER) {
 }
 
-/**
- * A MySQL persistence provider
- */
-export declare class MySQLProvider extends PersistenceProvider {
-    /**
-     * Create a new persistence provider instance
-     *
-     * @param url the url of the database
-     * @param user the username to use
-     * @param password the password to use
-     * @param action the sql action
-     * @param showSQL whether to show the generated sql commands
-     * @param classNames the names of the classes. Should be empty.
-     * @return the created persistence provider
-     */
-    public static createInstance(url: string, user: string, password: string, action: Action, showSQL: boolean, classNames: string[]): Promise<MySQLProvider>;
-}
+const MYSQL_PROVIDER = "io.github.markusjx.database.persistence.MySQLProvider";
 
 /**
- * A MariaDB persistence provider
+ * The MySQL provider
  */
-export declare class MariaDBProvider extends PersistenceProvider {
-    /**
-     * Create a new persistence provider instance
-     *
-     * @param url the url of the database
-     * @param user the username to use
-     * @param password the password to use
-     * @param action the sql action
-     * @param showSQL whether to show the generated sql commands
-     * @param classNames the names of the classes. Should be empty.
-     * @return the created persistence provider
-     */
-    public static createInstance(url: string, user: string, password: string, action: Action, showSQL: boolean, classNames: string[]): Promise<MySQLProvider>;
+export class MySQLProvider extends java.importClass<typeof MySQLProviderProxy>(MYSQL_PROVIDER) {
+}
+
+const MARIADB_PROVIDER = "io.github.markusjx.database.persistence.MariaDBProvider";
+
+/**
+ * The mariadb provider
+ */
+export class MariaDBProvider extends java.importClass<typeof MariaDBProviderProxy>(MARIADB_PROVIDER) {
 }
 
 /**
@@ -858,19 +825,5 @@ export namespace database {
                 return false;
             }
         }
-    }
-
-    /**
-     * Create a database manager from a SQLite database
-     *
-     * @param databaseFile the database file
-     * @param action the database action
-     * @param showSQL whether to show the generated sql commands
-     * @return the created database manager
-     */
-    export async function createSQLiteDatabaseManager(databaseFile: string, action: Action, showSQL: boolean = false): Promise<DatabaseManager> {
-        const provider = await SQLiteProvider.newInstance(databaseFile, action, showSQL, MANAGED_CLASSES);
-        const em = await CustomPersistence.createEntityManager("documents", provider);
-        return database.DatabaseManager.create(em);
     }
 }
