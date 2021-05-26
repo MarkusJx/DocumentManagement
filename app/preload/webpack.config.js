@@ -15,12 +15,6 @@ module.exports = {
         node: true
     },
     externals: [nodeExternals()],
-    resolve: {
-        fallback: {
-            "buffer": require.resolve("buffer/"),
-            "path": require.resolve("path-browserify"),
-        }
-    },
     module: {
         rules: [
             // loads .js/jsx files
