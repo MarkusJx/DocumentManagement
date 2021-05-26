@@ -2,6 +2,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
+// noinspection WebpackConfigHighlighting
 module.exports = {
     target: "electron-renderer",
     entry: [
@@ -16,7 +17,7 @@ module.exports = {
             {
                 // loads .html files
                 test: /\.(html)$/,
-                include: [path.resolve(__dirname, "..", "ui")],
+                include: path.resolve(__dirname, "..", "ui"),
                 use: {
                     loader: "html-loader",
                     options: {

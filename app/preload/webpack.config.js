@@ -2,6 +2,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
 const nodeExternals = require('webpack-node-externals');
 
+// noinspection WebpackConfigHighlighting
 module.exports = {
     target: "electron-preload",
     entry: [
@@ -14,10 +15,11 @@ module.exports = {
     externalsPresets: {
         node: true
     },
-    externals: [nodeExternals()],
+    externals: [
+        nodeExternals()
+    ],
     module: {
         rules: [
-            // loads .js/jsx files
             {
                 test: /\.(tsx|jsx|ts|js)$/,
                 include: [

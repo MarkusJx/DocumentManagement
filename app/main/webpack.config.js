@@ -1,6 +1,7 @@
 const path = require("path");
 const nodeExternals = require('webpack-node-externals');
 
+// noinspection WebpackConfigHighlighting
 module.exports = {
     target: "electron-main",
     entry: [
