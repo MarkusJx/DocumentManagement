@@ -8,7 +8,7 @@ import * as fs from "fs";
 import BackStack from "../util/BackStack";
 
 const logger = getLogger();
-const licensePath: string = path.join(__dirname, '..', '..', '..', "licenses");
+const licensePath: string = path.join(__dirname, '..', "licenses");
 
 /**
  * The static instance

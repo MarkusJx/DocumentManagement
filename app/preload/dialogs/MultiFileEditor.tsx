@@ -8,7 +8,6 @@ import {showErrorDialog} from "./ErrorDialog";
 import {getLogger} from "log4js";
 import ReactDOM from "react-dom";
 import BackStack from "../util/BackStack";
-import PropertyValueSet = database.PropertyValueSet;
 
 const logger = getLogger();
 
@@ -66,7 +65,7 @@ class MultiFileEditorElement extends React.Component {
      * The previous properties
      * @private
      */
-    private prevProperties: PropertyValueSet[] = [];
+    private prevProperties: database.PropertyValueSet[] = [];
 
     /**
      * Get the auto complete options for the tag text field

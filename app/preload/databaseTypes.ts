@@ -8,14 +8,6 @@
 import {JavaClass} from "@markusjx/java";
 import {Action, database, EntityManager,} from "./databaseWrapper";
 import javaTypes from "./javaTypes";
-import Property = database.Property;
-import PropertyValue = database.PropertyValue;
-import PropertyValueSet = database.PropertyValueSet;
-import Tag = database.Tag;
-import filters = database.filters;
-import DocumentFilter = database.filters.DocumentFilter;
-import DatabaseInfo = database.DatabaseInfo;
-import DatabaseManager = database.DatabaseManager;
 
 /**
  * A local date proxy
@@ -68,6 +60,29 @@ export declare class LoggerProxy extends JavaClass {
 }
 
 /**
+ * The hibernate creation action.
+ * The following information is from the
+ * org.hibernate.tool.schema.Action.java file.
+ */
+export declare class ActionProxy extends JavaClass {
+    // No action will be performed
+    public static readonly NONE: Action;
+    // Database creation will be generated
+    public static readonly CREATE_ONLY: Action;
+    // Database dropping will be generated
+    public static readonly DROP: Action;
+    // Database dropping will be generated followed by database creation
+    public static readonly CREATE: Action;
+    // Drop the schema and recreate it on SessionFactory startup.
+    // Additionally, drop the schema on SessionFactory shutdown.
+    public static readonly CREATE_DROP: Action;
+    // Validate the database schema
+    public static readonly VALIDATE: Action;
+    // Update (alter) the database schema
+    public static readonly UPDATE: Action;
+}
+
+/**
  * A persistence provider
  */
 export declare abstract class PersistenceProvider extends JavaClass {
@@ -86,6 +101,42 @@ export declare class SQLiteProviderClass extends PersistenceProvider {
      * @param classNames the names of the classes. Should be empty.
      */
     public static newInstance(databaseFile: string, action: Action, showSQL: boolean, classNames: string[]): Promise<SQLiteProviderClass>;
+}
+
+/**
+ * A MySQL persistence provider
+ */
+export declare class MySQLProviderProxy extends PersistenceProvider {
+    /**
+     * Create a new persistence provider instance
+     *
+     * @param url the url of the database
+     * @param user the username to use
+     * @param password the password to use
+     * @param action the sql action
+     * @param showSQL whether to show the generated sql commands
+     * @param classNames the names of the classes. Should be empty.
+     * @return the created persistence provider
+     */
+    public static newInstance(url: string, user: string, password: string, action: Action, showSQL: boolean, classNames: string[]): Promise<MySQLProviderProxy>;
+}
+
+/**
+ * A MariaDB persistence provider
+ */
+export declare class MariaDBProviderProxy extends PersistenceProvider {
+    /**
+     * Create a new persistence provider instance
+     *
+     * @param url the url of the database
+     * @param user the username to use
+     * @param password the password to use
+     * @param action the sql action
+     * @param showSQL whether to show the generated sql commands
+     * @param classNames the names of the classes. Should be empty.
+     * @return the created persistence provider
+     */
+    public static newInstance(url: string, user: string, password: string, action: Action, showSQL: boolean, classNames: string[]): Promise<MySQLProviderProxy>;
 }
 
 /**
@@ -128,17 +179,17 @@ export declare class PropertyValueSetProxy extends JavaClass {
      * @param property the property to store
      * @param propertyValue the property value to store
      */
-    public constructor(property?: Property, propertyValue?: PropertyValue);
+    public constructor(property?: database.Property, propertyValue?: database.PropertyValue);
 
     /**
      * Get the stored property
      */
-    public get property(): Property;
+    public get property(): database.Property;
 
     /**
      * Get the stored property value
      */
-    public get propertyValue(): PropertyValue;
+    public get propertyValue(): database.PropertyValue;
 
     /**
      * Equals check
@@ -252,12 +303,12 @@ export declare class DocumentProxy extends JavaClass {
     /**
      * Get the document's tags
      */
-    public get tags(): javaTypes.List<Tag>;
+    public get tags(): javaTypes.List<database.Tag>;
 
     /**
      * Get the document's properties
      */
-    public get properties(): javaTypes.List<PropertyValueSet>;
+    public get properties(): javaTypes.List<database.PropertyValueSet>;
 
     /**
      * Get the document's creation date
@@ -393,7 +444,7 @@ export declare class DocumentFilterProxy extends JavaClass {
      *
      * @param filterList the list of filters to use
      */
-    public static createFilter(filterList: filters.DocumentFilter[]): Promise<DocumentFilterProxy>;
+    public static createFilter(filterList: database.filters.DocumentFilter[]): Promise<DocumentFilterProxy>;
 }
 
 /**
@@ -442,7 +493,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      * @param filter the filter to use
      * @return the number of rows
      */
-    public getNumDocumentsBy(filter: DocumentFilter): Promise<BigInt>
+    public getNumDocumentsBy(filter: database.DocumentFilter): Promise<BigInt>
 
     /**
      * Get the number of documents in a directory but not in the database
@@ -475,7 +526,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      * @param name the name to search for
      * @return the properties with a name like name
      */
-    public getPropertiesLikeSync(name: string): javaTypes.List<Property>;
+    public getPropertiesLikeSync(name: string): javaTypes.List<database.Property>;
 
     /**
      * Check if a tag exists
@@ -491,7 +542,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      * @param name the name to search for
      * @return the list of tags
      */
-    public getTagsLikeSync(name: string): javaTypes.List<Tag>;
+    public getTagsLikeSync(name: string): javaTypes.List<database.Tag>;
 
     /**
      * Get all property values with a value like value
@@ -499,7 +550,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      * @param value the value to search for
      * @return the property values
      */
-    public getPropertyValuesLikeSync(value: string): javaTypes.List<PropertyValue>;
+    public getPropertyValuesLikeSync(value: string): javaTypes.List<database.PropertyValue>;
 
     /**
      * Check if a property exists
@@ -522,7 +573,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      *
      * @return the retrieved database info
      */
-    public getDatabaseInfo(): Promise<DatabaseInfo>;
+    public getDatabaseInfo(): Promise<database.DatabaseInfo>;
 
     /**
      * Close the database connection
@@ -542,7 +593,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      * @param toCopyTo the database manager managing the database to copy to
      * @return true if the operation was successful
      */
-    public copyDatabaseTo(toCopyTo: DatabaseManager): Promise<boolean>;
+    public copyDatabaseTo(toCopyTo: database.DatabaseManager): Promise<boolean>;
 
     /**
      * Clear the entity manager
@@ -554,14 +605,14 @@ export declare class DatabaseManagerProxy extends JavaClass {
      *
      * @param tags the tags to persist
      */
-    public persistTags(tags: javaTypes.List<Tag>): Promise<void>;
+    public persistTags(tags: javaTypes.List<database.Tag>): Promise<void>;
 
     /**
      * Persist a list of {@link PropertyValueSet}s
      *
      * @param propertyValues the sets to persist
      */
-    public persistPropertyValueSets(propertyValues: javaTypes.List<PropertyValueSet>): Promise<void>;
+    public persistPropertyValueSets(propertyValues: javaTypes.List<database.PropertyValueSet>): Promise<void>;
 
     /**
      * Persist a directory
@@ -582,7 +633,7 @@ export declare class DatabaseManagerProxy extends JavaClass {
      * @param offset the elements in the result list to skip
      * @return the retrieved documents
      */
-    protected getDocumentsBy(filter: DocumentFilter, offset: number): Promise<javaTypes.List<DocumentProxy>>;
+    protected getDocumentsBy(filter: database.DocumentFilter, offset: number): Promise<javaTypes.List<DocumentProxy>>;
 
     /**
      * Get a directory element by a path

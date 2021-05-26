@@ -1,5 +1,14 @@
 import {exec} from "child_process";
-import {Action, CustomPersistence, database, Logger, MariaDBProvider, MySQLProvider} from "../databaseWrapper";
+import {
+    Action,
+    CustomPersistence,
+    database,
+    Logger,
+    MANAGED_CLASSES,
+    MariaDBProvider,
+    MySQLProvider,
+    SQLiteProvider
+} from "../databaseWrapper";
 import log4js, {getLogger} from "log4js";
 import {ipcRenderer} from "electron";
 import fs from "fs";
@@ -85,18 +94,20 @@ export default class util {
                     throw new Error("The database file does not exist");
                 }
 
-                return database.createSQLiteDatabaseManager(setting.file, action, showSQL);
+                const provider = await SQLiteProvider.newInstance(setting.file, action, showSQL, MANAGED_CLASSES);
+                const em = await CustomPersistence.createEntityManager("documents", provider);
+                return database.DatabaseManager.create(em);
             }
             case DatabaseProvider.MariaDB: {
                 const setting = settings as AnySettings;
-                const provider = await MariaDBProvider.createInstance(setting.url, setting.user, setting.password,
-                    action, showSQL, []);
+                const provider = await MariaDBProvider.newInstance(setting.url, setting.user, setting.password,
+                    action, showSQL, MANAGED_CLASSES);
                 return fromProvider(provider);
             }
             case DatabaseProvider.MySQL: {
                 const setting = settings as AnySettings;
-                const provider = await MySQLProvider.createInstance(setting.url, setting.user, setting.password,
-                    action, showSQL, []);
+                const provider = await MySQLProvider.newInstance(setting.url, setting.user, setting.password,
+                    action, showSQL, MANAGED_CLASSES);
                 return fromProvider(provider);
             }
             default:
