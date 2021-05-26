@@ -90,6 +90,36 @@ function decryptString(str: string, iv: Buffer): string {
     return decrypted.toString('utf-8');
 }
 
+// @ts-ignore
+type ms_passport_t = typeof import("node-ms-passport");
+// @ts-ignore
+type passport_t = typeof import("node-ms-passport").passport;
+
+/**
+ * Require a module using eval
+ *
+ * @param id the id of the module to require
+ * @return the imported module or null if not found
+ */
+function eval_require<T>(id: string): T | null {
+    try {
+        return eval('require')(id) as T;
+    } catch (e) {
+        logger.error(`An error occurred while trying to import ${id}:`, e);
+        return null;
+    }
+}
+
+/**
+ * The node-ms-passport module
+ */
+const ms_passport = (process.platform === "win32") ? eval_require<ms_passport_t>("node-ms-passport") : null;
+
+/**
+ * The passport module in node-ms-passport
+ */
+const passport: passport_t = (ms_passport === null) ? null : ms_passport.passport;
+
 /**
  * Update the encryption key using ms passport
  *
@@ -97,8 +127,6 @@ function decryptString(str: string, iv: Buffer): string {
  */
 async function win32_updatePassport(encryptionKey: Buffer): Promise<void> {
     logger.info("Updating the encryption key");
-    // @ts-ignore
-    const {passport} = await import("node-ms-passport");
     if (!encryptKey) {
         const account = new passport(PASSPORT_ACCOUNT_ID);
         if (!account.accountExists) {
@@ -124,13 +152,7 @@ const encryptionStrategies = {
      * @return the encrypted password
      */
     "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
-        // @ts-ignore
-        let passport: typeof import("node-ms-passport").passport = null;
-        try {
-            // @ts-ignore
-            passport = (await import("node-ms-passport")).passport;
-        } catch (e) {
-            logger.error("An error occurred while trying to import node-ms-passport:", e);
+        if (passport === null) {
             return password;
         }
 
@@ -158,13 +180,7 @@ const decryptionStrategies = {
      * @return the decrypted password
      */
     "win32": async function (password: string, encryptionKey: Buffer, iv: Buffer): Promise<string> {
-        // @ts-ignore
-        let passport: typeof import("node-ms-passport").passport = null;
-        try {
-            // @ts-ignore
-            passport = (await import("node-ms-passport")).passport;
-        } catch (e) {
-            logger.error("An error occurred while trying to import node-ms-passport:", e);
+        if (passport === null) {
             return password;
         }
 
@@ -193,7 +209,7 @@ export async function encryptPassword(password: string, encryptionKey: Buffer, i
     }
 
     if (encryptionStrategies.hasOwnProperty(process.platform)) {
-        return await encryptionStrategies[process.platform](password, encryptionKey, iv);
+        return encryptionStrategies[process.platform](password, encryptionKey, iv);
     } else {
         return password;
     }
@@ -213,7 +229,7 @@ export async function decryptPassword(password: string, encryptionKey: Buffer, i
     }
 
     if (decryptionStrategies.hasOwnProperty(process.platform)) {
-        return await decryptionStrategies[process.platform](password, encryptionKey, iv);
+        return decryptionStrategies[process.platform](password, encryptionKey, iv);
     } else {
         return password;
     }
