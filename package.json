@@ -24,7 +24,7 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "@markusjx/java": "0.1.0-beta.3",
+    "@markusjx/java": "0.1.0-beta.4",
     "@wojtekmaj/react-daterange-picker": "^3.1.0",
     "core-js": "^3.13.0",
     "custom-electron-titlebar": "^3.2.7",
@@ -63,7 +63,7 @@
     "sass-loader": "^11.1.1",
     "typescript": "^4.3.2",
     "url-loader": "^4.1.1",
-    "webpack": "^5.37.1",
+    "webpack": "^5.38.0",
     "webpack-cli": "^4.7.0",
     "webpack-merge": "^5.7.3",
     "webpack-node-externals": "^3.0.0"
