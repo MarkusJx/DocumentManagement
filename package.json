@@ -32,7 +32,7 @@
     "electron-updater": "^4.3.9",
     "electron-window-state": "^5.0.3",
     "find-java-home": "^1.2.0",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.0",
     "material-components-web": "^10.0.0",
     "open-sans-fonts": "^1.6.2",
     "react": "^17.0.2",
